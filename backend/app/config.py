@@ -1,8 +1,8 @@
-import os
+from datetime import timedelta
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL", "sqlite:///app.db"
-    )
+    SQLALCHEMY_DATABASE_URI = "sqlite:///app.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+    SECRET_KEY = "dev-secret"
+    JWT_SECRET_KEY = "jwt-secret"
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
