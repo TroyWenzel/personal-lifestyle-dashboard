@@ -1,0 +1,13 @@
+.dashboard-container {
+    padding: 20px;
+}
+
+.dashboard-container h1 {
+    margin-bottom: 20px;
+}
+
+.dashboard-container button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+}
