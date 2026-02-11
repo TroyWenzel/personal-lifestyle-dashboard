@@ -1,14 +1,25 @@
+
 import { useState } from "react";
 import { searchMeals } from "../../api/mealService";
 import { saveMeal } from "../../api/contentService";
+import "./FoodPage.css"; 
 
 const FoodPage = () => {
     const [query, setQuery] = useState("");
     const [meals, setMeals] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const handleSearch = async () => {
-        const data = await searchMeals(query);
-        setMeals(data.meals || []);
+        setLoading(true);
+        try {
+            const data = await searchMeals(query);
+            setMeals(data.meals || []);
+        } catch (error) {
+            console.error("Search error:", error);
+            alert("Failed to search meals");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSave = async (meal) => {
@@ -22,23 +33,42 @@ const FoodPage = () => {
     };
 
     return (
-        <div>
+        <div className="food-container">
             <h2>Search Meals</h2>
-            <input 
-                value={query} 
-                onChange={e => setQuery(e.target.value)} 
-                placeholder="Search for meals..."
-            />
-            <button onClick={handleSearch}>Search</button>
+            <div className="search-container">
+                <input 
+                    value={query} 
+                    onChange={e => setQuery(e.target.value)} 
+                    placeholder="Search for meals..."
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <button onClick={handleSearch} disabled={loading}>
+                    {loading ? 'Searching...' : 'Search'}
+                </button>
+            </div>
 
-            {meals.map(meal => (
-                <div key={meal.idMeal} style={{ marginBottom: "20px", border: "1px solid #ccc", padding: "10px" }}>
-                    <h3>{meal.strMeal}</h3>
-                    <img src={meal.strMealThumb} width="150" alt={meal.strMeal} />
-                    <br />
-                    <button onClick={() => handleSave(meal)}>Save Meal</button>
-                </div>
-            ))}
+            <div className="meals-grid">
+                {meals.map(meal => (
+                    <div key={meal.idMeal} className="meal-card">
+                        <h3>{meal.strMeal}</h3>
+                        <img src={meal.strMealThumb} alt={meal.strMeal} className="meal-image" />
+                        <div className="meal-info">
+                            <p><strong>Category:</strong> {meal.strCategory}</p>
+                            <p><strong>Cuisine:</strong> {meal.strArea}</p>
+                        </div>
+                        <button 
+                            onClick={() => handleSave(meal)}
+                            className="save-button"
+                        >
+                            Save Meal
+                        </button>
+                    </div>
+                ))}
+            </div>
+            
+            {meals.length === 0 && !loading && query && (
+                <p className="no-results">No meals found for "{query}"</p>
+            )}
         </div>
     );
 };

@@ -1,10 +1,15 @@
 import apiClient from "./apiClient";
 
 /**
- * Save a meal to the user's saved items
+ * Save an item from any category
  */
+export const saveItem = async (itemData) => {
+    const response = await apiClient.post('/content/', itemData);
+    return response;
+};
+
 export const saveMeal = async (meal) => {
-    const itemData = {
+    return saveItem({
         category: "food",
         external_id: meal.idMeal,
         title: meal.strMeal,
@@ -14,10 +19,15 @@ export const saveMeal = async (meal) => {
             area: meal.strArea,
             instructions: meal.strInstructions
         }
-    };
-    
-    const response = await apiClient.post('/content/', itemData);
-    return response;
+    });
+};
+
+export const saveLocation = async (weatherData) => {
+    return saveItem(weatherData);
+};
+
+export const saveArtwork = async (artData) => {
+    return saveItem(artData);
 };
 
 /**

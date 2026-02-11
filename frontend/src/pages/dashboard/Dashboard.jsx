@@ -5,7 +5,7 @@ import { getSavedItems, deleteItem } from "../../api/contentService";
 import "./Dashboard.css";
 
 function Dashboard() {
-    const { logout, token } = useContext(AuthContext);
+    const {logout} = useContext(AuthContext);
     const navigate = useNavigate();
     const [savedItems, setSavedItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,7 +46,9 @@ function Dashboard() {
     };
 
     if (loading) {
-        return <div className="dashboard-container">Loading...</div>;
+        return (
+            <div className="dashboard-container">Loading...</div>
+        );
     }
 
     return (
