@@ -1,0 +1,500 @@
+/* ===== DASHBOARD.CSS ===== */
+
+.dashboard {
+    padding: var(--space-8);
+    max-width: 100%;
+    margin: 0;
+    min-height: calc(100vh - var(--navbar-height));
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.dashboard-header h1 {
+    font-size: var(--text-5xl);
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-2);
+}
+
+.dashboard .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.dashboard .stat-card {
+    background: var(--white);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-200);
+}
+
+.dashboard .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--brand-primary);
+}
+
+.dashboard .stat-icon {
+    font-size: var(--text-3xl);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-gradient);
+    border-radius: var(--border-radius-lg);
+    color: var(--white);
+}
+
+.dashboard .stat-info h3 {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1;
+}
+
+.dashboard .stat-info p {
+    color: var(--gray-500);
+    margin: var(--space-1) 0 0 0;
+    font-size: var(--text-sm);
+}
+
+.dashboard .quick-actions {
+    background: var(--white);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-8);
+    margin-bottom: var(--space-8);
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard .quick-actions h2 {
+    color: var(--gray-800);
+    margin-bottom: var(--space-6);
+    font-size: var(--text-2xl);
+}
+
+.dashboard .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.dashboard .action-btn {
+    padding: var(--space-4);
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.dashboard .action-btn:hover {
+    background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--gray-400);
+}
+
+.dashboard .recent-section {
+    background: var(--white);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-8);
+    margin-bottom: var(--space-8);
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.dashboard .section-header h2 {
+    color: var(--gray-800);
+    margin: 0;
+    font-size: var(--text-2xl);
+}
+
+.dashboard .items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--space-6);
+}
+
+.dashboard .saved-item-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.dashboard .saved-item-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--brand-primary);
+}
+
+.dashboard .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.dashboard .item-type {
+    font-size: var(--text-2xl);
+    background: var(--gray-100);
+    padding: var(--space-2);
+    border-radius: var(--border-radius-md);
+}
+
+.dashboard .item-date {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+}
+
+.dashboard .item-title {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--gray-800);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.dashboard .item-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.dashboard .btn-view,
+.dashboard .btn-delete {
+    padding: var(--space-2) var(--space-4);
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    flex: 1;
+}
+
+.dashboard .btn-view {
+    background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+    color: var(--white);
+}
+
+.dashboard .btn-view:hover {
+    background: linear-gradient(135deg, var(--success-dark) 0%, #047857 100%);
+    transform: translateY(-2px);
+}
+
+.dashboard .btn-delete {
+    background: linear-gradient(135deg, var(--error) 0%, var(--error-dark) 100%);
+    color: var(--white);
+}
+
+.dashboard .btn-delete:hover {
+    background: linear-gradient(135deg, var(--error-dark) 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+}
+
+.dashboard .btn-logout {
+    background: linear-gradient(135deg, var(--error) 0%, var(--error-dark) 100%);
+    color: var(--white);
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: var(--space-4);
+    }
+    
+    .dashboard .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard .items-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard .section-header {
+        flex-direction: column;
+        gap: var(--space-4);
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header h1 {
+        font-size: var(--text-3xl);
+    }
+}
+
+/* ===== BIRTHDAY CELEBRATIONS ===== */
+/* Add this entire section to your existing Dashboard.css */
+
+.birthday-celebration {
+    margin-bottom: var(--space-8);
+    animation: slideInDown 0.5s ease-out;
+}
+
+.birthday-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.birthday-card::before {
+    content: '🎉🎂🎈';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    font-size: 5rem;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+
+.birthday-emoji {
+    font-size: 3.5rem;
+    animation: bounce 2s infinite;
+    position: relative;
+    z-index: 2;
+}
+
+.birthday-message {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.birthday-message h2 {
+    color: #5f2d3c;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.birthday-message p {
+    color: #7f4a5c;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-lg);
+}
+
+.birthday-age {
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.3);
+    display: inline-block;
+    padding: var(--space-1) var(--space-4);
+    border-radius: var(--border-radius-full);
+    margin-bottom: var(--space-4);
+}
+
+.birthday-special-offer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    background: rgba(255, 255, 255, 0.3);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--border-radius-full);
+    backdrop-filter: blur(5px);
+    flex-wrap: wrap;
+}
+
+.offer-badge {
+    background: white;
+    color: #e74c3c;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--border-radius-full);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    box-shadow: var(--shadow-md);
+}
+
+.birthday-countdown-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 2px solid #ffeaa7;
+    border-radius: var(--border-radius-full);
+    padding: var(--space-3) var(--space-6);
+    margin-bottom: var(--space-6);
+    color: #2d3436;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    animation: pulse 2s infinite;
+}
+
+.countdown-icon {
+    font-size: var(--text-xl);
+    animation: bounce 2s infinite;
+}
+
+.countdown-text {
+    font-size: var(--text-base);
+}
+
+/* Loading Spinner */
+.dashboard-container.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.dashboard-container.loading .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--gray-200);
+    border-top-color: var(--brand-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: var(--space-4);
+}
+
+.dashboard-container.loading p {
+    color: var(--gray-600);
+    font-size: var(--text-lg);
+}
+
+/* No Items State */
+.no-items {
+    text-align: center;
+    padding: var(--space-12);
+    background: var(--gray-50);
+    border-radius: var(--border-radius-xl);
+    border: 2px dashed var(--gray-300);
+}
+
+.no-items p {
+    color: var(--gray-600);
+    margin-bottom: var(--space-6);
+    font-size: var(--text-lg);
+}
+
+/* Animations */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 234, 167, 0.4);
+    }
+    50% { 
+        opacity: 0.9;
+        box-shadow: 0 0 0 10px rgba(255, 234, 167, 0);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Birthday Styles */
+@media (max-width: 768px) {
+    .birthday-card {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-4);
+    }
+    
+    .birthday-special-offer {
+        flex-direction: column;
+        gap: var(--space-2);
+        width: 100%;
+    }
+    
+    .birthday-emoji {
+        font-size: 2.5rem;
+    }
+    
+    .birthday-message h2 {
+        font-size: var(--text-xl);
+    }
+    
+    .birthday-message p {
+        font-size: var(--text-base);
+    }
+}
+
+@media (max-width: 480px) {
+    .birthday-countdown-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-4);
+    }
+    
+    .birthday-card {
+        padding: var(--space-4);
+    }
+}

@@ -1,15 +1,16 @@
 import axios from 'axios';
 
-// Create an axios instance with default config
+// Create configured axios instance for API calls
 const apiClient = axios.create({
+    // Use environment variable for API URL, fallback to localhost
     baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000',
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true,
+    withCredentials: true, // Include cookies in requests if needed
 });
 
-// Add request interceptors for auth
+// Request interceptor - adds auth token to every request
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -23,12 +24,13 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Add response interceptors for error handling
+// Response interceptor - handles common errors globally
 apiClient.interceptors.response.use(
-    (response) => response.data,
+    (response) => response.data, // Extract data directly for cleaner usage
     (error) => {
         console.error('API Error:', error.response?.data || error.message);
         
+        // Handle 401 Unauthorized errors - clear invalid token and redirect to login
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login';
@@ -40,7 +42,7 @@ apiClient.interceptors.response.use(
 
 export default apiClient;
 
-// Export the apiRequest function for compatibility
+// Legacy compatibility wrapper
 export const apiRequest = async (endpoint) => {
     return apiClient.get(endpoint);
 };
