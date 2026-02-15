@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSaveLocation } from "@/api/queries";
 import { searchWeather } from "@/api/services/weatherService";
-import "@/styles/features/WeatherPage.css";
+import "@/styles/GlassDesignSystem.css";
 
 const WeatherPage = () => {
     const [location, setLocation] = useState("");
@@ -105,28 +105,28 @@ const WeatherPage = () => {
     };
 
     return (
-        <div className="weather-page">
-            <div className="weather-container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h1>⛅ Weather Tracker</h1>
                     <p className="subtitle">Search for weather in any city and save your favorite locations</p>
                 </div>
 
                 {/* Search Section */}
-                <div className="search-section">
-                    <div className="search-box">
+                <div className="glass-search-section">
+                    <div className="glass-search-box">
                         <input
                             type="text"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             onKeyPress={handleKeyPress}
                             placeholder="Enter city name (e.g., London, Tokyo, New York)..."
-                            className="search-input"
+                            className="glass-input"
                         />
                         <button 
                             onClick={handleSearch} 
                             disabled={loading}
-                            className="search-btn"
+                            className="glass-btn"
                         >
                             {loading ? 'Searching...' : '🔍 Get Weather'}
                         </button>
@@ -200,7 +200,7 @@ const WeatherPage = () => {
                             <button 
                                 onClick={handleSave}
                                 disabled={saveLocationMutation.isLoading}
-                                className="save-location-btn"
+                                className="glass-btn glass-btn-sm"
                             >
                                 {saveLocationMutation.isLoading ? '💾 Saving...' : '💾 Save Location'}
                             </button>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useJournalEntries, useCreateJournalEntry, useDeleteJournalEntry } from '@/api/queries';
-import '@/styles/features/Hobby-Space-Journal.css';
+import "@/styles/GlassDesignSystem.css";
 
 const JournalPage = () => {
     const [title, setTitle] = useState('');
@@ -71,9 +71,9 @@ const JournalPage = () => {
     };
 
     return (
-        <div className="hobby-space-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>📓 Personal Journal</h2>
                     <p className="subtitle">Record your thoughts, feelings, and daily experiences</p>
                 </div>

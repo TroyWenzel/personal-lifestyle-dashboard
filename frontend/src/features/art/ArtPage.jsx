@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchArtworks, useSaveArtwork } from "@/api/queries";
-import "@/styles/features/Food-Drinks-Art-Books.css";
+import "@/styles/GlassDesignSystem.css";
 
 const ArtPage = () => {
     const [query, setQuery] = useState("");
@@ -44,27 +44,27 @@ const ArtPage = () => {
     };
 
     return (
-        <div className="food-drinks-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>🎨 Art Discovery</h2>
                     <p className="subtitle">Explore masterpieces from world-class museums</p>
                 </div>
                 
-                <div className="search-section">
-                    <div className="search-box">
+                <div className="glass-search-section">
+                    <div className="glass-search-box">
                         <input 
                             type="text"
                             value={query} 
                             onChange={e => setQuery(e.target.value)} 
                             placeholder="Search artworks, artists, or styles..."
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="search-input"
+                            className="glass-input"
                         />
                         <button 
                             onClick={handleSearch} 
                             disabled={isLoading}
-                            className="search-btn"
+                            className="glass-btn"
                         >
                             {isLoading ? 'Searching...' : '🔍 Search Art'}
                         </button>
@@ -80,23 +80,23 @@ const ArtPage = () => {
                 )}
 
                 {/* Artworks Grid */}
-                <div className="items-grid">
+                <div className="glass-grid">
                     {artworks.filter(art => art.image_id).map(artwork => (
-                        <div key={artwork.id} className="item-card art-card">
+                        <div key={artwork.id} className="glass-item-card art-card">
                             {artwork.image_id && (
                                 <img 
                                     src={`https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg`}
                                     alt={artwork.title || "Untitled"}
-                                    className="item-image"
+                                    className="glass-item-image"
                                     loading="lazy"
                                 />
                             )}
-                            <div className="item-info">
-                                <h3 className="item-title">{artwork.title || "Untitled"}</h3>
-                                <div className="item-meta">
-                                    <span className="meta-tag">👨‍🎨 {artwork.artist_title || "Unknown Artist"}</span>
+                            <div className="glass-item-info">
+                                <h3 className="glass-item-title">{artwork.title || "Untitled"}</h3>
+                                <div className="glass-item-meta">
+                                    <span className="glass-meta-tag">👨‍🎨 {artwork.artist_title || "Unknown Artist"}</span>
                                     {artwork.date_display && (
-                                        <span className="meta-tag">📅 {artwork.date_display}</span>
+                                        <span className="glass-meta-tag">📅 {artwork.date_display}</span>
                                     )}
                                 </div>
                                 {artwork.medium_display && (
@@ -105,7 +105,7 @@ const ArtPage = () => {
                                 <button 
                                     onClick={() => handleSave(artwork)}
                                     disabled={saveArtworkMutation.isLoading}
-                                    className="save-btn"
+                                    className="glass-btn glass-btn-sm"
                                 >
                                     {saveArtworkMutation.isLoading ? '💾 Saving...' : '💾 Save Artwork'}
                                 </button>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchBooks, useSaveBook } from '@/api/queries';
-import '@/styles/features/Food-Drinks-Art-Books.css';
+import "@/styles/GlassDesignSystem.css";
 
 const BooksPage = () => {
     const [query, setQuery] = useState('');
@@ -47,27 +47,27 @@ const BooksPage = () => {
     };
 
     return (
-        <div className="food-drinks-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>📚 Book Discovery</h2>
                     <p className="subtitle">Explore millions of books from Open Library</p>
                 </div>
 
-                <div className="search-section">
-                    <div className="search-box">
+                <div className="glass-search-section">
+                    <div className="glass-search-box">
                         <input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search for books by title, author, or subject..."
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="search-input"
+                            className="glass-input"
                         />
                         <button 
                             onClick={handleSearch} 
                             disabled={isLoading || !query.trim()}
-                            className="search-btn"
+                            className="glass-btn"
                         >
                             {isLoading ? 'Searching...' : '🔍 Search Books'}
                         </button>
@@ -83,14 +83,14 @@ const BooksPage = () => {
                 )}
 
                 {/* Books Grid */}
-                <div className="items-grid">
+                <div className="glass-grid">
                     {books.map((book) => (
-                        <div key={book.id} className="item-card book-card">
+                        <div key={book.id} className="glass-item-card book-card">
                             {book.coverId ? (
                                 <img
                                     src={`https://covers.openlibrary.org/b/id/${book.coverId}-M.jpg`}
                                     alt={book.title}
-                                    className="item-image book-cover"
+                                    className="glass-item-image book-cover"
                                     loading="lazy"
                                 />
                             ) : (
@@ -99,12 +99,12 @@ const BooksPage = () => {
                                     <span>No Cover</span>
                                 </div>
                             )}
-                            <div className="item-info">
-                                <h3 className="item-title">{book.title}</h3>
-                                <div className="item-meta">
-                                    <span className="meta-tag">✍️ {book.author}</span>
+                            <div className="glass-item-info">
+                                <h3 className="glass-item-title">{book.title}</h3>
+                                <div className="glass-item-meta">
+                                    <span className="glass-meta-tag">✍️ {book.author}</span>
                                     {book.year && (
-                                        <span className="meta-tag">📅 {book.year}</span>
+                                        <span className="glass-meta-tag">📅 {book.year}</span>
                                     )}
                                 </div>
                                 {book.subjects.length > 0 && (
@@ -119,7 +119,7 @@ const BooksPage = () => {
                                 <button
                                     onClick={() => handleSaveBook(book)}
                                     disabled={saveBookMutation.isLoading}
-                                    className="save-btn"
+                                    className="glass-btn glass-btn-sm"
                                 >
                                     {saveBookMutation.isLoading ? '💾 Saving...' : '💾 Save Book'}
                                 </button>

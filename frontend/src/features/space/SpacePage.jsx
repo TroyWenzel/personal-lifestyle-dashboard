@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSpacePhoto, useSaveSpacePhoto } from '@/api/queries';
-import '@/styles/features/Hobby-Space-Journal.css';
+import "@/styles/GlassDesignSystem.css";
 
 const SpacePage = () => {
     const [selectedDate, setSelectedDate] = useState('');
@@ -44,33 +44,33 @@ const SpacePage = () => {
     };
 
     return (
-        <div className="hobby-space-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>🚀 NASA Astronomy Picture of the Day</h2>
                     <p className="subtitle">Explore the cosmos with NASA's daily space imagery</p>
                 </div>
 
-                <div className="search-section">
-                    <div className="search-box">
+                <div className="glass-search-section">
+                    <div className="glass-search-box">
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             max={getTodayDate()}
-                            className="search-input"
+                            className="glass-input"
                         />
                         <button 
                             onClick={handleFetchPhoto}
                             disabled={isLoading}
-                            className="search-btn"
+                            className="glass-btn"
                         >
                             {isLoading ? 'Loading...' : '🔍 Get Photo'}
                         </button>
                         <button 
                             onClick={() => { setSelectedDate(''); setDateToFetch(null); refetch(); }}
                             disabled={isLoading}
-                            className="search-btn secondary"
+                            className="glass-btn secondary"
                         >
                             📅 Today's Photo
                         </button>
@@ -127,7 +127,7 @@ const SpacePage = () => {
                             <button 
                                 onClick={handleSavePhoto}
                                 disabled={savePhotoMutation.isLoading}
-                                className="save-btn"
+                                className="glass-btn glass-btn-sm"
                             >
                                 {savePhotoMutation.isLoading ? '💾 Saving...' : '💾 Save Photo'}
                             </button>

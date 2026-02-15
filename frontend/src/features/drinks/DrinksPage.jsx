@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchDrinks, useSaveDrink } from '@/api/queries';
-import '@/styles/features/Food-Drinks-Art-Books.css';
+import "@/styles/GlassDesignSystem.css";
 
 const DrinksPage = () => {
     const [query, setQuery] = useState('');
@@ -47,27 +47,27 @@ const DrinksPage = () => {
     };
 
     return (
-        <div className="food-drinks-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>🍸 Cocktail Explorer</h2>
                     <p className="subtitle">Discover and save your favorite cocktail recipes</p>
                 </div>
                 
-                <div className="search-section">
-                    <div className="search-box">
+                <div className="glass-search-section">
+                    <div className="glass-search-box">
                         <input 
                             type="text"
                             value={query} 
                             onChange={e => setQuery(e.target.value)} 
                             placeholder="Search for cocktails (e.g., margarita, mojito)..."
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="search-input"
+                            className="glass-input"
                         />
                         <button 
                             onClick={handleSearch} 
                             disabled={isLoading}
-                            className="search-btn"
+                            className="glass-btn"
                         >
                             {isLoading ? 'Searching...' : '🔍 Search'}
                         </button>
@@ -76,26 +76,26 @@ const DrinksPage = () => {
 
                 {/* Loading State */}
                 {isLoading && (
-                    <div className="loading-container">
+                    <div className="loading-glass-container">
                         <div className="spinner"></div>
                         <p>Searching for cocktails...</p>
                     </div>
                 )}
 
                 {/* Drinks Grid */}
-                <div className="items-grid">
+                <div className="glass-grid">
                     {drinks.map(drink => (
-                        <div key={drink.idDrink} className="item-card">
+                        <div key={drink.idDrink} className="glass-item-card">
                             <img 
                                 src={drink.strDrinkThumb} 
                                 alt={drink.strDrink} 
-                                className="item-image" 
+                                className="glass-item-image" 
                             />
-                            <div className="item-info">
-                                <h3 className="item-title">{drink.strDrink}</h3>
-                                <div className="item-meta">
-                                    <span className="meta-tag">🍸 {drink.strCategory}</span>
-                                    <span className="meta-tag">🥃 {drink.strAlcoholic}</span>
+                            <div className="glass-item-info">
+                                <h3 className="glass-item-title">{drink.strDrink}</h3>
+                                <div className="glass-item-meta">
+                                    <span className="glass-meta-tag">🍸 {drink.strCategory}</span>
+                                    <span className="glass-meta-tag">🥃 {drink.strAlcoholic}</span>
                                 </div>
                                 <div className="button-group">
                                     <button 
@@ -107,7 +107,7 @@ const DrinksPage = () => {
                                     <button 
                                         onClick={() => handleSaveDrink(drink)}
                                         disabled={saveDrinkMutation.isLoading}
-                                        className="save-btn"
+                                        className="glass-btn glass-btn-sm"
                                     >
                                         {saveDrinkMutation.isLoading ? '💾 Saving...' : '💾 Save'}
                                     </button>

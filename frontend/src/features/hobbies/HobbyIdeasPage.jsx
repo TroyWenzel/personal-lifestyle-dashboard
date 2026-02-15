@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRandomActivity, useSaveActivity } from '@/api/queries';
-import '@/styles/features/Hobby-Space-Journal.css';
+import "@/styles/GlassDesignSystem.css";
 
 const HobbyIdeasPage = () => {
     const [activityType, setActivityType] = useState('');
@@ -60,9 +60,9 @@ const HobbyIdeasPage = () => {
     };
 
     return (
-        <div className="hobby-space-theme page-content">
-            <div className="container">
-                <div className="page-header">
+        <div className="glass-page">
+            <div className="glass-container">
+                <div className="glass-page-header">
                     <h2>✨ Activity Ideas</h2>
                     <p className="subtitle">Beat boredom with personalized activity suggestions</p>
                 </div>
@@ -175,7 +175,7 @@ const HobbyIdeasPage = () => {
                             <button 
                                 onClick={handleSaveActivity}
                                 disabled={saveActivityMutation.isLoading}
-                                className="save-btn"
+                                className="glass-btn glass-btn-sm"
                             >
                                 {saveActivityMutation.isLoading ? '💾 Saving...' : '💾 Save Activity'}
                             </button>
