@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import "../styles/pages/Home.css";
+import { AuthContext } from "@/context/AuthContext";
+import "@/styles/pages/Auth.css";
 
 function Login() {
     // State for form inputs and UI feedback
@@ -55,8 +55,16 @@ function Login() {
                 const token = data.access_token || data.token || data.jwt;
                 
                 if (token) {
-                    login(token); // Store token via AuthContext
-                    navigate("/home"); // Redirect to dashboard on success
+                    // Extract user data from response (adjust based on your backend response)
+                    const userData = {
+                        email: email,
+                        username: data.username || data.user?.username || email.split('@')[0],
+                        id: data.user_id || data.user?.id,
+                        ...data.user // Include any other user fields from backend
+                    };
+                    
+                    login(token, userData); // Store token AND user data via AuthContext
+                    navigate("/"); // Redirect to home on success
                 } else {
                     setMessage("Authentication failed - no token received");
                 }

@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from "../client";
 
 // Fetch current weather for a location
 export const searchWeather = async (location) => {
@@ -93,3 +93,7 @@ const getMockWeatherData = (location) => {
 
 // Re-export save function for consistent import pattern
 export { saveLocation } from './contentService';
+
+// Aliases for TanStack Query compatibility
+export const getCurrentWeather = searchWeather;
+export const searchLocation = searchWeather;

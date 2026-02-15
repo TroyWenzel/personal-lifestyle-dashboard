@@ -40,3 +40,7 @@ export const getArtworkById = async (id) => {
 
 // Re-export save function from contentService
 export { saveArtwork } from './contentService';
+
+// Aliases for TanStack Query compatibility
+export const searchArtworks = searchArt;
+export const getArtworkDetails = getArtworkById;

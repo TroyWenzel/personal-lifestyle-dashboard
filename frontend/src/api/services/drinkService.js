@@ -33,3 +33,7 @@ export const getRandomCocktail = async () => {
 };
 
 export { saveDrink } from './contentService';
+
+// Aliases for TanStack Query compatibility
+export const searchDrinks = searchCocktails;
+export const getRandomDrink = getRandomCocktail;

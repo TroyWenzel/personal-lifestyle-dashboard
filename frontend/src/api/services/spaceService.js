@@ -117,3 +117,6 @@ export const removeSavedSpacePhoto = (date) => {
         return { success: false, message: 'Failed to remove photo' };
     }
 };
+
+// Alias for TanStack Query compatibility
+export const getSpacePhoto = getAstronomyPicture;

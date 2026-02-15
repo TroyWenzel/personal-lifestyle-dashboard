@@ -34,5 +34,22 @@ export const getMealById = async (id) => {
     }
 };
 
+// Get a random meal
+export const getRandomMeal = async () => {
+    try {
+        const response = await fetch(`${API_BASE}/random.php`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error in getRandomMeal:', error);
+        throw error;
+    }
+};
+
 // Re-export save function from contentService for consistent import pattern
 export { saveMeal } from './contentService';

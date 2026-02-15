@@ -1,6 +1,8 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import "@/styles/pages/Home.css";
+import "@/styles/Animations.css";
 
 function Home() {
     const { token, user } = useContext(AuthContext);

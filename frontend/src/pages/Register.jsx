@@ -1,12 +1,15 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "@/context/AuthContext";
 
 function Register() {
     // State for registration form
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [birthday, setBirthday] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [message, setMessage] = useState("");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -17,6 +20,9 @@ function Register() {
     // Comprehensive form validation for registration
     const validateForm = () => {
         const newErrors = {};
+        if (!name.trim() || name.length < 2) {
+            newErrors.name = 'Name must be at least 2 characters';
+        }
         if (!email.includes('@') || !email.includes('.')) {
             newErrors.email = 'Please enter a valid email address';
         }
@@ -25,6 +31,9 @@ function Register() {
         }
         if (password !== confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
+        }
+        if (phoneNumber && !/^[\d\s\-\+\(\)]+$/.test(phoneNumber)) {
+            newErrors.phoneNumber = 'Please enter a valid phone number';
         }
         return newErrors;
     };
@@ -47,7 +56,13 @@ function Register() {
             const response = await fetch("http://localhost:5000/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ 
+                    email, 
+                    password,
+                    username: name,
+                    birthday,
+                    phoneNumber
+                }),
             });
 
             const data = await response.json();
@@ -66,8 +81,20 @@ function Register() {
                 
                 if (loginResponse.ok) {
                     const token = loginData.access_token || loginData.token || loginData.jwt;
-                    login(token);
-                    navigate("/dashboard");
+                    
+                    // Extract user data with registration info
+                    const userData = {
+                        email: email,
+                        username: name,
+                        displayName: name,
+                        birthday: birthday,
+                        phoneNumber: phoneNumber,
+                        id: loginData.user_id || loginData.user?.id,
+                        ...loginData.user
+                    };
+                    
+                    login(token, userData);
+                    navigate("/");
                 } else {
                     setMessage("Registration successful but auto-login failed. Please log in manually.");
                 }
@@ -84,10 +111,29 @@ function Register() {
 
     return (
         <div className="register-container">
-            <h2>Register</h2>
+            <h2>Create Your Account</h2>
+            <p className="register-subtitle">Join LifeHub and start organizing your digital life</p>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="email">Email:</label>
+                    <label htmlFor="name">Full Name: *</label>
+                    <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            if (errors.name) setErrors({...errors, name: ''});
+                        }}
+                        placeholder="John Doe"
+                        required
+                        className={errors.name ? "error-input" : ""}
+                    />
+                    {errors.name && <span className="error-text">{errors.name}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="email">Email: *</label>
                     <input
                         id="email"
                         name="email"
@@ -97,13 +143,50 @@ function Register() {
                             setEmail(e.target.value);
                             if (errors.email) setErrors({...errors, email: ''});
                         }}
+                        placeholder="john@example.com"
                         required
                         className={errors.email ? "error-input" : ""}
                     />
                     {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="password">Password:</label>
+                    <label htmlFor="birthday">Birthday: *</label>
+                    <input
+                        id="birthday"
+                        name="birthday"
+                        type="date"
+                        value={birthday}
+                        onChange={(e) => {
+                            setBirthday(e.target.value);
+                            if (errors.birthday) setErrors({...errors, birthday: ''});
+                        }}
+                        required
+                        className={errors.birthday ? "error-input" : ""}
+                    />
+                    {errors.birthday && <span className="error-text">{errors.birthday}</span>}
+                    <small className="field-hint">We'll celebrate with you! 🎂</small>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="phoneNumber">Phone Number: (Optional)</label>
+                    <input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => {
+                            setPhoneNumber(e.target.value);
+                            if (errors.phoneNumber) setErrors({...errors, phoneNumber: ''});
+                        }}
+                        placeholder="+1 (555) 123-4567"
+                        className={errors.phoneNumber ? "error-input" : ""}
+                    />
+                    {errors.phoneNumber && <span className="error-text">{errors.phoneNumber}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password: *</label>
                     <input
                         id="password"
                         name="password"
@@ -113,6 +196,7 @@ function Register() {
                             setPassword(e.target.value);
                             if (errors.password) setErrors({...errors, password: ''});
                         }}
+                        placeholder="At least 6 characters"
                         required
                         className={errors.password ? "error-input" : ""}
                     />

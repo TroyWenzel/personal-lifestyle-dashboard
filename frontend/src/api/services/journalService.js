@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from "../client";
 import { saveJournal } from './contentService';
 
 // For backward compatibility - use contentService instead
@@ -14,6 +14,34 @@ export const getJournalEntries = async () => {
 
 export const saveJournalEntry = async (journalData) => {
     return saveJournal(journalData);
+};
+
+// Alias for TanStack Query compatibility
+export const createJournalEntry = saveJournalEntry;
+
+// Update a journal entry
+export const updateJournalEntry = async (id, journalData) => {
+    try {
+        const response = await apiClient.put(`/api/content/${id}`, {
+            ...journalData,
+            type: 'journal'
+        });
+        return response;
+    } catch (error) {
+        console.error('Error updating journal entry:', error);
+        throw error;
+    }
+};
+
+// Delete a journal entry
+export const deleteJournalEntry = async (id) => {
+    try {
+        const response = await apiClient.delete(`/api/content/${id}`);
+        return response;
+    } catch (error) {
+        console.error('Error deleting journal entry:', error);
+        throw error;
+    }
 };
 
 // Legacy localStorage functions (for development fallback)

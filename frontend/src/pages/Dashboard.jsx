@@ -1,17 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import { getSavedItems, deleteItem, getDashboardStats } from "../api/contentService";
-import { isUserBirthday, calculateAge, getBirthdayCountdown } from "../api/userService";
-import "../styles/pages/Dashboard.css";
+import { AuthContext } from "@/context/AuthContext";
+import { useSavedItems, useDashboardStats, useDeleteItem } from "@/api/queries";
+import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/services/userService";
+import "@/styles/pages/Dashboard.css";
 
 function Dashboard() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     
-    // State for dashboard data
-    const [savedItems, setSavedItems] = useState([]);
-    const [stats, setStats] = useState({
+    // 🚀 TanStack Query - replaces all the useState and useEffect!
+    const { data: savedItems = [], isLoading: itemsLoading } = useSavedItems();
+    const { data: stats = {
         meals: 0,
         journalEntries: 0,
         activities: 0,
@@ -20,65 +20,56 @@ function Dashboard() {
         spacePhotos: 0,
         locations: 0,
         artworks: 0
-    });
-    const [loading, setLoading] = useState(true);
+    }, isLoading: statsLoading } = useDashboardStats();
+    const deleteItemMutation = useDeleteItem();
     
-    // 🎂 Birthday state
-    const [userBirthday, setUserBirthday] = useState(null);
-    const [isBirthdayToday, setIsBirthdayToday] = useState(false);
-    const [birthdayCountdown, setBirthdayCountdown] = useState(null);
-    const [userDisplayName, setUserDisplayName] = useState('');
-
-    // Fetch dashboard data and birthday info on component mount
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Parallel API calls for better performance
-                const [items, dashboardStats] = await Promise.all([
-                    getSavedItems(),
-                    getDashboardStats()
-                ]);
-                setSavedItems(items);
-                setStats(dashboardStats);
-                
-                // 🎂 Check birthday from localStorage
-                if (user?.uid) {
-                    const userData = localStorage.getItem(`user_${user.uid}`);
-                    if (userData) {
-                        const { birthday } = JSON.parse(userData);
-                        setUserBirthday(birthday);
-                        setIsBirthdayToday(isUserBirthday(birthday));
-                        setBirthdayCountdown(getBirthdayCountdown(birthday));
-                    }
-                    
-                    // Set display name from user object
-                    setUserDisplayName(user.username || user.displayName || user.email?.split('@')[0] || 'User');
-                }
-            } catch (error) {
-                console.error("Error fetching dashboard data:", error);
-            } finally {
-                setLoading(false);
-            }
+    // Loading state - combine both queries
+    const loading = itemsLoading || statsLoading;
+    
+    // 🎂 Birthday calculations (memoized to avoid recalculation)
+    const birthdayData = useMemo(() => {
+        if (!user) return { birthday: null, isBirthdayToday: false, countdown: null, displayName: 'User' };
+        
+        // Try to get birthday and name from localStorage first
+        let userData = null;
+        if (user.uid) {
+            const userDataStr = localStorage.getItem(`user_${user.uid}`);
+            userData = userDataStr ? JSON.parse(userDataStr) : null;
+        }
+        
+        // Also check the main user object in localStorage
+        if (!userData) {
+            const mainUserStr = localStorage.getItem('user');
+            userData = mainUserStr ? JSON.parse(mainUserStr) : null;
+        }
+        
+        const birthday = userData?.birthday || null;
+        const displayName = userData?.username || userData?.displayName || user.username || user.displayName || user.email?.split('@')[0] || 'User';
+        
+        return {
+            birthday,
+            isBirthdayToday: isUserBirthday(birthday),
+            countdown: getBirthdayCountdown(birthday),
+            displayName
         };
-
-        fetchData();
-    }, [user]); // ✅ Added user dependency
+    }, [user]);
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
-    // Delete an item and update UI optimistically
-    const handleDelete = async (itemId) => {
-        try {
-            await deleteItem(itemId);
-            setSavedItems(savedItems.filter(item => item.id !== itemId));
-            alert("Item deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting item:", error);
-            alert("Failed to delete item. Please try again.");
-        }
+    // Delete an item using mutation
+    const handleDelete = (itemId) => {
+        deleteItemMutation.mutate(itemId, {
+            onSuccess: () => {
+                alert("Item deleted successfully!");
+            },
+            onError: (error) => {
+                console.error("Error deleting item:", error);
+                alert("Failed to delete item. Please try again.");
+            },
+        });
     };
 
     if (loading) {
@@ -93,16 +84,16 @@ function Dashboard() {
     return (
         <div className="dashboard-container">
             {/* 🎂 BIRTHDAY CELEBRATION BANNER - Shows on birthday */}
-            {isBirthdayToday && (
+            {birthdayData.isBirthdayToday && (
                 <div className="birthday-celebration">
                     <div className="birthday-card">
                         <div className="birthday-emoji">🎂</div>
                         <div className="birthday-message">
-                            <h2>Happy Birthday, {userDisplayName}! 🎉</h2>
+                            <h2>Happy Birthday, {birthdayData.displayName}! 🎉</h2>
                             <p>We hope you have an amazing day!</p>
-                            {userBirthday && calculateAge(userBirthday) && (
+                            {birthdayData.birthday && calculateAge(birthdayData.birthday) && (
                                 <p className="birthday-age">
-                                    You're turning {calculateAge(userBirthday)} today!
+                                    You're turning {calculateAge(birthdayData.birthday)} today!
                                 </p>
                             )}
                             <div className="birthday-special-offer">
@@ -116,19 +107,19 @@ function Dashboard() {
             )}
 
             {/* 🎂 BIRTHDAY COUNTDOWN - Shows when birthday is within 30 days */}
-            {!isBirthdayToday && birthdayCountdown && birthdayCountdown <= 30 && (
+            {!birthdayData.isBirthdayToday && birthdayData.countdown && birthdayData.countdown <= 30 && (
                 <div className="birthday-countdown-banner">
                     <span className="countdown-icon">🎂</span>
                     <span className="countdown-text">
-                        Your birthday is in {birthdayCountdown} day{birthdayCountdown !== 1 ? 's' : ''}! 
-                        {birthdayCountdown <= 7 ? ' 🎉 So soon!' : ''}
+                        Your birthday is in {birthdayData.countdown} day{birthdayData.countdown !== 1 ? 's' : ''}! 
+                        {birthdayData.countdown <= 7 ? ' 🎉 So soon!' : ''}
                     </span>
                 </div>
             )}
 
             {/* Welcome header section */}
             <div className="dashboard-header">
-                <h1>Welcome, {userDisplayName}! 👋</h1>
+                <h1>Welcome, {birthdayData.displayName}! 👋</h1>
                 <p className="welcome-text">
                     Here's an overview of your personal collection
                 </p>
@@ -169,14 +160,14 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card" onClick={() => navigate('/drinks')}>
-                    <div className="stat-icon">🍸</div>
+                    <div className="stat-icon">🸸</div>
                     <div className="stat-info">
                         <h3>{stats.drinks}</h3>
                         <p>Saved Drinks</p>
                     </div>
                 </div>
 
-                <div className="stat-card" onClick={() => navigate('/hobby')}>
+                <div className="stat-card" onClick={() => navigate('/hobbies')}>
                     <div className="stat-icon">✨</div>
                     <div className="stat-info">
                         <h3>{stats.activities}</h3>
@@ -193,7 +184,7 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card" onClick={() => navigate('/journal')}>
-                    <div className="stat-icon">📔</div>
+                    <div className="stat-icon">📓</div>
                     <div className="stat-info">
                         <h3>{stats.journalEntries}</h3>
                         <p>Journal Entries</p>
@@ -218,16 +209,16 @@ function Dashboard() {
                         📚 Search Books
                     </button>
                     <button className="action-btn" onClick={() => navigate('/drinks')}>
-                        🍸 Find Drinks
+                        🸸 Find Drinks
                     </button>
-                    <button className="action-btn" onClick={() => navigate('/hobby')}>
+                    <button className="action-btn" onClick={() => navigate('/hobbies')}>
                         ✨ New Activity
                     </button>
                     <button className="action-btn" onClick={() => navigate('/space')}>
                         🚀 View Space
                     </button>
                     <button className="action-btn" onClick={() => navigate('/journal')}>
-                        📔 Write Journal
+                        📓 Write Journal
                     </button>
                     <button className="action-btn" onClick={() => navigate('/profile')}>
                         👤 Edit Profile
@@ -261,10 +252,10 @@ function Dashboard() {
                                         {item.type === 'location' && '⛅'}
                                         {item.type === 'artwork' && '🎨'}
                                         {item.type === 'book' && '📚'}
-                                        {item.type === 'drink' && '🍸'}
+                                        {item.type === 'drink' && '🸸'}
                                         {item.type === 'activity' && '✨'}
                                         {item.type === 'spacePhoto' && '🚀'}
-                                        {item.type === 'journal' && '📔'}
+                                        {item.type === 'journal' && '📓'}
                                     </span>
                                     <span className="item-date">
                                         {new Date(item.createdAt).toLocaleDateString()}
@@ -302,7 +293,7 @@ function Dashboard() {
                                         else if (item.type === 'artwork') navigate('/art');
                                         else if (item.type === 'book') navigate('/books');
                                         else if (item.type === 'drink') navigate('/drinks');
-                                        else if (item.type === 'activity') navigate('/hobby');
+                                        else if (item.type === 'activity') navigate('/hobbies');
                                         else if (item.type === 'spacePhoto') navigate('/space');
                                         else if (item.type === 'journal') navigate('/journal');
                                     }}>
@@ -311,8 +302,9 @@ function Dashboard() {
                                     <button 
                                         className="btn-delete"
                                         onClick={() => handleDelete(item.id)}
+                                        disabled={deleteItemMutation.isLoading}
                                     >
-                                        Delete
+                                        {deleteItemMutation.isLoading ? 'Deleting...' : 'Delete'}
                                     </button>
                                 </div>
                             </div>

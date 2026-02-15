@@ -20,3 +20,6 @@ export const getActivity = async (type = '') => {
 };
 
 export { saveActivity } from './contentService';
+
+// Alias for TanStack Query compatibility
+export const getRandomActivity = getActivity;
