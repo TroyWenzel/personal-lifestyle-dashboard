@@ -1,3 +1,4 @@
+import re
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -25,7 +26,7 @@ def create_app():
      CORS(app, resources={r"/*": {
           "origins": [
                "https://steady-rugelach-889cba.netlify.app",
-               r"https://.*--steady-rugelach-889cba\.netlify\.app", # Current preview
+               re.compile(r"https://.*--steady-rugelach-889cba\.netlify\.app"), # Current preview
                "http://localhost:5173", # For local testing
                "http://127.0.0.1:5173"
           ]
