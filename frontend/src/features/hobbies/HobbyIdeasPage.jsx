@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useRandomActivity, useSaveActivity } from '@/api/queries';
-import "@/styles/GlassDesignSystem.css";
+import '@/styles/GlassDesignSystem.css';
 
 const HobbyIdeasPage = () => {
     const [activityType, setActivityType] = useState('');
     const [participants, setParticipants] = useState('');
     
-    // 🚀 TanStack Query with manual refetch
+    // 🚀 TanStack Query - manually triggered with enabled: false
     const { data: activity, isLoading, refetch } = useRandomActivity({ 
         type: activityType, 
         participants: participants 
-    });
+    }, { enabled: false });
+    
     const saveActivityMutation = useSaveActivity();
 
     const handleGetActivity = () => {
@@ -67,122 +68,129 @@ const HobbyIdeasPage = () => {
                     <p className="subtitle">Beat boredom with personalized activity suggestions</p>
                 </div>
 
-                {/* Filters */}
-                <div className="activity-filters">
-                    <div className="filter-group">
-                        <label htmlFor="type">Activity Type</label>
-                        <select
-                            id="type"
-                            value={activityType}
-                            onChange={(e) => setActivityType(e.target.value)}
-                            className="filter-select"
-                        >
-                            {activityTypes.map(type => (
-                                <option key={type.value} value={type.value}>
-                                    {type.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                <div className="glass-card" style={{ marginBottom: '2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                Activity Type
+                            </label>
+                            <select
+                                value={activityType}
+                                onChange={(e) => setActivityType(e.target.value)}
+                                className="glass-select"
+                                style={{ width: '100%' }}
+                            >
+                                {activityTypes.map(type => (
+                                    <option key={type.value} value={type.value}>
+                                        {type.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div className="filter-group">
-                        <label htmlFor="participants">Number of People</label>
-                        <select
-                            id="participants"
-                            value={participants}
-                            onChange={(e) => setParticipants(e.target.value)}
-                            className="filter-select"
-                        >
-                            <option value="">Any Number</option>
-                            <option value="1">1 Person (Solo)</option>
-                            <option value="2">2 People</option>
-                            <option value="3">3 People</option>
-                            <option value="4">4 People</option>
-                            <option value="5">5+ People</option>
-                        </select>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                Number of People
+                            </label>
+                            <select
+                                value={participants}
+                                onChange={(e) => setParticipants(e.target.value)}
+                                className="glass-select"
+                                style={{ width: '100%' }}
+                            >
+                                <option value="">Any Number</option>
+                                <option value="1">1 Person (Solo)</option>
+                                <option value="2">2 People</option>
+                                <option value="3">3 People</option>
+                                <option value="4">4 People</option>
+                                <option value="5">5+ People</option>
+                            </select>
+                        </div>
                     </div>
 
                     <button 
                         onClick={handleGetActivity}
                         disabled={isLoading}
-                        className="generate-btn"
+                        className="glass-btn"
+                        style={{ width: '100%' }}
                     >
                         {isLoading ? '🎲 Finding...' : '🎲 Get Random Activity'}
                     </button>
                 </div>
 
-                {/* Loading State */}
                 {isLoading && (
-                    <div className="loading-container">
-                        <div className="spinner"></div>
+                    <div className="glass-loading">
+                        <div className="glass-spinner"></div>
                         <p>Finding the perfect activity...</p>
                     </div>
                 )}
 
-                {/* Activity Display */}
                 {activity && !isLoading && (
-                    <div className="activity-card">
-                        <div className="activity-icon">
-                            {activityTypes.find(t => t.value === activity.type)?.label.split(' ')[0] || '✨'}
+                    <div className="glass-card">
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
+                                {activityTypes.find(t => t.value === activity.type)?.label.split(' ')[0] || '✨'}
+                            </div>
+                            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', marginBottom: '1rem' }}>
+                                {activity.activity}
+                            </h3>
                         </div>
                         
-                        <h3 className="activity-title">{activity.activity}</h3>
-                        
-                        <div className="activity-details">
-                            <div className="detail-row">
-                                <span className="detail-label">Type:</span>
-                                <span className="detail-value">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
+                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Type</div>
+                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
                                     {activityTypes.find(t => t.value === activity.type)?.label || activity.type}
-                                </span>
-                            </div>
-                            
-                            <div className="detail-row">
-                                <span className="detail-label">Participants:</span>
-                                <span className="detail-value">
-                                    {activity.participants} {activity.participants === 1 ? 'person' : 'people'}
-                                </span>
-                            </div>
-                            
-                            <div className="detail-row">
-                                <span className="detail-label">Accessibility:</span>
-                                <span className="detail-value">
-                                    {getAccessibilityLabel(activity.accessibility)}
-                                </span>
-                            </div>
-                            
-                            <div className="detail-row">
-                                <span className="detail-label">Cost:</span>
-                                <span className="detail-value">
-                                    {getPriceLabel(activity.price)}
-                                </span>
-                            </div>
-
-                            {activity.link && (
-                                <div className="detail-row">
-                                    <a 
-                                        href={activity.link} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="activity-link"
-                                    >
-                                        🔗 Learn More
-                                    </a>
                                 </div>
-                            )}
+                            </div>
+                            
+                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
+                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Participants</div>
+                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
+                                    {activity.participants} {activity.participants === 1 ? 'person' : 'people'}
+                                </div>
+                            </div>
+                            
+                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
+                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Difficulty</div>
+                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
+                                    {getAccessibilityLabel(activity.accessibility)}
+                                </div>
+                            </div>
+                            
+                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
+                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Cost</div>
+                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
+                                    {getPriceLabel(activity.price)}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="activity-actions">
+                        {activity.link && (
+                            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                                <a 
+                                    href={activity.link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="glass-btn-secondary"
+                                >
+                                    🔗 Learn More
+                                </a>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                             <button 
                                 onClick={handleSaveActivity}
                                 disabled={saveActivityMutation.isLoading}
-                                className="glass-btn glass-btn-sm"
+                                className="glass-btn"
                             >
                                 {saveActivityMutation.isLoading ? '💾 Saving...' : '💾 Save Activity'}
                             </button>
                             <button 
                                 onClick={handleGetActivity}
                                 disabled={isLoading}
-                                className="secondary-btn"
+                                className="glass-btn-secondary"
                             >
                                 🔄 Get Another
                             </button>
@@ -190,25 +198,21 @@ const HobbyIdeasPage = () => {
                     </div>
                 )}
 
-                {/* Empty State */}
                 {!activity && !isLoading && (
-                    <div className="no-results">
-                        <div className="empty-state">
-                            <span className="empty-icon">🎲</span>
-                            <h3>Ready to Try Something New?</h3>
-                            <p>Click the button above to get a random activity suggestion</p>
-                            <div className="suggestion-tags">
-                                <span className="suggestion-label">Or try:</span>
-                                <button onClick={() => { setActivityType('recreational'); handleGetActivity(); }}>
-                                    🎮 Fun Activity
-                                </button>
-                                <button onClick={() => { setActivityType('education'); handleGetActivity(); }}>
-                                    📚 Learn Something
-                                </button>
-                                <button onClick={() => { setActivityType('relaxation'); handleGetActivity(); }}>
-                                    🧘 Relax
-                                </button>
-                            </div>
+                    <div className="glass-empty-state">
+                        <span className="glass-empty-icon">🎲</span>
+                        <h3>Ready to Try Something New?</h3>
+                        <p>Click the button above to get a random activity suggestion</p>
+                        <div className="glass-suggestion-tags">
+                            <button onClick={() => { setActivityType('recreational'); handleGetActivity(); }}>
+                                🎮 Fun Activity
+                            </button>
+                            <button onClick={() => { setActivityType('education'); handleGetActivity(); }}>
+                                📚 Learn Something
+                            </button>
+                            <button onClick={() => { setActivityType('relaxation'); handleGetActivity(); }}>
+                                🧘 Relax
+                            </button>
                         </div>
                     </div>
                 )}

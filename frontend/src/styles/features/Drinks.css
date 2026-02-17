@@ -1,0 +1,317 @@
+.drinks-bar-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.25;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.drinks-bar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.6) blur(2px);
+}
+
+/* Content overlay */
+.drinks-content-overlay {
+    position: relative;
+    z-index: 1;
+}
+
+/* Clickable drink cards */
+.drinks-clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.drinks-clickable:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* NEW VIBRANT DRINK MODAL */
+.drinks-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.drinks-modal-content {
+    position: relative;
+    border-radius: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    max-width: 1100px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Full vibrant drink image background */
+.drinks-modal-bg-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px) brightness(0.5) saturate(1.3);
+    transform: scale(1.1);
+    z-index: 0;
+}
+
+/* Gradient overlay for readability */
+.drinks-modal-bg-full::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.7) 0%, 
+        rgba(20, 20, 40, 0.85) 50%,
+        rgba(0, 0, 0, 0.75) 100%
+    );
+}
+
+.drinks-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+}
+
+.drinks-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* New layout - side by side */
+.drinks-modal-layout-new {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Left side - Featured drink */
+.drinks-featured-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.drinks-featured-frame {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 20px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.drinks-featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.drinks-featured-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+.drinks-featured-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    margin: 0;
+}
+
+.drinks-featured-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.drinks-badge-new {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+/* Right side - Recipe details */
+.drinks-recipe-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 4rem);
+}
+
+.drinks-ingredients-box,
+.drinks-instructions-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.drinks-ingredients-box h3,
+.drinks-instructions-box h3 {
+    font-size: 1.4rem;
+    color: white;
+    margin: 0 0 1rem 0;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.drinks-ingredients-list-new {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.drinks-ingredients-list-new li {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ingredient-measure-new {
+    font-weight: 700;
+    color: #fbbf24; /* Vibrant yellow */
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.ingredient-name-new {
+    color: white;
+    font-weight: 500;
+}
+
+.drinks-instructions-new {
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.8;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+.drinks-save-btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .drinks-modal-layout-new {
+        grid-template-columns: 1fr;
+    }
+    
+    .drinks-featured-section {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .drinks-modal-overlay {
+        padding: 1rem;
+    }
+    
+    .drinks-featured-frame {
+        width: 250px;
+        height: 250px;
+    }
+}

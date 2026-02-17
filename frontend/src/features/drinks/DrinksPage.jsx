@@ -1,34 +1,43 @@
-import { useState } from 'react';
-import { useSearchDrinks, useSaveDrink } from '@/api/queries';
+import { useState } from "react";
+import { useSavedItems, useDeleteItem, useSaveDrink } from "@/api/queries";
+import { searchCocktails } from "@/api/services/drinkService";
 import "@/styles/GlassDesignSystem.css";
+import "@/styles/features/Drinks.css";
 
 const DrinksPage = () => {
-    const [query, setQuery] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState("");
+    const [drinks, setDrinks] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('search');
     const [selectedDrink, setSelectedDrink] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [savedDrinksData, setSavedDrinksData] = useState({}); // Store full drink data
 
-    // 🚀 TanStack Query
-    const { data: drinksData, isLoading } = useSearchDrinks(searchQuery);
+    const { data: allSavedItems = [] } = useSavedItems();
+    const deleteItemMutation = useDeleteItem();
     const saveDrinkMutation = useSaveDrink();
-    
-    const drinks = drinksData?.drinks || [];
+    const savedDrinks = allSavedItems.filter(item => item.type === 'drink');
 
-    const handleSearch = () => {
-        if (query.trim()) {
-            setSearchQuery(query);
+    const handleSearch = async (queryOverride = null) => {
+        const query = queryOverride || searchQuery;
+        if (!query.trim()) return;
+        
+        setIsLoading(true);
+        try {
+            const data = await searchCocktails(query);
+            setDrinks(data.drinks || []);
+            setActiveTab('search');
+        } catch (error) {
+            console.error('Search error:', error);
+            alert('Failed to search drinks');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleSaveDrink = (drink) => {
-        saveDrinkMutation.mutate(drink, {
-            onSuccess: () => {
-                alert('Drink saved successfully!');
-            },
-            onError: (error) => {
-                console.error('Error saving drink:', error);
-                alert('Failed to save drink');
-            },
-        });
+    const handleDrinkClick = (drink) => {
+        setSelectedDrink(drink);
+        setShowModal(true);
     };
 
     const getIngredients = (drink) => {
@@ -38,152 +47,351 @@ const DrinksPage = () => {
             const measure = drink[`strMeasure${i}`];
             if (ingredient && ingredient.trim()) {
                 ingredients.push({
-                    ingredient: ingredient.trim(),
-                    measure: measure ? measure.trim() : ''
+                    name: ingredient,
+                    measure: measure || ''
                 });
             }
         }
         return ingredients;
     };
 
+    const handleSave = (drink) => {
+        saveDrinkMutation.mutate(drink, {
+            onSuccess: (result) => {
+                // Store the full drink data for later viewing
+                if (result?.id) {
+                    setSavedDrinksData(prev => ({
+                        ...prev,
+                        [result.id]: drink
+                    }));
+                }
+                alert("Drink saved successfully!");
+            },
+            onError: (error) => {
+                console.error("Error saving drink:", error);
+                alert("Failed to save drink");
+            }
+        });
+    };
+
+    const handleDelete = (itemId) => {
+        deleteItemMutation.mutate(itemId, {
+            onSuccess: () => alert('Drink removed!'),
+            onError: (error) => {
+                console.error('Error deleting:', error);
+                alert('Failed to remove drink');
+            }
+        });
+    };
+
     return (
         <div className="glass-page">
-            <div className="glass-container">
+            {/* Bar Background - using local image */}
+            <div className="drinks-bar-background">
+                <img 
+                    src="/assets/Bar_Background.jpg"
+                    alt="Bar background"
+                    className="drinks-bar-image"
+                />
+            </div>
+
+            <div className="glass-container drinks-content-overlay">
                 <div className="glass-page-header">
-                    <h2>🍸 Cocktail Explorer</h2>
-                    <p className="subtitle">Discover and save your favorite cocktail recipes</p>
+                    <h2>🍸 Cocktail Bar</h2>
+                    <p className="subtitle">Discover amazing cocktail recipes from around the world</p>
                 </div>
-                
-                <div className="glass-search-section">
-                    <div className="glass-search-box">
-                        <input 
-                            type="text"
-                            value={query} 
-                            onChange={e => setQuery(e.target.value)} 
-                            placeholder="Search for cocktails (e.g., margarita, mojito)..."
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="glass-input"
-                        />
+
+                {/* Single button for Saved Collection */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                    <button 
+                        className="glass-tab active"
+                        onClick={() => setActiveTab(activeTab === 'saved' ? 'search' : 'saved')}
+                        style={{ maxWidth: '400px' }}
+                    >
+                        {activeTab === 'saved' ? '🔍 Back to Search' : `🍹 View Saved Drinks (${savedDrinks.length})`}
+                    </button>
+                </div>
+
+                {activeTab === 'search' && (
+                    <>
+                        <div className="glass-search-section">
+                            <div className="glass-search-box">
+                                <input 
+                                    type="text"
+                                    value={searchQuery} 
+                                    onChange={e => setSearchQuery(e.target.value)} 
+                                    placeholder="Search cocktails (e.g., Margarita, Mojito, Martini)..."
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                    className="glass-input"
+                                />
+                                <button 
+                                    onClick={handleSearch} 
+                                    disabled={isLoading}
+                                    className="glass-btn"
+                                >
+                                    {isLoading ? 'Searching...' : '🔍 Search'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {isLoading && (
+                            <div className="glass-loading">
+                                <div className="glass-spinner"></div>
+                                <p>Searching cocktail recipes...</p>
+                            </div>
+                        )}
+
+                        {drinks && drinks.length > 0 && !isLoading && (
+                            <div className="glass-grid">
+                                {drinks.map((drink) => (
+                                    <div 
+                                        key={drink.idDrink}
+                                        className="glass-item-card drinks-clickable"
+                                        onClick={() => handleDrinkClick(drink)}
+                                    >
+                                        <img 
+                                            src={drink.strDrinkThumb}
+                                            alt={drink.strDrink}
+                                            style={{
+                                                width: '100%',
+                                                height: '250px',
+                                                objectFit: 'contain',
+                                                borderRadius: '12px 12px 0 0',
+                                                background: 'rgba(0, 0, 0, 0.05)'
+                                            }}
+                                            loading="lazy"
+                                        />
+                                        <div style={{ padding: '1.5rem' }}>
+                                            <h3 style={{ 
+                                                fontSize: '1.1rem', 
+                                                marginBottom: '0.5rem',
+                                                color: 'var(--text-primary)'
+                                            }}>
+                                                {drink.strDrink}
+                                            </h3>
+                                            <p style={{ 
+                                                color: 'var(--text-secondary)',
+                                                marginBottom: '0.5rem',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                🍸 {drink.strCategory}
+                                            </p>
+                                            <p style={{ 
+                                                fontSize: '0.85rem',
+                                                color: 'var(--text-tertiary)',
+                                                marginBottom: '1rem'
+                                            }}>
+                                                {drink.strAlcoholic} • {drink.strGlass}
+                                            </p>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSave(drink);
+                                                }}
+                                                className="glass-btn"
+                                            >
+                                                💾 Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {(!drinks || drinks.length === 0) && !isLoading && searchQuery && (
+                            <div className="glass-empty-state">
+                                <span className="glass-empty-icon">🍸</span>
+                                <h3>No Cocktails Found</h3>
+                                <p>Try searching for different drink names</p>
+                                <div className="glass-suggestion-tags">
+                                    <button onClick={() => { setSearchQuery('Margarita'); handleSearch('Margarita'); }}>Margarita</button>
+                                    <button onClick={() => { setSearchQuery('Mojito'); handleSearch('Mojito'); }}>Mojito</button>
+                                    <button onClick={() => { setSearchQuery('Martini'); handleSearch('Martini'); }}>Martini</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {!searchQuery && (
+                            <div className="glass-empty-state">
+                                <span className="glass-empty-icon">🍸</span>
+                                <h3>Discover Cocktails</h3>
+                                <p>Search for your favorite drinks and cocktails</p>
+                                <div className="glass-suggestion-tags">
+                                    <button onClick={() => { setSearchQuery('Vodka'); handleSearch('Vodka'); }}>Vodka</button>
+                                    <button onClick={() => { setSearchQuery('Rum'); handleSearch('Rum'); }}>Rum</button>
+                                    <button onClick={() => { setSearchQuery('Tequila'); handleSearch('Tequila'); }}>Tequila</button>
+                                    <button onClick={() => { setSearchQuery('Whiskey'); handleSearch('Whiskey'); }}>Whiskey</button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {activeTab === 'saved' && (
+                    <>
+                        {savedDrinks.length > 0 ? (
+                            <div className="glass-grid">
+                                {savedDrinks.map(item => (
+                                    <div 
+                                        key={item.id} 
+                                        className="glass-item-card drinks-clickable"
+                                        onClick={() => {
+                                            // Reconstruct drink data from saved metadata
+                                            const drinkData = savedDrinksData[item.id] || {
+                                                idDrink: item.external_id,
+                                                strDrink: item.title,
+                                                strDrinkThumb: item.metadata?.thumbnail,
+                                                strCategory: item.metadata?.category,
+                                                strAlcoholic: item.metadata?.alcoholic,
+                                                strGlass: item.metadata?.glass,
+                                                strInstructions: item.metadata?.instructions,
+                                                ...Object.fromEntries(
+                                                    item.metadata?.ingredients?.map((ing, i) => [
+                                                        [`strIngredient${i + 1}`, ing.name],
+                                                        [`strMeasure${i + 1}`, ing.measure]
+                                                    ]).flat() || []
+                                                )
+                                            };
+                                            setSelectedDrink(drinkData);
+                                            setShowModal(true);
+                                        }}
+                                    >
+                                        {item.metadata?.thumbnail && (
+                                            <img 
+                                                src={item.metadata.thumbnail}
+                                                alt={item.title}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '250px',
+                                                    objectFit: 'contain',
+                                                    borderRadius: '12px 12px 0 0',
+                                                    background: 'rgba(0, 0, 0, 0.05)'
+                                                }}
+                                                loading="lazy"
+                                            />
+                                        )}
+                                        <div style={{ padding: '1.5rem' }}>
+                                            <h3 style={{ 
+                                                fontSize: '1.1rem', 
+                                                marginBottom: '0.5rem',
+                                                color: 'var(--text-primary)'
+                                            }}>
+                                                {item.title}
+                                            </h3>
+                                            <p style={{ 
+                                                color: 'var(--text-secondary)',
+                                                marginBottom: '0.5rem'
+                                            }}>
+                                                🍸 {item.metadata?.category}
+                                            </p>
+                                            <p style={{ 
+                                                fontSize: '0.8rem',
+                                                color: 'var(--text-tertiary)',
+                                                marginBottom: '1rem'
+                                            }}>
+                                                Saved {new Date(item.createdAt).toLocaleDateString()}
+                                            </p>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Prevent card click
+                                                    handleDelete(item.id);
+                                                }}
+                                                className="glass-btn-secondary"
+                                                disabled={deleteItemMutation.isLoading}
+                                            >
+                                                🗑️ Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="glass-empty-state">
+                                <span className="glass-empty-icon">🍸</span>
+                                <h3>No Saved Drinks</h3>
+                                <p>Search for cocktails and save your favorites here</p>
+                                <button 
+                                    onClick={() => setActiveTab('search')}
+                                    className="glass-btn"
+                                >
+                                    Start Exploring
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Drink Recipe Modal with Full Image Background */}
+            {showModal && selectedDrink && (
+                <div className="drinks-modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="drinks-modal-content" onClick={(e) => e.stopPropagation()}>
+                        {/* Full drink image background */}
+                        <div 
+                            className="drinks-modal-bg-full"
+                            style={{
+                                backgroundImage: `url(${selectedDrink.strDrinkThumb})`,
+                            }}
+                        ></div>
+                        
                         <button 
-                            onClick={handleSearch} 
-                            disabled={isLoading}
-                            className="glass-btn"
+                            className="drinks-modal-close"
+                            onClick={() => setShowModal(false)}
                         >
-                            {isLoading ? 'Searching...' : '🔍 Search'}
+                            ✕
                         </button>
-                    </div>
-                </div>
-
-                {/* Loading State */}
-                {isLoading && (
-                    <div className="loading-glass-container">
-                        <div className="spinner"></div>
-                        <p>Searching for cocktails...</p>
-                    </div>
-                )}
-
-                {/* Drinks Grid */}
-                <div className="glass-grid">
-                    {drinks.map(drink => (
-                        <div key={drink.idDrink} className="glass-item-card">
-                            <img 
-                                src={drink.strDrinkThumb} 
-                                alt={drink.strDrink} 
-                                className="glass-item-image" 
-                            />
-                            <div className="glass-item-info">
-                                <h3 className="glass-item-title">{drink.strDrink}</h3>
-                                <div className="glass-item-meta">
-                                    <span className="glass-meta-tag">🍸 {drink.strCategory}</span>
-                                    <span className="glass-meta-tag">🥃 {drink.strAlcoholic}</span>
+                        
+                        <div className="drinks-modal-layout-new">
+                            {/* Left side - Featured drink image */}
+                            <div className="drinks-featured-section">
+                                <div className="drinks-featured-frame">
+                                    <img 
+                                        src={selectedDrink.strDrinkThumb}
+                                        alt={selectedDrink.strDrink}
+                                        className="drinks-featured-image"
+                                    />
+                                    <div className="drinks-featured-glow"></div>
                                 </div>
-                                <div className="button-group">
-                                    <button 
-                                        onClick={() => setSelectedDrink(drink)}
-                                        className="view-btn"
-                                    >
-                                        👁️ View Recipe
-                                    </button>
-                                    <button 
-                                        onClick={() => handleSaveDrink(drink)}
-                                        disabled={saveDrinkMutation.isLoading}
-                                        className="glass-btn glass-btn-sm"
-                                    >
-                                        {saveDrinkMutation.isLoading ? '💾 Saving...' : '💾 Save'}
-                                    </button>
+                                <h2 className="drinks-featured-title">{selectedDrink.strDrink}</h2>
+                                <div className="drinks-featured-badges">
+                                    <span className="drinks-badge-new">{selectedDrink.strCategory}</span>
+                                    <span className="drinks-badge-new">{selectedDrink.strAlcoholic}</span>
+                                    <span className="drinks-badge-new">🥃 {selectedDrink.strGlass}</span>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
 
-                {/* No Results */}
-                {drinks.length === 0 && !isLoading && searchQuery && (
-                    <div className="no-results">
-                        <div className="empty-state">
-                            <span className="empty-icon">🍸</span>
-                            <h3>No cocktails found for "{searchQuery}"</h3>
-                            <p>Try these popular cocktails:</p>
-                            <div className="suggestion-tags">
-                                <button onClick={() => { setQuery('margarita'); setSearchQuery('margarita'); }}>Margarita</button>
-                                <button onClick={() => { setQuery('mojito'); setSearchQuery('mojito'); }}>Mojito</button>
-                                <button onClick={() => { setQuery('martini'); setSearchQuery('martini'); }}>Martini</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                
-                {/* Empty State */}
-                {drinks.length === 0 && !isLoading && !searchQuery && (
-                    <div className="no-results">
-                        <div className="empty-state">
-                            <span className="empty-icon">🍹</span>
-                            <h3>Explore Cocktail Recipes</h3>
-                            <p>Search for your favorite drinks</p>
-                            <div className="suggestion-tags">
-                                <span className="suggestion-label">Popular:</span>
-                                <button onClick={() => { setQuery('margarita'); setSearchQuery('margarita'); }}>Margarita</button>
-                                <button onClick={() => { setQuery('mojito'); setSearchQuery('mojito'); }}>Mojito</button>
-                                <button onClick={() => { setQuery('cosmopolitan'); setSearchQuery('cosmopolitan'); }}>Cosmopolitan</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Drink Details Modal */}
-                {selectedDrink && (
-                    <div className="modal-overlay" onClick={() => setSelectedDrink(null)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <button className="modal-close" onClick={() => setSelectedDrink(null)}>✕</button>
-                            <div className="modal-header">
-                                <img src={selectedDrink.strDrinkThumb} alt={selectedDrink.strDrink} />
-                                <h2>{selectedDrink.strDrink}</h2>
-                                <div className="modal-meta">
-                                    <span>{selectedDrink.strCategory}</span>
-                                    <span>{selectedDrink.strAlcoholic}</span>
-                                    <span>{selectedDrink.strGlass}</span>
-                                </div>
-                            </div>
-                            <div className="modal-body">
-                                <div className="ingredients-section">
-                                    <h3>📝 Ingredients</h3>
-                                    <ul>
-                                        {getIngredients(selectedDrink).map((item, idx) => (
-                                            <li key={idx}>
-                                                {item.measure} {item.ingredient}
+                            {/* Right side - Recipe details */}
+                            <div className="drinks-recipe-section">
+                                <div className="drinks-ingredients-box">
+                                    <h3>🍹 Ingredients</h3>
+                                    <ul className="drinks-ingredients-list-new">
+                                        {getIngredients(selectedDrink).map((ing, index) => (
+                                            <li key={index}>
+                                                <span className="ingredient-measure-new">{ing.measure}</span>
+                                                <span className="ingredient-name-new">{ing.name}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
-                                <div className="instructions-section">
-                                    <h3>🍹 Instructions</h3>
-                                    <p>{selectedDrink.strInstructions}</p>
+
+                                <div className="drinks-instructions-box">
+                                    <h3>📝 Instructions</h3>
+                                    <p className="drinks-instructions-new">
+                                        {selectedDrink.strInstructions}
+                                    </p>
                                 </div>
+
+                                <button 
+                                    onClick={() => handleSave(selectedDrink)}
+                                    className="glass-btn drinks-save-btn"
+                                >
+                                    💾 Save to Collection
+                                </button>
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

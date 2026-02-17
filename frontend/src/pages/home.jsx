@@ -1,13 +1,38 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "@/context/AuthContext";
+import { useDashboardStats } from "@/api/queries";
 import "@/styles/pages/Home.css";
 import "@/styles/Animations.css";
 
 function Home() {
     const { token, user } = useContext(AuthContext);
+    
+    const { data: stats = {
+        meals: 0,
+        journalEntries: 0,
+        activities: 0,
+        books: 0,
+        drinks: 0,
+        spacePhotos: 0,
+        locations: 0,
+        artworks: 0
+    } } = useDashboardStats();
+    
+    const totalSavedItems = stats.meals + stats.locations + stats.artworks + 
+                        stats.books + stats.drinks + stats.activities + stats.spacePhotos;
+    
+    const activeFeatures = [
+        stats.meals > 0,
+        stats.locations > 0,
+        stats.artworks > 0,
+        stats.books > 0,
+        stats.drinks > 0,
+        stats.activities > 0,
+        stats.spacePhotos > 0,
+        stats.journalEntries > 0
+    ].filter(Boolean).length;
 
-    // Feature cards data
     const features = [
         {
             id: 1,
@@ -65,7 +90,7 @@ function Home() {
         },
         {
             id: 7,
-            icon: "📔",
+            icon: "📓",
             title: "Personal Journal",
             description: "Reflect on your day, track moods, and create lasting memories.",
             path: "/journal",
@@ -83,13 +108,10 @@ function Home() {
         }
     ];
 
-    // Show only first 3 features for non-authenticated users? 
-    // Or show all? Let's show all for now, but can adjust
     const displayedFeatures = token ? features : features;
 
     return (
         <div className="home">
-            {/* Animated Background */}
             <div className="background-effects">
                 <div className="floating-circle circle-1"></div>
                 <div className="floating-circle circle-2"></div>
@@ -97,11 +119,9 @@ function Home() {
                 <div className="floating-circle circle-4"></div>
             </div>
 
-            {/* Hero Section - Changes based on auth state */}
             <section className="hero-section glass-card">
                 <div className="hero-content">
                     {token ? (
-                        // Authenticated Hero
                         <>
                             <span className="hero-greeting">Welcome back,</span>
                             <h1 className="hero-title">
@@ -120,7 +140,6 @@ function Home() {
                             </div>
                         </>
                     ) : (
-                        // Guest Hero
                         <>
                             <span className="hero-badge">✨ All-in-One Platform</span>
                             <h1 className="hero-title">
@@ -129,7 +148,7 @@ function Home() {
                             </h1>
                             <p className="hero-subtitle">
                                 Discover recipes, track weather, explore art, read books, mix drinks, 
-                                journal thoughts, find activities, and explore space — all in one place.
+                                journal thoughts, find activities, and explore space - all in one place.
                             </p>
                             <div className="hero-actions">
                                 <Link to="/register" className="btn-primary">
@@ -150,7 +169,6 @@ function Home() {
                 </div>
             </section>
 
-            {/* Features Grid */}
             <section className="features-section">
                 <div className="section-header">
                     <h2>
@@ -193,31 +211,29 @@ function Home() {
                 </div>
             </section>
 
-            {/* Stats Section - Only for authenticated users */}
             {token && (
                 <section className="stats-section glass-card">
                     <div className="stats-grid">
                         <div className="stat-item">
-                            <span className="stat-value">24</span>
+                            <span className="stat-value">{totalSavedItems}</span>
                             <span className="stat-label">Saved Items</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-value">8</span>
+                            <span className="stat-value">{activeFeatures}</span>
                             <span className="stat-label">Active Features</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-value">3</span>
+                            <span className="stat-value">🔜</span>
                             <span className="stat-label">Days Streak</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-value">12</span>
+                            <span className="stat-value">{stats.journalEntries}</span>
                             <span className="stat-label">Journal Entries</span>
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* CTA Section - Only for guests */}
             {!token && (
                 <section className="cta-section glass-card">
                     <div className="cta-content">

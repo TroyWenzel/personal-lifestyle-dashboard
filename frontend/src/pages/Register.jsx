@@ -1,15 +1,17 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
+import "@/styles/GlassDesignSystem.css";
 
 function Register() {
-    // State for registration form
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [birthday, setBirthday] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        birthday: "",
+        phoneNumber: "",
+        password: "",
+        confirmPassword: ""
+    });
     const [message, setMessage] = useState("");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -17,24 +19,40 @@ function Register() {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Comprehensive form validation for registration
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
     const validateForm = () => {
         const newErrors = {};
-        if (!name.trim() || name.length < 2) {
+        
+        if (formData.name.length < 2) {
             newErrors.name = 'Name must be at least 2 characters';
         }
-        if (!email.includes('@') || !email.includes('.')) {
+        
+        if (!formData.email.includes('@') || !formData.email.includes('.')) {
             newErrors.email = 'Please enter a valid email address';
         }
-        if (password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+        
+        if (!formData.birthday) {
+            newErrors.birthday = 'Birthday is required';
         }
-        if (password !== confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
-        }
-        if (phoneNumber && !/^[\d\s\-\+\(\)]+$/.test(phoneNumber)) {
+        
+        if (formData.phoneNumber && !/^\+?[\d\s()-]+$/.test(formData.phoneNumber)) {
             newErrors.phoneNumber = 'Please enter a valid phone number';
         }
+        
+        if (formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters';
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+        
         return newErrors;
     };
 
@@ -52,184 +70,188 @@ function Register() {
         setLoading(true);
 
         try {
-            // First, register the user
             const response = await fetch("http://localhost:5000/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    email, 
-                    password,
-                    username: name,
-                    birthday,
-                    phoneNumber
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                    username: formData.name,
+                    birthday: formData.birthday,
+                    phoneNumber: formData.phoneNumber
                 }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setMessage("Registration successful! Logging you in...");
+                const userData = {
+                    email: formData.email,
+                    username: formData.name,
+                    birthday: formData.birthday,
+                    phoneNumber: formData.phoneNumber,
+                    id: data.user_id,
+                    ...data.user
+                };
                 
-                // Automatically log in the user after successful registration
-                const loginResponse = await fetch("http://localhost:5000/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
-
-                const loginData = await loginResponse.json();
-                
-                if (loginResponse.ok) {
-                    const token = loginData.access_token || loginData.token || loginData.jwt;
-                    
-                    // Extract user data with registration info
-                    const userData = {
-                        email: email,
-                        username: name,
-                        displayName: name,
-                        birthday: birthday,
-                        phoneNumber: phoneNumber,
-                        id: loginData.user_id || loginData.user?.id,
-                        ...loginData.user
-                    };
-                    
-                    login(token, userData);
-                    navigate("/");
-                } else {
-                    setMessage("Registration successful but auto-login failed. Please log in manually.");
-                }
+                login(data.access_token, userData);
+                setMessage("Registration successful! Redirecting...");
+                setTimeout(() => navigate("/"), 1000);
             } else {
-                setMessage(data.message || "Registration failed");
+                setMessage(data.error || "Registration failed. Please try again.");
             }
         } catch (error) {
             console.error("Registration error:", error);
-            setMessage("Unable to connect to server. Please try again.");
+            setMessage("Network error. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="register-container">
-            <h2>Create Your Account</h2>
-            <p className="register-subtitle">Join LifeHub and start organizing your digital life</p>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="name">Full Name: *</label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => {
-                            setName(e.target.value);
-                            if (errors.name) setErrors({...errors, name: ''});
-                        }}
-                        placeholder="John Doe"
-                        required
-                        className={errors.name ? "error-input" : ""}
-                    />
-                    {errors.name && <span className="error-text">{errors.name}</span>}
+        <div className="glass-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem 1rem' }}>
+            <div className="glass-card" style={{ maxWidth: '500px', width: '100%' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✨</div>
+                    <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>Create Account</h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>Join LifeHub today!</p>
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="email">Email: *</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (errors.email) setErrors({...errors, email: ''});
-                        }}
-                        placeholder="john@example.com"
-                        required
-                        className={errors.email ? "error-input" : ""}
-                    />
-                    {errors.email && <span className="error-text">{errors.email}</span>}
-                </div>
+                {message && (
+                    <div className="glass-card" style={{ 
+                        marginBottom: '1.5rem', 
+                        background: message.includes('successful') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        borderColor: message.includes('successful') ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                    }}>
+                        <p style={{ color: message.includes('successful') ? '#10b981' : '#ef4444', margin: 0 }}>
+                            {message.includes('successful') ? '✅' : '❌'} {message}
+                        </p>
+                    </div>
+                )}
 
-                <div className="form-group">
-                    <label htmlFor="birthday">Birthday: *</label>
-                    <input
-                        id="birthday"
-                        name="birthday"
-                        type="date"
-                        value={birthday}
-                        onChange={(e) => {
-                            setBirthday(e.target.value);
-                            if (errors.birthday) setErrors({...errors, birthday: ''});
-                        }}
-                        required
-                        className={errors.birthday ? "error-input" : ""}
-                    />
-                    {errors.birthday && <span className="error-text">{errors.birthday}</span>}
-                    <small className="field-hint">We'll celebrate with you! 🎂</small>
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Full Name *
+                        </label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="John Doe"
+                            required
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        {errors.name && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.name}</small>}
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="phoneNumber">Phone Number: (Optional)</label>
-                    <input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => {
-                            setPhoneNumber(e.target.value);
-                            if (errors.phoneNumber) setErrors({...errors, phoneNumber: ''});
-                        }}
-                        placeholder="+1 (555) 123-4567"
-                        className={errors.phoneNumber ? "error-input" : ""}
-                    />
-                    {errors.phoneNumber && <span className="error-text">{errors.phoneNumber}</span>}
-                </div>
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Email Address *
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="your.email@example.com"
+                            required
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        {errors.email && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.email}</small>}
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="password">Password: *</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => {
-                            setPassword(e.target.value);
-                            if (errors.password) setErrors({...errors, password: ''});
-                        }}
-                        placeholder="At least 6 characters"
-                        required
-                        className={errors.password ? "error-input" : ""}
-                    />
-                    {errors.password && <span className="error-text">{errors.password}</span>}
-                </div>
-                <div className="form-group">
-                    <label htmlFor="confirmPassword">Confirm Password:</label>
-                    <input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                            if (errors.confirmPassword) setErrors({...errors, confirmPassword: ''});
-                        }}
-                        required
-                        className={errors.confirmPassword ? "error-input" : ""}
-                    />
-                    {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-                </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Registering...' : 'Register'}
-                </button>
-            </form>
-            {message && (
-                <p className={message.includes("successful") ? "success-message" : "error-message"}>
-                    {message}
-                </p>
-            )}
-            <p className="auth-link">
-                Already have an account? <a href="/login">Login here</a>
-            </p>
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Birthday * 🎂
+                        </label>
+                        <input
+                            type="date"
+                            name="birthday"
+                            value={formData.birthday}
+                            onChange={handleChange}
+                            required
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                            We'll celebrate with you!
+                        </small>
+                        {errors.birthday && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.birthday}</small>}
+                    </div>
+
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Phone Number (Optional)
+                        </label>
+                        <input
+                            type="tel"
+                            name="phoneNumber"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                            placeholder="+1 (555) 123-4567"
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        {errors.phoneNumber && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.phoneNumber}</small>}
+                    </div>
+
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Password *
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Create a password"
+                            required
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        {errors.password && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</small>}
+                    </div>
+
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Confirm Password *
+                        </label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Confirm your password"
+                            required
+                            className="glass-input"
+                            style={{ width: '100%' }}
+                        />
+                        {errors.confirmPassword && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.confirmPassword}</small>}
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="glass-btn"
+                        style={{ width: '100%', marginBottom: '1rem' }}
+                    >
+                        {loading ? 'Creating account...' : '🚀 Create Account'}
+                    </button>
+
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <p style={{ color: 'var(--text-secondary)' }}>
+                            Already have an account?{' '}
+                            <Link to="/login" style={{ color: 'var(--accent-primary)', fontWeight: '600', textDecoration: 'none' }}>
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

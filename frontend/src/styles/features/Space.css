@@ -1,0 +1,173 @@
+html {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+body {
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Space page container */
+.space-page {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Static Carina Nebula Background */
+.space-background-static {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-image: url('https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~large.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    filter: brightness(0.7) blur(3px);
+    z-index: -2; /* Negative - furthest back possible */
+    pointer-events: none; /* Don't intercept any clicks or scrollbar */
+}
+
+/* Dark overlay for readability */
+.space-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    opacity: 0.50; /* Reduced from 0.85 to match other pages' brightness */
+    z-index: -1; /* Behind content but in front of background */
+    pointer-events: none; /* Don't intercept any clicks or scrollbar */
+}
+
+/* Content */
+.space-content {
+    position: relative;
+    z-index: 1; /* Normal positive z-index - in front of backgrounds */
+    padding: 2rem;
+}
+
+.space-date-section {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+}
+
+/* Photo Card */
+.space-photo-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    animation: slideUp 0.5s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.space-image-container {
+    width: 100%;
+    max-height: 600px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.space-main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    max-height: 600px;
+}
+
+.space-video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.space-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.space-info-section {
+    padding: 2rem;
+}
+
+.space-photo-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.space-date {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.space-copyright {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.space-explanation {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    text-align: justify;
+}
+
+.space-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .space-photo-title {
+        font-size: 1.5rem;
+    }
+
+    .space-info-section {
+        padding: 1.5rem;
+    }
+
+    .space-explanation {
+        text-align: left;
+    }
+
+    .space-actions {
+        flex-direction: column;
+    }
+
+    .space-actions .glass-btn,
+    .space-actions .glass-btn-secondary {
+        width: 100%;
+    }
+}

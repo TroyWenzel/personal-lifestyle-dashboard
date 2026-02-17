@@ -49,6 +49,11 @@ function Dashboard() {
         };
     }, [user]);
 
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     const handleDelete = (itemId) => {
         deleteItemMutation.mutate(itemId, {
             onSuccess: () => {
@@ -73,32 +78,63 @@ function Dashboard() {
     }
 
     return (
-        <div className="glass-page">
+        <div className="glass-page" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
             <div className="glass-container">
+                {/* Birthday Banner */}
                 {birthdayData.isBirthdayToday && (
-                    <div className="glass-card" style={{ marginBottom: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))' }}>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎂 Happy Birthday, {birthdayData.displayName}! 🎉</h2>
+                    <div style={{ 
+                        background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 142, 83, 0.2))',
+                        border: '2px solid rgba(255, 107, 107, 0.3)',
+                        borderRadius: 'var(--radius-lg)',
+                        padding: '2rem',
+                        marginBottom: '2rem',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎂</div>
+                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                            Happy Birthday, {birthdayData.displayName}! 🎉
+                        </h2>
                         <p style={{ color: 'var(--text-secondary)' }}>We hope you have an amazing day!</p>
                         {birthdayData.birthday && calculateAge(birthdayData.birthday) && (
-                            <p style={{ color: 'var(--text-primary)', marginTop: '0.5rem' }}>
+                            <p style={{ color: 'var(--text-tertiary)', marginTop: '0.5rem' }}>
                                 You're turning {calculateAge(birthdayData.birthday)} today!
                             </p>
                         )}
                     </div>
                 )}
 
+                {/* Birthday Countdown */}
+                {!birthdayData.isBirthdayToday && birthdayData.countdown && birthdayData.countdown <= 30 && (
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '1rem',
+                        marginBottom: '2rem',
+                        textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: '1.5rem', marginRight: '0.5rem' }}>🎂</span>
+                        <span style={{ color: 'var(--text-primary)' }}>
+                            Your birthday is in {birthdayData.countdown} day{birthdayData.countdown !== 1 ? 's' : ''}!
+                            {birthdayData.countdown <= 7 && ' 🎉 So soon!'}
+                        </span>
+                    </div>
+                )}
+
+                {/* Welcome Header */}
                 <div className="glass-page-header">
-                    <h1>Welcome, {birthdayData.displayName}! 👋</h1>
+                    <h2>Welcome, {birthdayData.displayName}! 👋</h2>
                     <p className="subtitle">Here's an overview of your personal collection</p>
                 </div>
 
+                {/* Stats Grid */}
                 <div className="glass-grid" style={{ marginBottom: '3rem' }}>
                     <div className="glass-card" onClick={() => navigate('/food')} style={{ cursor: 'pointer' }}>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍽️</div>
                         <h3 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{stats.meals}</h3>
                         <p style={{ color: 'var(--text-secondary)' }}>Saved Meals</p>
                     </div>
-                    
+
                     <div className="glass-card" onClick={() => navigate('/weather')} style={{ cursor: 'pointer' }}>
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛅</div>
                         <h3 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{stats.locations}</h3>
@@ -142,100 +178,122 @@ function Dashboard() {
                     </div>
                 </div>
 
-                <div className="glass-card" style={{ marginBottom: '2rem' }}>
+                {/* Quick Actions */}
+                <div style={{ marginBottom: '3rem' }}>
                     <h2 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Quick Actions</h2>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/food')}>🍽️ Find Recipes</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/weather')}>⛅ Check Weather</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/art')}>🎨 Explore Art</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/books')}>📚 Search Books</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/drinks')}>🍸 Find Drinks</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/hobbies')}>✨ New Activity</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/space')}>🚀 View Space</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/journal')}>📓 Write Journal</button>
-                        <button className="glass-btn glass-btn-sm" onClick={() => navigate('/profile')}>👤 Edit Profile</button>
+                        <button className="glass-btn" onClick={() => navigate('/food')}>🍽️ Find Recipes</button>
+                        <button className="glass-btn" onClick={() => navigate('/weather')}>⛅ Check Weather</button>
+                        <button className="glass-btn" onClick={() => navigate('/art')}>🎨 Explore Art</button>
+                        <button className="glass-btn" onClick={() => navigate('/books')}>📚 Search Books</button>
+                        <button className="glass-btn" onClick={() => navigate('/drinks')}>🍸 Find Drinks</button>
+                        <button className="glass-btn" onClick={() => navigate('/hobbies')}>✨ New Activity</button>
+                        <button className="glass-btn" onClick={() => navigate('/space')}>🚀 View Space</button>
+                        <button className="glass-btn" onClick={() => navigate('/journal')}>📓 Write Journal</button>
+                        <button className="glass-btn" onClick={() => navigate('/profile')}>👤 Edit Profile</button>
                     </div>
                 </div>
 
-                {savedItems.length > 0 ? (
-                    <div className="glass-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ color: 'var(--text-primary)' }}>Recently Saved Items</h2>
-                            <button className="glass-btn-secondary" onClick={() => navigate('/explore')}>Explore More</button>
+                {/* Recently Saved Items */}
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                        <h2 style={{ color: 'var(--text-primary)' }}>Recently Saved Items</h2>
+                        <button className="glass-btn" onClick={() => navigate('/food')}>Explore More</button>
+                    </div>
+
+                    {savedItems.length === 0 ? (
+                        <div className="glass-empty-state">
+                            <span className="glass-empty-icon">📦</span>
+                            <h3>No saved items yet</h3>
+                            <p>Start exploring to save items!</p>
+                            <button className="glass-btn" onClick={() => navigate('/food')}>Start Exploring</button>
                         </div>
-                        
+                    ) : (
                         <div className="glass-grid">
                             {savedItems.slice(0, 6).map(item => (
-                                <div key={item.id} className="glass-card-sm">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                        <span style={{ fontSize: '1.5rem' }}>
-                                            {item.type === 'meal' && '🍽️'}
-                                            {item.type === 'location' && '⛅'}
-                                            {item.type === 'artwork' && '🎨'}
-                                            {item.type === 'book' && '📚'}
-                                            {item.type === 'drink' && '🍸'}
-                                            {item.type === 'activity' && '✨'}
-                                            {item.type === 'spacePhoto' && '🚀'}
-                                            {item.type === 'journal' && '📓'}
-                                        </span>
-                                        <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                                            {new Date(item.createdAt).toLocaleDateString()}
-                                        </span>
-                                    </div>
+                                <div key={item.id} className="glass-item-card">
+                                    {item.metadata?.thumbnail && (
+                                        <img 
+                                            src={item.metadata.thumbnail} 
+                                            alt={item.title}
+                                            className="glass-item-image"
+                                        />
+                                    )}
                                     
-                                    <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>{item.title}</h3>
-                                    
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                        <button 
-                                            className="glass-btn-secondary glass-btn-sm" 
-                                            style={{ flex: 1 }}
-                                            onClick={() => {
-                                                const routes = {
-                                                    meal: '/food',
-                                                    location: '/weather',
-                                                    artwork: '/art',
-                                                    book: '/books',
-                                                    drink: '/drinks',
-                                                    activity: '/hobbies',
-                                                    spacePhoto: '/space',
-                                                    journal: '/journal'
-                                                };
-                                                navigate(routes[item.type]);
-                                            }}
-                                        >
-                                            View
-                                        </button>
-                                        <button 
-                                            className="glass-btn-secondary glass-btn-sm"
-                                            onClick={() => handleDelete(item.id)}
-                                            disabled={deleteItemMutation.isLoading}
-                                            style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
-                                        >
-                                            {deleteItemMutation.isLoading ? 'Deleting...' : '🗑️'}
-                                        </button>
+                                    <div className="glass-item-info">
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                            <span style={{ fontSize: '1.5rem' }}>
+                                                {item.type === 'meal' && '🍽️'}
+                                                {item.type === 'location' && '⛅'}
+                                                {item.type === 'artwork' && '🎨'}
+                                                {item.type === 'book' && '📚'}
+                                                {item.type === 'drink' && '🍸'}
+                                                {item.type === 'activity' && '✨'}
+                                                {item.type === 'spacePhoto' && '🚀'}
+                                                {item.type === 'journal' && '📓'}
+                                            </span>
+                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
+                                                {new Date(item.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        
+                                        <h3 className="glass-item-title">{item.title}</h3>
+                                        
+                                        <div className="glass-item-meta">
+                                            {item.metadata?.category && (
+                                                <span className="glass-meta-tag">{item.metadata.category}</span>
+                                            )}
+                                            {item.metadata?.area && (
+                                                <span className="glass-meta-tag">{item.metadata.area}</span>
+                                            )}
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                                            <button 
+                                                className="glass-btn" 
+                                                onClick={() => {
+                                                    const routes = {
+                                                        meal: '/food',
+                                                        location: '/weather',
+                                                        artwork: '/art',
+                                                        book: '/books',
+                                                        drink: '/drinks',
+                                                        activity: '/hobbies',
+                                                        spacePhoto: '/space',
+                                                        journal: '/journal'
+                                                    };
+                                                    navigate(routes[item.type], { state: { savedItem: item } });
+                                                }}
+                                            >
+                                                View Details
+                                            </button>
+                                            <button 
+                                                className="glass-btn-secondary"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(item.id);
+                                                }}
+                                                disabled={deleteItemMutation.isLoading}
+                                                style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                                            >
+                                                {deleteItemMutation.isLoading ? 'Deleting...' : '🗑️'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                ) : (
-                    <div className="glass-empty-state">
-                        <span className="glass-empty-icon">📦</span>
-                        <h3>No saved items yet</h3>
-                        <p>Start exploring to save items!</p>
-                        <button className="glass-btn" onClick={() => navigate('/food')} style={{ marginTop: '1rem' }}>
-                            Start Exploring
-                        </button>
-                    </div>
-                )}
-                
-                <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+                    )}
+                </div>
+
+                {/* Logout Button */}
+                <div style={{ marginTop: '3rem', textAlign: 'center' }}>
                     <button 
-                        className="glass-btn-secondary"
-                        onClick={() => { logout(); navigate("/login"); }}
-                        style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                        className="glass-btn-secondary" 
+                        onClick={handleLogout}
+                        style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                     >
-                        🚪 Logout
+                        Logout
                     </button>
                 </div>
             </div>

@@ -4,10 +4,21 @@ import { saveJournal } from './contentService';
 // For backward compatibility - use contentService instead
 export const getJournalEntries = async () => {
     try {
+        console.log('🔍 Fetching journal entries from API...');
         const response = await apiClient.get('/api/content?type=journal');
+        console.log('📦 Full API response:', response);
+        console.log('📄 response.content:', response.content);
+        console.log('📊 Content length:', response.content?.length);
         return response.content || [];
     } catch (error) {
-        console.error('Error fetching journal entries:', error);
+        console.error('❌ Error fetching journal entries:', error);
+        
+        // Fallback to localStorage in development mode (same as contentService)
+        if (import.meta.env.DEV) {
+            console.log('⚠️ Using localStorage fallback for journal entries');
+            return getLocalJournalEntries();
+        }
+        
         return [];
     }
 };

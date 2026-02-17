@@ -61,3 +61,29 @@ def get_mars_photos():
             'error': 'internal_error',
             'message': 'Failed to fetch Mars rover photos'
         }), 500
+
+@nasa_bp.route("/backgrounds", methods=["GET"])
+@jwt_required(optional=True)
+def get_space_backgrounds():
+    """Get random space images for backgrounds"""
+    try:
+        count = request.args.get('count', 10, type=int)
+        
+        backgrounds_data = nasa_api.get_space_backgrounds(count)
+        
+        if isinstance(backgrounds_data, dict) and 'error' in backgrounds_data:
+            return jsonify({
+                'success': False,
+                'error': backgrounds_data['error'],
+                'message': backgrounds_data.get('message', 'Failed to fetch space backgrounds')
+            }), 500
+        
+        return jsonify(backgrounds_data), 200
+        
+    except Exception as e:
+        print(f"Error fetching backgrounds: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'internal_error',
+            'message': 'Failed to fetch space backgrounds'
+        }), 500

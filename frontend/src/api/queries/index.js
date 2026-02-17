@@ -16,7 +16,7 @@ import {
 } from '../services/contentService';
 
 import { getCurrentUser, updateUserProfile } from '../services/userService';
-import { getRandomMeal, searchMeals } from '../services/mealService';
+import { getRandomMeal, searchMeals } from '../services/foodService';
 import { getCurrentWeather, searchLocation } from '../services/weatherService';
 import { searchArtworks, getArtworkDetails } from '../services/artService';
 import { searchBooks } from '../services/bookService';

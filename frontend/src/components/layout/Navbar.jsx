@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import "../../styles/components/Navbar.css";
@@ -6,8 +6,8 @@ import "../../styles/components/Navbar.css";
 const Navbar = () => {
     const { token, logout, user } = useContext(AuthContext);
     const location = useLocation();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // All navigation items organized by category
     const navItems = [
         { path: "/", label: "Home", public: true },
         { path: "/dashboard", label: "Dashboard", protected: true },
@@ -19,27 +19,37 @@ const Navbar = () => {
         { path: "/space", label: "Space", protected: true },
         { path: "/journal", label: "Journal", protected: true },
         { path: "/hobbies", label: "Activities", protected: true },
-        // ✅ Added Profile page link
         { path: "/profile", label: "Profile", protected: true, icon: "👤" },
     ];
+
+    const toggleMobileMenu = () => {
+        setMobileMenuOpen(!mobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setMobileMenuOpen(false);
+    };
 
     return (
         <nav className="navbar glass-nav">
             <div className="navbar-brand">
-                <Link to="/" className="brand-link">
+                <Link to="/" className="brand-link" onClick={closeMobileMenu}>
                     <span className="brand-icon">✨</span>
                     <span className="brand-text">LifeHub</span>
                 </Link>
             </div>
             
-            {/* Mobile menu button */}
-            <button className="mobile-menu-btn" aria-label="Toggle menu">
+            <button 
+                className={`mobile-menu-btn ${mobileMenuOpen ? 'active' : ''}`}
+                aria-label="Toggle menu"
+                onClick={toggleMobileMenu}
+            >
                 <span className="hamburger-line"></span>
                 <span className="hamburger-line"></span>
                 <span className="hamburger-line"></span>
             </button>
 
-            <div className="navbar-links-container">
+            <div className={`navbar-links-container ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="navbar-links">
                     {navItems.map((item, index) => {
                         if (item.public || (item.protected && token)) {
@@ -49,6 +59,7 @@ const Navbar = () => {
                                     to={item.path} 
                                     className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
                                     style={{ '--index': index }}
+                                    onClick={closeMobileMenu}
                                 >
                                     <span className="nav-label">
                                         {item.icon && <span className="nav-icon">{item.icon}</span>}
@@ -61,13 +72,38 @@ const Navbar = () => {
                         return null;
                     })}
                 </div>
+                
+                <div className="navbar-auth-mobile">
+                    {token ? (
+                        <>
+                            <Link to="/profile" className="mobile-nav-link" onClick={closeMobileMenu}>
+                                <span className="nav-icon">👤</span>
+                                <span>Profile</span>
+                            </Link>
+                            <button onClick={() => { logout(); closeMobileMenu(); }} className="mobile-nav-link logout">
+                                <span className="nav-icon">🚪</span>
+                                <span>Logout</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="mobile-nav-link" onClick={closeMobileMenu}>
+                                <span className="nav-icon">🔐</span>
+                                <span>Login</span>
+                            </Link>
+                            <Link to="/register" className="mobile-nav-link" onClick={closeMobileMenu}>
+                                <span className="nav-icon">✨</span>
+                                <span>Register</span>
+                            </Link>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="navbar-auth">
                 {token ? (
                     <div className="user-menu">
-                        {/* ✅ Quick profile link in user menu */}
-                        <Link to="/profile" className="quick-profile-link">
+                        <Link to="/profile" className="quick-profile-link" onClick={closeMobileMenu}>
                             <div className="user-greeting">
                                 <span className="greeting-emoji">👋</span>
                                 <span className="greeting-text">
@@ -76,7 +112,7 @@ const Navbar = () => {
                             </div>
                         </Link>
                         <button 
-                            onClick={logout} 
+                            onClick={() => { logout(); closeMobileMenu(); }} 
                             className="logout-btn"
                             aria-label="Logout"
                         >
@@ -86,17 +122,24 @@ const Navbar = () => {
                     </div>
                 ) : (
                     <div className="auth-buttons">
-                        <Link to="/login" className="auth-link login-link">
+                        <Link to="/login" className="auth-link login-link" onClick={closeMobileMenu}>
                             <span className="auth-icon">🔐</span>
                             <span className="auth-text">Login</span>
                         </Link>
-                        <Link to="/register" className="auth-link register-link">
+                        <Link to="/register" className="auth-link register-link" onClick={closeMobileMenu}>
                             <span className="auth-icon">✨</span>
                             <span className="auth-text">Register</span>
                         </Link>
                     </div>
                 )}
             </div>
+
+            {mobileMenuOpen && (
+                <div 
+                    className="mobile-menu-overlay" 
+                    onClick={closeMobileMenu}
+                ></div>
+            )}
         </nav>
     );
 };

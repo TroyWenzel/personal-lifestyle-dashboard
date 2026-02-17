@@ -1,157 +1,164 @@
-import { useState } from 'react';
-import { useSpacePhoto, useSaveSpacePhoto } from '@/api/queries';
-import "@/styles/GlassDesignSystem.css";
+import { useState, useEffect } from 'react';
+import { getAstronomyPicture } from '@/api/services/spaceService';
+import '@/styles/GlassDesignSystem.css';
+import '@/styles/features/Space.css';
 
 const SpacePage = () => {
-    const [selectedDate, setSelectedDate] = useState('');
-    const [dateToFetch, setDateToFetch] = useState(null);
+    const [photo, setPhoto] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [date, setDate] = useState('');
 
-    // 🚀 TanStack Query
-    const { data: spacePhoto, isLoading, refetch } = useSpacePhoto(dateToFetch);
-    const savePhotoMutation = useSaveSpacePhoto();
-
-    const handleFetchPhoto = () => {
-        setDateToFetch(selectedDate || null);
+    // Fetch today's APOD
+    const fetchPhoto = async (specificDate = '') => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await getAstronomyPicture(specificDate);
+            
+            if (data.error) {
+                throw new Error(data.error.message || 'NASA API error');
+            }
+            
+            setPhoto(data);
+            if (specificDate) {
+                setDate(specificDate);
+            }
+        } catch (error) {
+            console.error('Error fetching space photo:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSavePhoto = () => {
-        if (!spacePhoto) return;
+    useEffect(() => {
+        fetchPhoto();
+    }, []);
 
-        const photoData = {
-            title: spacePhoto.title,
-            date: spacePhoto.date,
-            explanation: spacePhoto.explanation,
-            url: spacePhoto.url,
-            hdurl: spacePhoto.hdurl,
-            media_type: spacePhoto.media_type,
-            copyright: spacePhoto.copyright
-        };
-
-        savePhotoMutation.mutate(photoData, {
-            onSuccess: () => {
-                alert('Space photo saved successfully!');
-            },
-            onError: (error) => {
-                console.error('Error saving photo:', error);
-                alert('Failed to save space photo');
-            },
-        });
-    };
-
-    const getTodayDate = () => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+    const handleDateSubmit = (e) => {
+        e.preventDefault();
+        if (date) {
+            fetchPhoto(date);
+        }
     };
 
     return (
-        <div className="glass-page">
-            <div className="glass-container">
+        <div className="space-page">
+            {/* Static Carina Nebula Background */}
+            <div className="space-background-static"></div>
+            
+            {/* Dark overlay for readability */}
+            <div className="space-overlay"></div>
+
+            <div className="glass-container space-content">
                 <div className="glass-page-header">
-                    <h2>🚀 NASA Astronomy Picture of the Day</h2>
-                    <p className="subtitle">Explore the cosmos with NASA's daily space imagery</p>
+                    <h2>🚀 Space Explorer</h2>
+                    <p className="subtitle">
+                        Astronomy Picture of the Day from NASA
+                    </p>
                 </div>
 
-                <div className="glass-search-section">
-                    <div className="glass-search-box">
+                {/* Date Picker */}
+                <div className="space-date-section">
+                    <form onSubmit={handleDateSubmit} className="glass-search-box">
                         <input
                             type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            max={getTodayDate()}
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            max={new Date().toISOString().split('T')[0]}
                             className="glass-input"
+                            placeholder="Select a date"
                         />
-                        <button 
-                            onClick={handleFetchPhoto}
-                            disabled={isLoading}
-                            className="glass-btn"
-                        >
-                            {isLoading ? 'Loading...' : '🔍 Get Photo'}
+                        <button type="submit" className="glass-btn">
+                            🔍 View Photo
                         </button>
-                        <button 
-                            onClick={() => { setSelectedDate(''); setDateToFetch(null); refetch(); }}
-                            disabled={isLoading}
-                            className="glass-btn secondary"
-                        >
-                            📅 Today's Photo
-                        </button>
-                    </div>
+                    </form>
                 </div>
 
                 {/* Loading State */}
-                {isLoading && (
-                    <div className="loading-container">
-                        <div className="spinner"></div>
-                        <p>Loading space imagery...</p>
+                {loading && (
+                    <div className="glass-loading">
+                        <div className="glass-spinner"></div>
+                        <p>Loading astronomy photo...</p>
                     </div>
                 )}
 
-                {/* Space Photo Display */}
-                {spacePhoto && !isLoading && (
-                    <div className="space-photo-container">
-                        <div className="photo-header">
-                            <h3>{spacePhoto.title}</h3>
-                            <span className="photo-date">📅 {spacePhoto.date}</span>
-                        </div>
+                {/* Error State */}
+                {error && (
+                    <div className="glass-empty-state">
+                        <span className="glass-empty-icon">⚠️</span>
+                        <h3>Error Loading Photo</h3>
+                        <p>{error}</p>
+                        <button onClick={() => fetchPhoto()} className="glass-btn">
+                            Try Again
+                        </button>
+                    </div>
+                )}
 
-                        {spacePhoto.media_type === 'image' ? (
-                            <div className="photo-wrapper">
-                                <img 
-                                    src={spacePhoto.url} 
-                                    alt={spacePhoto.title}
-                                    className="space-photo"
-                                    loading="lazy"
+                {/* Photo Display */}
+                {!loading && !error && photo && (
+                    <div className="space-photo-card">
+                        {photo.media_type === 'image' ? (
+                            <div className="space-image-container">
+                                <img
+                                    src={photo.hdurl || photo.url}
+                                    alt={photo.title}
+                                    className="space-main-image"
                                 />
-                                {spacePhoto.copyright && (
-                                    <p className="photo-copyright">© {spacePhoto.copyright}</p>
-                                )}
                             </div>
-                        ) : spacePhoto.media_type === 'video' ? (
-                            <div className="video-wrapper">
+                        ) : photo.media_type === 'video' ? (
+                            <div className="space-video-container">
                                 <iframe
-                                    src={spacePhoto.url}
-                                    title={spacePhoto.title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
+                                    src={photo.url}
+                                    title={photo.title}
                                     className="space-video"
+                                    frameBorder="0"
+                                    allowFullScreen
                                 />
                             </div>
                         ) : null}
 
-                        <div className="photo-details">
-                            <h4>📖 Explanation</h4>
-                            <p className="photo-explanation">{spacePhoto.explanation}</p>
-                        </div>
-
-                        <div className="photo-actions">
-                            <button 
-                                onClick={handleSavePhoto}
-                                disabled={savePhotoMutation.isLoading}
-                                className="glass-btn glass-btn-sm"
-                            >
-                                {savePhotoMutation.isLoading ? '💾 Saving...' : '💾 Save Photo'}
-                            </button>
-                            {spacePhoto.hdurl && (
-                                <a 
-                                    href={spacePhoto.hdurl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="hd-link"
-                                >
-                                    🖼️ View HD Version
-                                </a>
+                        <div className="space-info-section">
+                            <h3 className="space-photo-title">{photo.title}</h3>
+                            
+                            {photo.date && (
+                                <p className="space-date">
+                                    📅 {new Date(photo.date).toLocaleDateString('en-US', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </p>
                             )}
-                        </div>
-                    </div>
-                )}
 
-                {/* Empty State */}
-                {!spacePhoto && !isLoading && (
-                    <div className="no-results">
-                        <div className="empty-state">
-                            <span className="empty-icon">🌌</span>
-                            <h3>Explore the Universe</h3>
-                            <p>Select a date or view today's astronomy picture</p>
+                            {photo.copyright && (
+                                <p className="space-copyright">
+                                    📸 Copyright: {photo.copyright}
+                                </p>
+                            )}
+
+                            <p className="space-explanation">{photo.explanation}</p>
+
+                            <div className="space-actions">
+                                {photo.hdurl && (
+                                    <a
+                                        href={photo.hdurl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="glass-btn"
+                                    >
+                                        🖼️ View HD Image
+                                    </a>
+                                )}
+                                <button
+                                    onClick={() => fetchPhoto()}
+                                    className="glass-btn-secondary"
+                                >
+                                    🔄 Today's Photo
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

@@ -1,4 +1,4 @@
-import apiClient from '@/api/client';
+import apiClient from "../client";
 
 // ============================================
 // Generic Save Functions
@@ -182,22 +182,26 @@ export const saveActivity = async (activity) => {
  * @returns {Promise} - API response
  */
 export const saveBook = async (book) => {
+    // Extract author - API uses author_name array
+    const author = book.author_name?.join(', ') || book.author || 'Unknown Author';
+    
     return saveItem({
         category: "books",
         type: "book",
-        external_id: book.id || book.key || Date.now().toString(),
-        title: book.title,
-        description: `By ${book.author || book.author_name?.[0] || 'Unknown Author'}`,
+        external_id: book.key || book.cover_i?.toString() || Date.now().toString(),
+        title: book.title || "Untitled",
+        description: `By ${author}`,
         metadata: {
-            author: book.author || book.author_name?.[0],
-            year: book.year || book.first_publish_year,
-            coverId: book.coverId || book.cover_i,
-            coverUrl: book.coverUrl || (book.cover_i 
+            author: author,
+            year: book.first_publish_year || book.year,
+            coverId: book.cover_i || book.coverId,
+            coverUrl: book.cover_i 
                 ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`
-                : null),
-            subjects: book.subjects || [],
-            pages: book.pages || book.number_of_pages_median,
-            isbn: book.isbn?.[0] || book.isbn
+                : (book.coverUrl || null),
+            subjects: book.subject?.slice(0, 10) || book.subjects || [],
+            pages: book.number_of_pages_median || book.pages,
+            isbn: book.isbn?.[0] || book.isbn,
+            publisher: book.publisher?.[0] || book.publisher
         }
     });
 };
@@ -362,13 +366,13 @@ const getLocalStorageItems = () => {
             id: item.id || Date.now() + Math.random(),
             type: type,
             category: type === 'meal' ? 'food' : 
-                     type === 'location' ? 'weather' :
-                     type === 'artwork' ? 'art' : 
-                     type === 'journal' ? 'personal' :
-                     type === 'activity' ? 'hobby' :
-                     type === 'book' ? 'books' :
-                     type === 'drink' ? 'drinks' :
-                     type === 'space' ? 'space' : 'other',
+                        type === 'location' ? 'weather' :
+                        type === 'artwork' ? 'art' : 
+                        type === 'journal' ? 'personal' :
+                        type === 'activity' ? 'hobby' :
+                        type === 'book' ? 'books' :
+                        type === 'drink' ? 'drinks' :
+                        type === 'space' ? 'space' : 'other',
             title: item.title || item.strMeal || item.name || item.activity || 'Untitled',
             description: item.description || '',
             user_notes: item.user_notes || item.content || '',

@@ -116,10 +116,7 @@
 .glass-page-header h2 {
     font-size: 3rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
     line-height: 1.2;
 }
@@ -192,6 +189,43 @@
 .glass-select option {
     background: #1e293b;
     color: white;
+}
+
+/* ============================================
+    TABS
+   ============================================ */
+
+.glass-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.glass-tab {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+}
+
+.glass-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.glass-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: rgba(102, 126, 234, 0.5);
+    color: white;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 /* ============================================

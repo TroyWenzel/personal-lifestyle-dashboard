@@ -6,7 +6,6 @@ from flask import current_app
 class NASAAPI:
 
     def __init__(self):
-        # Get NASA API key from environment variable
         self.api_key = os.getenv('NASA_API_KEY')
         self.base_url = "https://api.nasa.gov"
         
@@ -83,5 +82,76 @@ class NASAAPI:
         except Exception as e:
             current_app.logger.error(f"Mars Rover API error: {str(e)}")
             return {'error': 'internal_error', 'photos': []}
+    
+    def get_space_backgrounds(self, count=10):
+        """Get multiple APODs for rotating backgrounds"""
+        if not self.api_key:
+            current_app.logger.error("NASA API key is missing!")
+            return {
+                'error': 'api_key_missing',
+                'message': 'NASA API key is not configured.'
+            }
+        
+        try:
+            # Instead of using count parameter (which might not work),
+            # fetch recent APODs from the past days
+            from datetime import datetime, timedelta
+            
+            images = []
+            today = datetime.now()
+            
+            current_app.logger.info(f"Fetching {count} NASA backgrounds from recent days...")
+            
+            # Try to fetch APOD from the last 15 days to get 10 images
+            for i in range(15):
+                if len(images) >= count:
+                    break
+                    
+                date = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+                
+                params = {
+                    'api_key': self.api_key,
+                    'date': date
+                }
+                
+                try:
+                    current_app.logger.info(f"Fetching APOD for {date}...")
+                    response = requests.get(
+                        f"{self.base_url}/planetary/apod",
+                        params=params,
+                        timeout=10
+                    )
+                    
+                    current_app.logger.info(f"APOD {date} status: {response.status_code}")
+                    
+                    if response.status_code == 200:
+                        apod = response.json()
+                        media_type = apod.get('media_type')
+                        current_app.logger.info(f"APOD {date} media type: {media_type}")
+                        # Only add if it's an image (not video)
+                        if media_type == 'image':
+                            images.append(apod)
+                            current_app.logger.info(f"Added image from {date}, total: {len(images)}")
+                    else:
+                        current_app.logger.error(f"APOD {date} failed: {response.text}")
+                except Exception as e:
+                    current_app.logger.error(f"Failed to fetch APOD for {date}: {str(e)}")
+                    continue
+            
+            current_app.logger.info(f"Successfully fetched {len(images)} background images")
+            
+            return {
+                'success': True,
+                'images': images
+            }
+                
+        except Exception as e:
+            current_app.logger.error(f"NASA backgrounds error: {str(e)}")
+            import traceback
+            current_app.logger.error(traceback.format_exc())
+            return {
+                'error': 'internal_error',
+                'message': f'Failed to fetch NASA data: {str(e)}'
+            }
 
 nasa_api = NASAAPI()

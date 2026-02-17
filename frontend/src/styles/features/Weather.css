@@ -1,0 +1,349 @@
+/* World Map Background */
+.weather-map-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.world-map-container {
+    width: 100%;
+    height: 100%;
+}
+
+.weather-content-overlay {
+    position: relative;
+    z-index: 1;
+}
+
+/* Custom map marker style */
+.custom-map-marker {
+    background: transparent;
+    border: none;
+}
+
+.marker-pin {
+    width: 30px;
+    height: 30px;
+    background: #ff7e5f;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 15px rgba(255, 126, 95, 0.8);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 126, 95, 0.7);
+    }
+    70% {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 15px rgba(255, 126, 95, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 126, 95, 0);
+    }
+}
+
+/* Leaflet overrides for dark theme */
+.leaflet-container {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-tile {
+    filter: brightness(0.7) contrast(1.2) saturate(0.8) !important;
+}
+
+.weather-search-section {
+    margin-bottom: 2rem;
+}
+
+.weather-default-city {
+    text-align: center;
+    margin-top: 1rem;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+.weather-default-city strong {
+    color: var(--text-primary);
+}
+
+/* Current Weather Card */
+.weather-current-card {
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: visible;
+    
+    /* Create a mask that cuts out the circle */
+    -webkit-mask-image: radial-gradient(
+        circle 125px at 50% 40%,
+        transparent 0,
+        transparent 125px,
+        black 125px
+    );
+    mask-image: radial-gradient(
+        circle 125px at 50% 40%,
+        transparent 0,
+        transparent 125px,
+        black 125px
+    );
+}
+
+/* Remove the pseudo-elements since we're using mask */
+.weather-current-card::after {
+    display: none;
+}
+
+/* Transparent circle cutout in center */
+.weather-current-card::before {
+    content: '';
+    position: absolute;
+    top: 40%; /* Moved up from 50% */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 250px; /* Slightly larger */
+    height: 250px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0) !important; /* 100% transparent */
+    backdrop-filter: none !important; /* No blur */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 0 0 8px rgba(255, 255, 255, 0.05),
+        0 0 30px rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Make the card content avoid the circle */
+.weather-current-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+.weather-location-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.weather-location-name {
+    color: var(--text-primary);
+    font-size: 2.5rem; /* Larger */
+    margin-bottom: 0.5rem;
+    font-weight: 700; /* Bolder - was 600 */
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Add shadow for visibility */
+}
+
+.weather-location-time {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Weather Main Display - Icon + Temp */
+.weather-main-display {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr; /* Left | Circle | Right */
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem 1rem;
+    min-height: 250px;
+    position: relative;
+}
+
+.weather-icon-section {
+    text-align: center;
+    grid-column: 1;
+}
+
+.weather-icon-large {
+    font-size: 4rem;
+    margin-bottom: 0.5rem;
+}
+
+.weather-condition-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.weather-temp-section {
+    text-align: center;
+    grid-column: 3;
+}
+
+.weather-temp-large {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.weather-feels-like {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Weather Details Grid */
+.weather-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.weather-detail-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.weather-detail-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.weather-detail-label {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.weather-detail-value {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* Action Buttons */
+.weather-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.weather-btn-default {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.weather-btn-default.is-default {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Saved Locations Section */
+.weather-saved-section {
+    margin-top: 3rem;
+}
+
+.weather-saved-title {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.weather-saved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.weather-saved-card {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.weather-saved-card:hover {
+    transform: translateY(-4px);
+}
+
+.weather-saved-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.weather-saved-title-text {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.weather-saved-temp {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.weather-saved-condition {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.weather-saved-date {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.weather-saved-delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    z-index: 10;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .weather-main-display {
+        flex-direction: column;
+    }
+
+    .weather-temp-large {
+        font-size: 3rem;
+    }
+
+    .weather-icon-large {
+        font-size: 4rem;
+    }
+
+    .weather-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .weather-location-name {
+        font-size: 1.5rem;
+    }
+
+    .weather-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .weather-saved-grid {
+        grid-template-columns: 1fr;
+    }
+}

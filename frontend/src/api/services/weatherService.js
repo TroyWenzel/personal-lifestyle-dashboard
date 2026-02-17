@@ -42,14 +42,14 @@ export const getWeatherForecast = async (location, days = 3) => {
 // Mock weather data for development/testing
 const getMockWeatherData = (location) => {
     const locations = {
-        'chicago': { temp: 2, feelslike: -1, desc: 'Partly cloudy', humidity: 65, wind: 15 },
-        'london': { temp: 8, feelslike: 6, desc: 'Light rain', humidity: 80, wind: 10 },
-        'tokyo': { temp: 12, feelslike: 11, desc: 'Sunny', humidity: 50, wind: 8 },
-        'sydney': { temp: 25, feelslike: 27, desc: 'Clear', humidity: 40, wind: 12 },
-        'new york': { temp: 5, feelslike: 2, desc: 'Cloudy', humidity: 70, wind: 18 },
-        'los angeles': { temp: 18, feelslike: 17, desc: 'Sunny', humidity: 30, wind: 5 },
-        'paris': { temp: 10, feelslike: 9, desc: 'Cloudy', humidity: 75, wind: 12 },
-        'miami': { temp: 28, feelslike: 30, desc: 'Sunny', humidity: 65, wind: 8 }
+        'chicago': { temp: 2, feelslike: -1, desc: 'Partly cloudy', humidity: 65, wind: 15, lat: 41.85, lon: -87.65 },
+        'london': { temp: 8, feelslike: 6, desc: 'Light rain', humidity: 80, wind: 10, lat: 51.5074, lon: -0.1278 },
+        'tokyo': { temp: 12, feelslike: 11, desc: 'Sunny', humidity: 50, wind: 8, lat: 35.6762, lon: 139.6503 },
+        'sydney': { temp: 25, feelslike: 27, desc: 'Clear', humidity: 40, wind: 12, lat: -33.8688, lon: 151.2093 },
+        'new york': { temp: 5, feelslike: 2, desc: 'Cloudy', humidity: 70, wind: 18, lat: 40.7128, lon: -74.0060 },
+        'los angeles': { temp: 18, feelslike: 17, desc: 'Sunny', humidity: 30, wind: 5, lat: 34.0522, lon: -118.2437 },
+        'paris': { temp: 10, feelslike: 9, desc: 'Cloudy', humidity: 75, wind: 12, lat: 48.8566, lon: 2.3522 },
+        'miami': { temp: 28, feelslike: 30, desc: 'Sunny', humidity: 65, wind: 8, lat: 25.7617, lon: -80.1918 }
     };
     
     const locKey = location.toLowerCase();
@@ -58,7 +58,9 @@ const getMockWeatherData = (location) => {
         feelslike: 14, 
         desc: 'Partly cloudy',
         humidity: 60,
-        wind: 10
+        wind: 10,
+        lat: 41.85,
+        lon: -87.65
     };
     
     return {
@@ -66,8 +68,8 @@ const getMockWeatherData = (location) => {
             name: location.charAt(0).toUpperCase() + location.slice(1),
             region: 'Mock Region',
             country: 'Mock Country',
-            lat: 41.85,
-            lon: -87.65,
+            lat: weatherData.lat,
+            lon: weatherData.lon,
             timezone_id: 'America/Chicago',
             localtime: new Date().toISOString().split('T')[0] + ' 14:45',
         },
