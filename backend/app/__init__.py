@@ -22,12 +22,17 @@ def create_app():
      app.config.from_object(Config)
      
      # Configure CORS to allow requests from React frontend
-     CORS(app, 
-          resources={r"/*": {"origins": "https://6994ce6e814f957e7b57fefd--steady-rugelach-889cba.netlify.app"}}, 
-          supports_credentials=True,
-          allow_headers=["Content-Type", "Authorization"],
-          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-     )
+     CORS(app, resources={r"/*": {
+          "origins": [
+               "https://steady-rugelach-889cba.netlify.app",
+               "https://6994db2055efd1ce2777402a--steady-rugelach-889cba.netlify.app", # Current preview
+               "http://localhost:5173", # For local testing
+               "http://127.0.0.1:5173"
+          ]
+     }}, 
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
      
      # Initialize Flask extensions with this app instance
      db.init_app(app)

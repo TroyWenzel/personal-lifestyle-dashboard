@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 import "@/styles/GlassDesignSystem.css";
+import apiClient from '../api/client';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -70,39 +71,29 @@ function Register() {
         setLoading(true);
 
         try {
-            const response = await fetch("http://localhost:5000/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: formData.email,
-                    password: formData.password,
-                    username: formData.name,
-                    birthday: formData.birthday,
-                    phoneNumber: formData.phoneNumber
-                }),
+            const response = await apiClient.post("/auth/register", {
+                email: formData.email,
+                password: formData.password,
+                username: formData.name,
+                birthday: formData.birthday,
+                phoneNumber: formData.phoneNumber
             });
 
-            const data = await response.json();
+            const userData = {
+                email: formData.email,
+                username: formData.name,
+                birthday: formData.birthday,
+                phoneNumber: formData.phoneNumber,
+                id: response.user_id,
+                ...response.user
+            };
 
-            if (response.ok) {
-                const userData = {
-                    email: formData.email,
-                    username: formData.name,
-                    birthday: formData.birthday,
-                    phoneNumber: formData.phoneNumber,
-                    id: data.user_id,
-                    ...data.user
-                };
-                
-                login(data.access_token, userData);
-                setMessage("Registration successful! Redirecting...");
-                setTimeout(() => navigate("/"), 1000);
-            } else {
-                setMessage(data.error || "Registration failed. Please try again.");
-            }
+            login(response.access_token, userData);
+            setMessage("Registration successful! Redirecting...");
+            setTimeout(() => navigate("/"), 1000);
         } catch (error) {
             console.error("Registration error:", error);
-            setMessage("Network error. Please try again.");
+            setMessage(error.response?.data?.message || "Registration failed. Please try again.");
         } finally {
             setLoading(false);
         }

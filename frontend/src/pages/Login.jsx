@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 import "@/styles/GlassDesignSystem.css";
+import apiClient from '../api/client';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -38,31 +39,21 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch("http://localhost:5000/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+            const response = await apiClient.post("/auth/login", { email, password });
 
-            const data = await response.json();
+            const userData = {
+                email: email,
+                username: response.username || email.split('@')[0],
+                id: response.user_id,
+                ...response.user
+            };
 
-            if (response.ok) {
-                const userData = {
-                    email: email,
-                    username: data.username || email.split('@')[0],
-                    id: data.user_id,
-                    ...data.user
-                };
-                
-                login(data.access_token, userData);
-                setMessage("Login successful! Redirecting...");
-                setTimeout(() => navigate("/"), 1000);
-            } else {
-                setMessage(data.error || "Login failed. Please check your credentials.");
-            }
+            login(response.access_token, userData);
+            setMessage("Login successful! Redirecting...");
+            setTimeout(() => navigate("/"), 1000);
         } catch (error) {
             console.error("Login error:", error);
-            setMessage("Network error. Please try again.");
+            setMessage(error.response?.data?.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
