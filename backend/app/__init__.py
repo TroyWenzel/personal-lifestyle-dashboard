@@ -25,7 +25,7 @@ def create_app():
      CORS(app, resources={r"/*": {
           "origins": [
                "https://steady-rugelach-889cba.netlify.app",
-               "https://6994db2055efd1ce2777402a--steady-rugelach-889cba.netlify.app", # Current preview
+               r"https://.*--steady-rugelach-889cba\.netlify\.app", # Current preview
                "http://localhost:5173", # For local testing
                "http://127.0.0.1:5173"
           ]
