@@ -23,7 +23,7 @@ def create_app():
      
      # Configure CORS to allow requests from React frontend
      CORS(app, 
-          resources={r"/*": {"origins": "http://localhost:5173"}}, 
+          resources={r"/*": {"origins": "https://6994ce6e814f957e7b57fefd--steady-rugelach-889cba.netlify.app"}}, 
           supports_credentials=True,
           allow_headers=["Content-Type", "Authorization"],
           methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
