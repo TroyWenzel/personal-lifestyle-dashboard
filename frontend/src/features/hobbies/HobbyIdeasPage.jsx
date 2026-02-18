@@ -1,75 +1,119 @@
-import { useState } from 'react';
-import { useRandomActivity, useSaveActivity } from '@/api/queries';
+import { useState, useCallback } from 'react';
+import apiClient from '@/api/client';
+import { saveActivity } from '@/api/services/contentService';
 import '@/styles/GlassDesignSystem.css';
+
+const activityTypes = [
+    { value: '',             label: 'Any Type' },
+    { value: 'education',    label: '📚 Education' },
+    { value: 'recreational', label: '🎮 Recreational' },
+    { value: 'social',       label: '👥 Social' },
+    { value: 'diy',          label: '🔨 DIY' },
+    { value: 'charity',      label: '❤️ Charity' },
+    { value: 'cooking',      label: '🍳 Cooking' },
+    { value: 'relaxation',   label: '🧘 Relaxation' },
+    { value: 'music',        label: '🎵 Music' },
+    { value: 'busywork',     label: '💼 Productive' },
+];
+
+const getAccessibilityLabel = (value) => {
+    if (value <= 0.2) return '🟢 Very Easy';
+    if (value <= 0.5) return '🟡 Easy';
+    if (value <= 0.7) return '🟠 Moderate';
+    if (value <= 0.9) return '🔴 Challenging';
+    return '⚫ Very Challenging';
+};
+
+const getPriceLabel = (value) => {
+    if (value === 0)  return '✅ Free';
+    if (value <= 0.3) return '💚 Low Cost';
+    if (value <= 0.6) return '🟡 Moderate Cost';
+    return '🔴 High Cost';
+};
+
+const getTypeEmoji = (typeValue) => {
+    const found = activityTypes.find(t => t.value === typeValue);
+    if (!found || found.value === '') return '✨';
+    return found.label.split(' ')[0];
+};
 
 const HobbyIdeasPage = () => {
     const [activityType, setActivityType] = useState('');
     const [participants, setParticipants] = useState('');
-    
-    // 🚀 TanStack Query - manually triggered with enabled: false
-    const { data: activity, isLoading, refetch } = useRandomActivity({ 
-        type: activityType, 
-        participants: participants 
-    }, { enabled: false });
-    
-    const saveActivityMutation = useSaveActivity();
+    const [activity,     setActivity]     = useState(null);
+    const [isLoading,    setIsLoading]    = useState(false);
+    const [error,        setError]        = useState(null);
+    const [isSaving,     setIsSaving]     = useState(false);
+    const [saveStatus,   setSaveStatus]   = useState(null);
 
-    const handleGetActivity = () => {
-        refetch();
-    };
+    const fetchActivity = useCallback(async (overrideType, overrideParticipants) => {
+        const type  = overrideType         !== undefined ? overrideType         : activityType;
+        const parts = overrideParticipants !== undefined ? overrideParticipants : participants;
 
-    const handleSaveActivity = () => {
+        setIsLoading(true);
+        setError(null);
+        setActivity(null);
+        setSaveStatus(null);
+
+        try {
+            const params = new URLSearchParams();
+            if (type)  params.append('type', type);
+            if (parts) params.append('participants', parts);
+
+            const url = params.toString()
+                ? `/api/hobbies/random?${params}`
+                : `/api/hobbies/random`;
+
+            const data = await apiClient.get(url);
+
+            if (data.error) throw new Error(data.error);
+
+            setActivity(data);
+        } catch (err) {
+            const message = err.response?.data?.error || err.message || 'Something went wrong. Please try again.';
+            setError(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activityType, participants]);
+
+    const handleSaveActivity = async () => {
         if (!activity) return;
+        setIsSaving(true);
+        setSaveStatus(null);
 
-        saveActivityMutation.mutate(activity, {
-            onSuccess: () => {
-                alert('Activity saved successfully!');
-            },
-            onError: (error) => {
-                console.error('Error saving activity:', error);
-                alert('Failed to save activity');
-            },
-        });
+        try {
+            await saveActivity(activity);
+            setSaveStatus('success');
+        } catch {
+            setSaveStatus('error');
+        } finally {
+            setIsSaving(false);
+            setTimeout(() => setSaveStatus(null), 3000);
+        }
     };
 
-    const activityTypes = [
-        { value: '', label: 'Any Type' },
-        { value: 'education', label: '📚 Education' },
-        { value: 'recreational', label: '🎮 Recreational' },
-        { value: 'social', label: '👥 Social' },
-        { value: 'diy', label: '🔨 DIY' },
-        { value: 'charity', label: '❤️ Charity' },
-        { value: 'cooking', label: '🍳 Cooking' },
-        { value: 'relaxation', label: '🧘 Relaxation' },
-        { value: 'music', label: '🎵 Music' },
-        { value: 'busywork', label: '💼 Productive' }
-    ];
-
-    const getAccessibilityLabel = (value) => {
-        if (value <= 0.2) return 'Very Easy';
-        if (value <= 0.5) return 'Easy';
-        if (value <= 0.7) return 'Moderate';
-        if (value <= 0.9) return 'Challenging';
-        return 'Very Challenging';
-    };
-
-    const getPriceLabel = (value) => {
-        if (value === 0) return 'Free';
-        if (value <= 0.3) return 'Low Cost';
-        if (value <= 0.6) return 'Moderate Cost';
-        return 'High Cost';
+    const handleQuickPick = (type) => {
+        setActivityType(type);
+        fetchActivity(type, participants);
     };
 
     return (
         <div className="glass-page">
             <div className="glass-container">
+
                 <div className="glass-page-header">
                     <h2>✨ Activity Ideas</h2>
                     <p className="subtitle">Beat boredom with personalized activity suggestions</p>
                 </div>
 
                 <div className="glass-card" style={{ marginBottom: '2rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '1rem',
+                        marginBottom: '1.5rem',
+                    }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
                                 Activity Type
@@ -80,10 +124,8 @@ const HobbyIdeasPage = () => {
                                 className="glass-select"
                                 style={{ width: '100%' }}
                             >
-                                {activityTypes.map(type => (
-                                    <option key={type.value} value={type.value}>
-                                        {type.label}
-                                    </option>
+                                {activityTypes.map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -108,8 +150,8 @@ const HobbyIdeasPage = () => {
                         </div>
                     </div>
 
-                    <button 
-                        onClick={handleGetActivity}
+                    <button
+                        onClick={() => fetchActivity()}
                         disabled={isLoading}
                         className="glass-btn"
                         style={{ width: '100%' }}
@@ -120,102 +162,93 @@ const HobbyIdeasPage = () => {
 
                 {isLoading && (
                     <div className="glass-loading">
-                        <div className="glass-spinner"></div>
+                        <div className="glass-spinner" />
                         <p>Finding the perfect activity...</p>
                     </div>
                 )}
 
+                {error && !isLoading && (
+                    <div className="glass-empty-state">
+                        <span className="glass-empty-icon">😅</span>
+                        <h3>Nothing Found</h3>
+                        <p>{error}</p>
+                        <div className="glass-suggestion-tags">
+                            <button onClick={() => handleQuickPick('recreational')}>🎮 Try Recreational</button>
+                            <button onClick={() => handleQuickPick('relaxation')}>🧘 Try Relaxation</button>
+                            <button onClick={() => { setParticipants(''); fetchActivity(activityType, ''); }}>👥 Any Group Size</button>
+                        </div>
+                    </div>
+                )}
+
                 {activity && !isLoading && (
-                    <div className="glass-card">
+                    <div className="glass-card" style={{ animation: 'fadeInScale 0.4s ease' }}>
                         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
-                                {activityTypes.find(t => t.value === activity.type)?.label.split(' ')[0] || '✨'}
+                                {getTypeEmoji(activity.type)}
                             </div>
-                            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', marginBottom: '1rem' }}>
+                            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', marginBottom: '0.5rem', lineHeight: 1.3 }}>
                                 {activity.activity}
                             </h3>
                         </div>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
-                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Type</div>
-                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                                    {activityTypes.find(t => t.value === activity.type)?.label || activity.type}
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                            gap: '1rem',
+                            marginBottom: '2rem',
+                        }}>
+                            {[
+                                { label: 'Type',         value: activityTypes.find(t => t.value === activity.type)?.label || activity.type },
+                                { label: 'Participants', value: `${activity.participants} ${activity.participants === 1 ? 'person' : 'people'}` },
+                                { label: 'Difficulty',   value: getAccessibilityLabel(activity.accessibility) },
+                                { label: 'Cost',         value: getPriceLabel(activity.price) },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="glass-card-sm" style={{ textAlign: 'center' }}>
+                                    <div style={{ color: 'var(--text-secondary)', marginBottom: '0.4rem', fontSize: '0.85rem' }}>{label}</div>
+                                    <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{value}</div>
                                 </div>
-                            </div>
-                            
-                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
-                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Participants</div>
-                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                                    {activity.participants} {activity.participants === 1 ? 'person' : 'people'}
-                                </div>
-                            </div>
-                            
-                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
-                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Difficulty</div>
-                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                                    {getAccessibilityLabel(activity.accessibility)}
-                                </div>
-                            </div>
-                            
-                            <div className="glass-card-sm" style={{ textAlign: 'center' }}>
-                                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Cost</div>
-                                <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                                    {getPriceLabel(activity.price)}
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         {activity.link && (
                             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                                <a 
-                                    href={activity.link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="glass-btn-secondary"
-                                >
+                                <a href={activity.link} target="_blank" rel="noopener noreferrer" className="glass-btn-secondary">
                                     🔗 Learn More
                                 </a>
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                            <button 
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button
                                 onClick={handleSaveActivity}
-                                disabled={saveActivityMutation.isLoading}
+                                disabled={isSaving}
                                 className="glass-btn"
+                                style={saveStatus === 'success' ? { background: 'linear-gradient(135deg,#10b981,#059669)' } : {}}
                             >
-                                {saveActivityMutation.isLoading ? '💾 Saving...' : '💾 Save Activity'}
+                                {isSaving ? '💾 Saving...' : saveStatus === 'success' ? '✅ Saved!' : saveStatus === 'error' ? '❌ Save Failed — Try Again' : '💾 Save Activity'}
                             </button>
-                            <button 
-                                onClick={handleGetActivity}
-                                disabled={isLoading}
-                                className="glass-btn-secondary"
-                            >
+                            <button onClick={() => fetchActivity()} disabled={isLoading} className="glass-btn-secondary">
                                 🔄 Get Another
                             </button>
                         </div>
                     </div>
                 )}
 
-                {!activity && !isLoading && (
+                {!activity && !isLoading && !error && (
                     <div className="glass-empty-state">
                         <span className="glass-empty-icon">🎲</span>
                         <h3>Ready to Try Something New?</h3>
-                        <p>Click the button above to get a random activity suggestion</p>
+                        <p>Select your preferences above, or jump in with a quick suggestion</p>
                         <div className="glass-suggestion-tags">
-                            <button onClick={() => { setActivityType('recreational'); handleGetActivity(); }}>
-                                🎮 Fun Activity
-                            </button>
-                            <button onClick={() => { setActivityType('education'); handleGetActivity(); }}>
-                                📚 Learn Something
-                            </button>
-                            <button onClick={() => { setActivityType('relaxation'); handleGetActivity(); }}>
-                                🧘 Relax
-                            </button>
+                            <button onClick={() => handleQuickPick('recreational')}>🎮 Fun Activity</button>
+                            <button onClick={() => handleQuickPick('education')}>📚 Learn Something</button>
+                            <button onClick={() => handleQuickPick('relaxation')}>🧘 Relax</button>
+                            <button onClick={() => handleQuickPick('cooking')}>🍳 Cook Something</button>
+                            <button onClick={() => handleQuickPick('social')}>👥 With Friends</button>
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

@@ -1,25 +1,18 @@
-const API_BASE = 'https://www.boredapi.com/api';
+import apiClient from "../client";
+import { saveActivity } from './contentService';
 
-export const getActivity = async (type = '') => {
-    try {
-        const url = type 
-            ? `${API_BASE}/activity?type=${type}`
-            : `${API_BASE}/activity`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('Error in getActivity:', error);
-        throw error;
-    }
+export const getActivity = async (type = '', participants = '') => {
+    const params = new URLSearchParams();
+    if (type) params.append('type', type);
+    if (participants) params.append('participants', participants);
+
+    const url = params.toString()
+        ? `/api/hobbies/random?${params}`
+        : `/api/hobbies/random`;
+
+    return apiClient.get(url);
 };
 
-export { saveActivity } from './contentService';
+export { saveActivity };
 
-// Alias for TanStack Query compatibility
 export const getRandomActivity = getActivity;
