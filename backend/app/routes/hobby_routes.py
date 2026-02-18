@@ -1,3 +1,4 @@
+import random
 import requests
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
@@ -5,7 +6,7 @@ from flask_cors import cross_origin
 
 hobby_bp = Blueprint('hobbies', __name__, url_prefix='/api/hobbies')
 
-BORED_API = 'https://www.boredapi.com/api'
+BORED_API = 'https://bored-api.appbrewery.com'
 
 @hobby_bp.route('/random', methods=['GET', 'OPTIONS'])
 @cross_origin(origins=[
@@ -21,20 +22,37 @@ def get_random_activity():
     def protected():
         try:
             activity_type = request.args.get('type', '')
-            participants = request.args.get('participants', '')
+            participants  = request.args.get('participants', '')
 
-            params = {}
-            if activity_type:
-                params['type'] = activity_type
-            if participants:
-                params['participants'] = participants
+            if activity_type or participants:
+                params = {}
+                if activity_type:
+                    params['type'] = activity_type
+                if participants:
+                    params['participants'] = participants
 
-            response = requests.get(f'{BORED_API}/activity', params=params)
+                response = requests.get(f'{BORED_API}/filter', params=params, timeout=10)
 
-            if not response.ok:
-                return jsonify({'error': 'No activities found for these filters.'}), 404
+                if response.status_code == 404 and participants and activity_type:
+                    response = requests.get(f'{BORED_API}/filter', params={'type': activity_type}, timeout=10)
 
-            data = response.json()
+                if not response.ok:
+                    return jsonify({'error': 'No activities found for these filters. Try different options!'}), 404
+
+                activities = response.json()
+                if not activities:
+                    return jsonify({'error': 'No activities found for these filters.'}), 404
+
+                data = random.choice(activities)
+
+            else:
+                # No filters — /random returns a single object directly
+                response = requests.get(f'{BORED_API}/random', timeout=10)
+
+                if not response.ok:
+                    return jsonify({'error': 'Failed to fetch activity. Please try again.'}), 500
+
+                data = response.json()
 
             if 'error' in data:
                 return jsonify({'error': data['error']}), 404

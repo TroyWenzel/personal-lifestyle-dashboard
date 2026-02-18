@@ -9,26 +9,21 @@ const Navbar = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navItems = [
-        { path: "/", label: "Home", public: true },
-        { path: "/dashboard", label: "Dashboard", protected: true },
-        { path: "/food", label: "Food", protected: true },
-        { path: "/weather", label: "Weather", protected: true },
-        { path: "/art", label: "Art", protected: true },
-        { path: "/books", label: "Books", protected: true },
-        { path: "/drinks", label: "Drinks", protected: true },
-        { path: "/space", label: "Space", protected: true },
-        { path: "/journal", label: "Journal", protected: true },
-        { path: "/hobbies", label: "Activities", protected: true },
-        { path: "/profile", label: "Profile", protected: true, icon: "👤" },
+        { path: "/",         label: "Home",    public: true },
+        { path: "/dashboard",label: "Dashboard", protected: true },
+        { path: "/food",     label: "Food",    protected: true },
+        { path: "/weather",  label: "Weather", protected: true },
+        { path: "/art",      label: "Art",     protected: true },
+        { path: "/books",    label: "Books",   protected: true },
+        { path: "/drinks",   label: "Drinks",  protected: true },
+        { path: "/space",    label: "Space",   protected: true },
+        { path: "/journal",  label: "Journal", protected: true },
+        { path: "/pokemon",  label: "⚡ Pokémon", protected: true },
+        { path: "/profile",  label: "Profile", protected: true, icon: "👤" },
     ];
 
-    const toggleMobileMenu = () => {
-        setMobileMenuOpen(!mobileMenuOpen);
-    };
-
-    const closeMobileMenu = () => {
-        setMobileMenuOpen(false);
-    };
+    const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+    const closeMobileMenu  = () => setMobileMenuOpen(false);
 
     return (
         <nav className="navbar glass-nav">

@@ -1,0 +1,236 @@
+/* ============================================
+   DASHBOARD — Recently Saved Item Cards
+   Type-specific layouts for each content type
+   ============================================ */
+
+/* ── Saved items grid ── */
+.dash-saved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ── Base card ── */
+.dash-saved-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    animation: fadeInScale 0.4s ease backwards;
+}
+.dash-saved-card:hover {
+    background: var(--glass-bg-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+}
+
+/* Horizontal row layout (books, weather, journal) */
+.dash-saved-card-row {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+/* ── Image wrappers ── */
+.dash-card-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: rgba(0,0,0,0.3);
+}
+
+/* Art gets a taller image area so artwork isn't squashed */
+.dash-card-img-wrap-art {
+    height: 220px;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dash-card-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Food & drinks: cover-crop (like hero images) */
+.dash-card-img-cover {
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Art: contain so we see the full painting without cropping */
+.dash-card-img-contain {
+    object-fit: contain;
+    object-position: center;
+    padding: 0.5rem;
+}
+
+/* Subtle gradient so text on top remains readable */
+.dash-card-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+}
+
+/* Placeholder when there's no image */
+.dash-card-img-placeholder {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* ── Card body ── */
+.dash-card-body {
+    padding: 1.1rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.dash-card-type-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.15rem;
+}
+.dash-card-emoji { font-size: 1.2rem; }
+.dash-card-date  { font-size: 0.78rem; color: var(--text-tertiary); }
+
+.dash-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+    margin: 0;
+    /* Clamp long titles to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dash-card-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-card-excerpt {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dash-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+}
+.dash-card-tag {
+    padding: 0.25rem 0.6rem;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.dash-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+}
+
+/* ── Book card ── */
+.dash-book-cover {
+    width: 90px;
+    min-width: 90px;
+    height: 100%;
+    min-height: 160px;
+    object-fit: cover;
+    object-position: center top;
+    border-right: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+.dash-book-cover-placeholder {
+    width: 90px;
+    min-width: 90px;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    background: rgba(255,255,255,0.04);
+    border-right: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+/* ── Weather card ── */
+.dash-weather-icon {
+    width: 90px;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    border-right: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+/* ── Journal card ── */
+.dash-saved-card-journal { background: rgba(139,92,246,0.07) !important; }
+.dash-journal-mood {
+    width: 80px;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    background: rgba(139,92,246,0.08);
+    border-right: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .dash-saved-grid { grid-template-columns: 1fr; }
+
+    /* Stack row-layout cards vertically on mobile */
+    .dash-saved-card-row {
+        flex-direction: column;
+    }
+    .dash-book-cover,
+    .dash-book-cover-placeholder,
+    .dash-weather-icon,
+    .dash-journal-mood {
+        width: 100%;
+        min-width: unset;
+        min-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+    }
+}
