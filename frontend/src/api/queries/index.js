@@ -9,7 +9,6 @@ import {
     saveLocation,
     saveArtwork,
     saveJournal,
-    saveActivity,
     saveBook,
     saveDrink,
     saveSpacePhoto,
@@ -21,7 +20,6 @@ import { getCurrentWeather, searchLocation } from '../services/weatherService';
 import { searchArtworks, getArtworkDetails } from '../services/artService';
 import { searchBooks } from '../services/bookService';
 import { searchDrinks, getRandomDrink } from '../services/drinkService';
-import { getRandomActivity } from '../services/hobbyService';
 import { getSpacePhoto } from '../services/spaceService';
 import { getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry } from '../services/journalService';
 

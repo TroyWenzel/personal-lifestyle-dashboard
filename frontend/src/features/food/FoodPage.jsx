@@ -25,6 +25,9 @@ const FoodPage = () => {
             setActiveTab('saved');
             openSavedMealDetails(item);
             window.history.replaceState({}, document.title);
+        } else if (location.state?.tab === 'saved') {
+            setActiveTab('saved');
+            window.history.replaceState({}, document.title);
         }
     }, [location]);
 

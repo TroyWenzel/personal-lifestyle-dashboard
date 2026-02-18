@@ -3,6 +3,12 @@ import apiClient from "../client";
 // ============================================
 // Generic Save Functions
 // ============================================
+
+/**
+ * Generic function to save any type of content item to the backend
+ * @param {Object} itemData - Formatted item data matching API schema
+ * @returns {Promise} - API response
+ */
 export const saveItem = async (itemData) => {
     try {
         const response = await apiClient.post('/api/content/', itemData);
@@ -16,6 +22,12 @@ export const saveItem = async (itemData) => {
 // ============================================
 // Food/Meal Functions
 // ============================================
+
+/**
+ * Format and save a meal from TheMealDB API
+ * @param {Object} meal - Raw meal data from TheMealDB
+ * @returns {Promise} - API response
+ */
 export const saveMeal = async (meal) => {
     // Extract ingredients from MealDB format (up to 20 ingredients)
     const ingredients = [];
@@ -33,7 +45,7 @@ export const saveMeal = async (meal) => {
     return saveItem({
         category: "food",
         type: "meal",
-        external_id: meal.idMeal,
+        external_id: meal.idMeal, // Store original API ID to prevent duplicates
         title: meal.strMeal,
         description: `${meal.strCategory} - ${meal.strArea}`,
         metadata: {
@@ -49,6 +61,12 @@ export const saveMeal = async (meal) => {
 // ============================================
 // Weather/Location Functions
 // ============================================
+
+/**
+ * Format and save weather location data
+ * @param {Object} weatherData - Weather data from weatherService
+ * @returns {Promise} - API response
+ */
 export const saveLocation = async (weatherData) => {
     // Handle both WeatherStack and OpenWeatherMap formats
     const location = weatherData.location || weatherData;
@@ -77,24 +95,33 @@ export const saveLocation = async (weatherData) => {
 // ============================================
 // Art Functions
 // ============================================
+
+/**
+ * Format and save artwork from Art Institute of Chicago API
+ * @param {Object} artData - Raw artwork data from artService
+ * @returns {Promise} - API response
+ */
 export const saveArtwork = async (artData) => {
+    const image_id = artData.image_id || artData.metadata?.image_id || null;
+    const artist = artData.artist_title || artData.metadata?.artist || 'Unknown Artist';
+
     return saveItem({
         category: "art",
         type: "artwork",
-        external_id: artData.id?.toString(),
+        external_id: artData.id?.toString() || artData.external_id?.toString(),
         title: artData.title || 'Untitled',
-        description: `By ${artData.artist_title || 'Unknown Artist'}`,
+        description: `By ${artist}`,
         metadata: {
-            artist: artData.artist_title,
-            date: artData.date_display,
-            medium: artData.medium_display,
-            thumbnail: artData.image_id 
-                ? `https://www.artic.edu/iiif/2/${artData.image_id}/full/300,/0/default.jpg`
-                : null,
-            image_id: artData.image_id,
-            department: artData.department_title,
-            dimensions: artData.dimensions,
-            credit_line: artData.credit_line
+            artist: artist,
+            date: artData.date_display || artData.metadata?.date,
+            medium: artData.medium_display || artData.metadata?.medium,
+            thumbnail: image_id
+                ? `https://www.artic.edu/iiif/2/${image_id}/full/300,/0/default.jpg`
+                : artData.metadata?.thumbnail || null,
+            image_id: image_id,
+            department: artData.department_title || artData.metadata?.department,
+            dimensions: artData.dimensions || artData.metadata?.dimensions,
+            credit_line: artData.credit_line || artData.metadata?.credit_line
         }
     });
 };
@@ -115,51 +142,26 @@ export const saveJournal = async (journalData) => {
         }
     });
 };
-
-// ============================================
-// Activity/Hobby Functions
-// ============================================
-export const saveActivity = async (activity) => {
-    return saveItem({
-        category: "hobby",
-        type: "activity",
-        external_id: activity.key || Date.now().toString(),
-        title: activity.activity,
-        description: `Type: ${activity.type} | Participants: ${activity.participants}`,
-        metadata: {
-            type: activity.type,
-            participants: activity.participants,
-            price: activity.price,
-            accessibility: activity.accessibility,
-            link: activity.link
-        }
-    });
-};
-
 // ============================================
 // Book Functions
 // ============================================
 export const saveBook = async (book) => {
-    // Extract author - API uses author_name array
-    const author = book.author_name?.join(', ') || book.author || 'Unknown Author';
-    
     return saveItem({
         category: "books",
         type: "book",
-        external_id: book.key || book.cover_i?.toString() || Date.now().toString(),
-        title: book.title || "Untitled",
-        description: `By ${author}`,
+        external_id: book.id || book.key || Date.now().toString(),
+        title: book.title,
+        description: `By ${book.author || book.author_name?.[0] || 'Unknown Author'}`,
         metadata: {
-            author: author,
-            year: book.first_publish_year || book.year,
-            coverId: book.cover_i || book.coverId,
-            coverUrl: book.cover_i 
+            author: book.author || book.author_name?.[0],
+            year: book.year || book.first_publish_year,
+            coverId: book.coverId || book.cover_i,
+            coverUrl: book.coverUrl || (book.cover_i 
                 ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`
-                : (book.coverUrl || null),
-            subjects: book.subject?.slice(0, 10) || book.subjects || [],
-            pages: book.number_of_pages_median || book.pages,
-            isbn: book.isbn?.[0] || book.isbn,
-            publisher: book.publisher?.[0] || book.publisher
+                : null),
+            subjects: book.subjects || [],
+            pages: book.pages || book.number_of_pages_median,
+            isbn: book.isbn?.[0] || book.isbn
         }
     });
 };
@@ -167,6 +169,12 @@ export const saveBook = async (book) => {
 // ============================================
 // Drink Functions
 // ============================================
+
+/**
+ * Format and save a drink from TheCocktailDB API
+ * @param {Object} drink - Raw drink data from TheCocktailDB
+ * @returns {Promise} - API response
+ */
 export const saveDrink = async (drink) => {
     // Extract ingredients from CocktailDB format (up to 15 ingredients)
     const ingredients = [];
@@ -202,6 +210,12 @@ export const saveDrink = async (drink) => {
 // ============================================
 // Space Functions
 // ============================================
+
+/**
+ * Format and save a NASA APOD photo
+ * @param {Object} photo - Raw photo data from NASA API
+ * @returns {Promise} - API response
+ */
 export const saveSpacePhoto = async (photo) => {
     return saveItem({
         category: "space",
@@ -224,6 +238,11 @@ export const saveSpacePhoto = async (photo) => {
 // ============================================
 // Fetch Functions
 // ============================================
+
+/**
+ * Fetch all saved items for the current user
+ * @returns {Promise<Array>} - Array of saved content items
+ */
 export const getSavedItems = async () => {
     try {
         const response = await apiClient.get('/api/content/');
@@ -239,6 +258,10 @@ export const getSavedItems = async () => {
     }
 };
 
+/**
+ * Fetch dashboard statistics for the current user
+ * @returns {Promise<Object>} - Object containing counts for each content type
+ */
 export const getDashboardStats = async () => {
     try {
         const response = await apiClient.get('/api/content/stats');
@@ -264,6 +287,11 @@ export const getDashboardStats = async () => {
     }
 };
 
+/**
+ * Delete a specific item by ID
+ * @param {string|number} itemId - ID of the item to delete
+ * @returns {Promise} - API response
+ */
 export const deleteItem = async (itemId) => {
     try {
         const response = await apiClient.delete(`/api/content/${itemId}`);
@@ -277,6 +305,11 @@ export const deleteItem = async (itemId) => {
 // ============================================
 // LocalStorage Fallback Functions (Development Only)
 // ============================================
+
+/**
+ * Get all saved items from localStorage (development fallback)
+ * @returns {Array} - Array of saved items
+ */
 const getLocalStorageItems = () => {
     try {
         const savedMeals = JSON.parse(localStorage.getItem('savedMeals') || '[]');
@@ -293,13 +326,13 @@ const getLocalStorageItems = () => {
             id: item.id || Date.now() + Math.random(),
             type: type,
             category: type === 'meal' ? 'food' : 
-                        type === 'location' ? 'weather' :
-                        type === 'artwork' ? 'art' : 
-                        type === 'journal' ? 'personal' :
-                        type === 'activity' ? 'hobby' :
-                        type === 'book' ? 'books' :
-                        type === 'drink' ? 'drinks' :
-                        type === 'space' ? 'space' : 'other',
+                     type === 'location' ? 'weather' :
+                     type === 'artwork' ? 'art' : 
+                     type === 'journal' ? 'personal' :
+                     type === 'activity' ? 'hobby' :
+                     type === 'book' ? 'books' :
+                     type === 'drink' ? 'drinks' :
+                     type === 'space' ? 'space' : 'other',
             title: item.title || item.strMeal || item.name || item.activity || 'Untitled',
             description: item.description || '',
             user_notes: item.user_notes || item.content || '',
@@ -328,8 +361,10 @@ const getLocalStorageItems = () => {
     }
 };
 
-
-// Get dashboard statistics from localStorage (development fallback)
+/**
+ * Get dashboard statistics from localStorage (development fallback)
+ * @returns {Object} - Stats object
+ */
 const getLocalStorageStats = () => {
     try {
         return {
@@ -360,6 +395,11 @@ const getLocalStorageStats = () => {
 // ============================================
 // LocalStorage Save Functions (Development Only)
 // ============================================
+
+/**
+ * Save a meal to localStorage (development fallback)
+ * @param {Object} meal - Meal data to save
+ */
 export const saveMealToLocalStorage = (meal) => {
     try {
         const savedMeals = JSON.parse(localStorage.getItem('savedMeals') || '[]');
@@ -376,6 +416,11 @@ export const saveMealToLocalStorage = (meal) => {
         throw error;
     }
 };
+
+/**
+ * Save a location to localStorage (development fallback)
+ * @param {Object} location - Location data to save
+ */
 export const saveLocationToLocalStorage = (location) => {
     try {
         const savedLocations = JSON.parse(localStorage.getItem('savedLocations') || '[]');
@@ -392,6 +437,11 @@ export const saveLocationToLocalStorage = (location) => {
         throw error;
     }
 };
+
+/**
+ * Save an artwork to localStorage (development fallback)
+ * @param {Object} artwork - Artwork data to save
+ */
 export const saveArtworkToLocalStorage = (artwork) => {
     try {
         const savedArtworks = JSON.parse(localStorage.getItem('savedArtworks') || '[]');

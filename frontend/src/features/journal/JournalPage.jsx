@@ -26,6 +26,9 @@ const JournalPage = () => {
             setSelectedEntry(location.state.savedItem);
             setShowForm(false);
             window.history.replaceState({}, document.title);
+        } else if (location.state?.tab === 'saved') {
+            setShowForm(false);
+            window.history.replaceState({}, document.title);
         }
     }, [location]);
 

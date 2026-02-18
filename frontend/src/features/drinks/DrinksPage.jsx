@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useSavedItems, useDeleteItem, useSaveDrink } from "@/api/queries";
 import { searchCocktails } from "@/api/services/drinkService";
 import "@/styles/GlassDesignSystem.css";
@@ -9,6 +10,7 @@ const DrinksPage = () => {
     const [drinks, setDrinks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('search');
+    const location = useLocation();
     const [selectedDrink, setSelectedDrink] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [savedDrinksData, setSavedDrinksData] = useState({}); // Store full drink data
@@ -17,6 +19,14 @@ const DrinksPage = () => {
     const deleteItemMutation = useDeleteItem();
     const saveDrinkMutation = useSaveDrink();
     const savedDrinks = allSavedItems.filter(item => item.type === 'drink');
+
+    // Switch to saved tab when navigated here from Dashboard
+    useEffect(() => {
+        if (location.state?.tab === 'saved') {
+            setActiveTab('saved');
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleSearch = async (queryOverride = null) => {
         const query = queryOverride || searchQuery;

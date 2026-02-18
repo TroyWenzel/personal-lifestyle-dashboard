@@ -1,13 +1,7 @@
-/* ============================================
-   DASHBOARD — Recently Saved Item Cards
-   Type-specific layouts for each content type
-   ============================================ */
-
-/* ── Saved items grid ── */
 .dash-saved-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
 }
 
 /* ── Base card ── */
@@ -20,7 +14,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     animation: fadeInScale 0.4s ease backwards;
 }
 .dash-saved-card:hover {
@@ -29,26 +23,25 @@
     box-shadow: 0 12px 36px rgba(0,0,0,0.25);
 }
 
-/* Horizontal row layout (books, weather, journal) */
+/* Horizontal row layout */
 .dash-saved-card-row {
     flex-direction: row;
     align-items: stretch;
 }
 
-/* ── Image wrappers ── */
+/* ── Image area ── */
 .dash-card-img-wrap {
     position: relative;
     width: 100%;
-    height: 180px;
+    height: 175px;
     flex-shrink: 0;
     overflow: hidden;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.35);
 }
 
-/* Art gets a taller image area so artwork isn't squashed */
-.dash-card-img-wrap-art {
-    height: 220px;
-    background: rgba(0,0,0,0.5);
+/* Art gets taller so paintings aren't squashed */
+.dash-art-img-wrap {
+    height: 210px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -59,45 +52,32 @@
     height: 100%;
     display: block;
 }
+.dash-card-img-cover   { object-fit: cover;   object-position: center; }
+.dash-card-img-contain { object-fit: contain; object-position: center; padding: 0.5rem; }
 
-/* Food & drinks: cover-crop (like hero images) */
-.dash-card-img-cover {
-    object-fit: cover;
-    object-position: center;
-}
-
-/* Art: contain so we see the full painting without cropping */
-.dash-card-img-contain {
-    object-fit: contain;
-    object-position: center;
-    padding: 0.5rem;
-}
-
-/* Subtle gradient so text on top remains readable */
 .dash-card-img-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%);
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5) 100%);
     pointer-events: none;
 }
 
-/* Placeholder when there's no image */
 .dash-card-img-placeholder {
-    height: 120px;
+    height: 110px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3.5rem;
+    font-size: 3rem;
     background: rgba(255,255,255,0.03);
     border-bottom: 1px solid var(--glass-border);
 }
 
 /* ── Card body ── */
 .dash-card-body {
-    padding: 1.1rem 1.25rem 1.25rem;
+    padding: 1rem 1.1rem 1.1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.35rem;
     flex: 1;
 }
 
@@ -105,40 +85,36 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.15rem;
 }
-.dash-card-emoji { font-size: 1.2rem; }
-.dash-card-date  { font-size: 0.78rem; color: var(--text-tertiary); }
+.dash-card-emoji { font-size: 1.1rem; }
+.dash-card-date  { font-size: 0.75rem; color: var(--text-tertiary); }
 
 .dash-card-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-primary);
-    line-height: 1.35;
+    line-height: 1.3;
     margin: 0;
-    /* Clamp long titles to 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
 .dash-card-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 .dash-card-excerpt {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     line-height: 1.4;
     margin: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -146,53 +122,54 @@
 .dash-card-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-top: 0.2rem;
+    gap: 0.3rem;
+    margin-top: 0.15rem;
 }
 .dash-card-tag {
-    padding: 0.25rem 0.6rem;
+    padding: 0.2rem 0.55rem;
     background: rgba(139,92,246,0.15);
     border: 1px solid rgba(139,92,246,0.25);
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-secondary);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dash-card-actions {
     display: flex;
     gap: 0.5rem;
     margin-top: auto;
-    padding-top: 0.75rem;
+    padding-top: 0.65rem;
 }
 
-/* ── Book card ── */
+/* ── Book cover ── */
 .dash-book-cover {
-    width: 90px;
-    min-width: 90px;
-    height: 100%;
-    min-height: 160px;
+    width: 85px;
+    min-width: 85px;
     object-fit: cover;
     object-position: center top;
     border-right: 1px solid var(--glass-border);
     flex-shrink: 0;
 }
 .dash-book-cover-placeholder {
-    width: 90px;
-    min-width: 90px;
-    min-height: 160px;
+    width: 85px;
+    min-width: 85px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     background: rgba(255,255,255,0.04);
     border-right: 1px solid var(--glass-border);
     flex-shrink: 0;
 }
 
-/* ── Weather card ── */
+/* ── Weather icon side ── */
 .dash-weather-icon {
-    width: 90px;
-    min-width: 90px;
+    width: 85px;
+    min-width: 85px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,35 +178,75 @@
     flex-shrink: 0;
 }
 
-/* ── Journal card ── */
-.dash-saved-card-journal { background: rgba(139,92,246,0.07) !important; }
+/* ── Journal mood side ── */
+.dash-saved-card-journal { background: rgba(139,92,246,0.06) !important; }
 .dash-journal-mood {
-    width: 80px;
-    min-width: 80px;
+    width: 75px;
+    min-width: 75px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     background: rgba(139,92,246,0.08);
     border-right: 1px solid var(--glass-border);
     flex-shrink: 0;
 }
 
+/* ── Stat / nav cards ── */
+.dash-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+.dash-stat-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+.dash-stat-card:hover {
+    background: var(--glass-bg-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    border-color: rgba(139,92,246,0.4);
+}
+.dash-stat-icon  { font-size: 2rem; }
+.dash-stat-count { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.dash-stat-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; }
+.dash-stat-hint  { font-size: 0.68rem; color: var(--text-tertiary); margin-top: 0.1rem; }
+
+/* ── Section headings ── */
+.dash-section-title {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 640px) {
-    .dash-saved-grid { grid-template-columns: 1fr; }
+    .dash-saved-grid  { grid-template-columns: 1fr; }
+    .dash-stat-grid   { grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+    .dash-stat-count  { font-size: 1.2rem; }
+    .dash-stat-label  { font-size: 0.68rem; }
 
-    /* Stack row-layout cards vertically on mobile */
-    .dash-saved-card-row {
-        flex-direction: column;
-    }
+    .dash-saved-card-row { flex-direction: column; }
     .dash-book-cover,
     .dash-book-cover-placeholder,
     .dash-weather-icon,
     .dash-journal-mood {
         width: 100%;
         min-width: unset;
-        min-height: 120px;
+        min-height: 90px;
         border-right: none;
         border-bottom: 1px solid var(--glass-border);
     }

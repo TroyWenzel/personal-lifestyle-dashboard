@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useSavedItems, useDeleteItem, useSaveBook } from "@/api/queries";
 import { searchBooks } from "@/api/services/bookService";
 import "@/styles/GlassDesignSystem.css";
@@ -9,6 +10,7 @@ const BooksPage = () => {
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('search');
+    const location = useLocation();
     const [selectedBook, setSelectedBook] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [backgroundBooks, setBackgroundBooks] = useState([]);
@@ -18,6 +20,14 @@ const BooksPage = () => {
     const deleteItemMutation = useDeleteItem();
     const saveBookMutation = useSaveBook();
     const savedBooks = allSavedItems.filter(item => item.type === 'book');
+
+    // Switch to saved tab when navigated here from Dashboard
+    useEffect(() => {
+        if (location.state?.tab === 'saved') {
+            setActiveTab('saved');
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     // Load background book cover mosaic
     useEffect(() => {

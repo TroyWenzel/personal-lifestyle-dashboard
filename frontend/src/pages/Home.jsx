@@ -169,6 +169,29 @@ function Home() {
                 </div>
             </section>
 
+            {token && (
+                <section className="stats-section glass-card">
+                    <div className="stats-grid">
+                        <div className="stat-item">
+                            <span className="stat-value">{totalSavedItems}</span>
+                            <span className="stat-label">Saved Items</span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-value">{activeFeatures}</span>
+                            <span className="stat-label">Active Features</span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-value">🔜</span>
+                            <span className="stat-label">Days Streak</span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-value">{stats.journalEntries}</span>
+                            <span className="stat-label">Journal Entries</span>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             <section className="features-section">
                 <div className="section-header">
                     <h2>
@@ -210,29 +233,6 @@ function Home() {
                     ))}
                 </div>
             </section>
-
-            {token && (
-                <section className="stats-section glass-card">
-                    <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-value">{totalSavedItems}</span>
-                            <span className="stat-label">Saved Items</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">{activeFeatures}</span>
-                            <span className="stat-label">Active Features</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">🔜</span>
-                            <span className="stat-label">Days Streak</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">{stats.journalEntries}</span>
-                            <span className="stat-label">Journal Entries</span>
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {!token && (
                 <section className="cta-section glass-card">

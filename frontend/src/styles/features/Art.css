@@ -246,3 +246,115 @@
         padding: 1rem;
     }
 }
+
+/* ============================================
+   Art Page - Search & Saved Grid Styles
+   ============================================ */
+
+.art-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.art-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tab-btn {
+    padding: 0.6rem 1.4rem;
+    border: 2px solid #a18cd1;
+    border-radius: 8px;
+    background: transparent;
+    color: #a18cd1;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+    background: #a18cd1;
+    color: #fff;
+}
+
+.art-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.art-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Natural proportions - no fixed height so images are never cropped */
+.art-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.art-info {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.art-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.art-info .artist {
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.art-info .date,
+.art-info .medium {
+    color: #888;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.save-button {
+    margin-top: auto;
+    padding: 0.5rem 1rem;
+    background: #a18cd1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.save-button:hover {
+    background: #8b6cc7;
+}
+
+.save-button.remove-button {
+    background: #c0392b;
+}
+
+.save-button.remove-button:hover {
+    background: #a93226;
+}
+
+.no-items {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}

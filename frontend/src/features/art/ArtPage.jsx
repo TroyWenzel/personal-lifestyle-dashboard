@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useSearchArtworks, useSaveArtwork, useSavedItems, useDeleteItem } from "@/api/queries";
 import { getArtworkById } from "@/api/services/artService";
+import { saveItem } from "@/api/services/contentService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Art.css";
 
@@ -12,6 +14,7 @@ const ArtPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [backgroundArt, setBackgroundArt] = useState([]);
     const [savedArtworksData, setSavedArtworksData] = useState({}); // Store full artwork data by saved item ID
+    const location = useLocation();
 
     const { data: artResponse, isLoading } = useSearchArtworks(currentQuery, 1, {
         enabled: !!currentQuery
@@ -20,7 +23,7 @@ const ArtPage = () => {
     const artworks = artResponse?.data || [];
     const saveArtworkMutation = useSaveArtwork();
     
-    const { data: allSavedItems = [] } = useSavedItems();
+    const { data: allSavedItems = [], refetch: refetchSaved } = useSavedItems();
     const deleteItemMutation = useDeleteItem();
     
     // Filter for artwork items - check both 'art' and 'artwork' types
@@ -49,6 +52,15 @@ const ArtPage = () => {
             console.error('Error saving artworks data:', e);
         }
     }, [savedArtworksData]);
+
+
+    // Switch to saved tab when navigated from Dashboard
+    useEffect(() => {
+        if (location.state?.tab === 'saved') {
+            setActiveTab('saved');
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     useEffect(() => {
         const fetchBackgroundArt = async () => {
@@ -99,60 +111,53 @@ const ArtPage = () => {
     };
 
     const handleSave = async (artwork) => {
-        // Ensure we have a valid ID
         const artworkId = artwork.id || artwork.external_id;
-        
-        if (!artworkId) {
-            alert('Cannot save artwork: Invalid ID');
-            return;
-        }
+        if (!artworkId) { alert('Cannot save artwork: Invalid ID'); return; }
 
-        // Create a proper thumbnail URL if image_id exists
-        const thumbnailUrl = artwork.image_id 
-            ? `https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg`
+        const image_id = artwork.image_id;
+        const thumbnailUrl = image_id
+            ? `https://www.artic.edu/iiif/2/${image_id}/full/400,/0/default.jpg`
             : null;
 
-        const itemData = {
-            type: "art",
-            category: "art",
-            external_id: artworkId.toString(),
-            title: artwork.title || "Untitled",
-            metadata: {
-                artist: artwork.artist_title || artwork.artist_display || "Unknown Artist",
-                artist_title: artwork.artist_title,
-                artist_display: artwork.artist_display,
-                date: artwork.date_display,
-                medium: artwork.medium_display,
-                image_id: artwork.image_id,
-                thumbnail: thumbnailUrl,
-                dimensions: artwork.dimensions,
-                credit_line: artwork.credit_line,
-                department: artwork.department_title
-            }
-        };
-        
-        saveArtworkMutation.mutate(itemData, {
-            onSuccess: (result) => {
-                // Store the full artwork data using the saved item's ID
-                if (result?.id) {
-                    setSavedArtworksData(prev => ({
-                        ...prev,
-                        [result.id]: {
-                            ...artwork,
-                            id: artworkId,
-                            image_id: artwork.image_id,
-                            artist_title: artwork.artist_title,
-                            artist_display: artwork.artist_display
-                        }
-                    }));
+        // Call saveItem directly so we fully control the metadata shape
+        // (avoids the double-wrap bug where saveArtwork re-reads artData.image_id
+        //  which is undefined on a pre-formatted object)
+        try {
+            const result = await saveItem({
+                category: "art",
+                type: "artwork",
+                external_id: artworkId.toString(),
+                title: artwork.title || "Untitled",
+                description: `By ${artwork.artist_title || artwork.artist_display || "Unknown Artist"}`,
+                metadata: {
+                    artist: artwork.artist_title || artwork.artist_display || "Unknown Artist",
+                    date: artwork.date_display,
+                    medium: artwork.medium_display,
+                    image_id,
+                    thumbnail: thumbnailUrl,
+                    dimensions: artwork.dimensions,
+                    credit_line: artwork.credit_line,
+                    department: artwork.department_title,
                 }
-                alert("Artwork saved successfully!");
-            },
-            onError: (error) => {
+            });
+            if (result?.id) {
+                setSavedArtworksData(prev => ({
+                    ...prev,
+                    [result.id]: { ...artwork, id: artworkId, image_id }
+                }));
+            }
+            // Manually refetch so the saved list updates
+            saveArtworkMutation.reset();
+            refetchSaved();
+            alert("Artwork saved successfully!");
+        } catch (error) {
+            if (error?.response?.status === 409) {
+                alert("This artwork is already in your collection!");
+            } else {
                 console.error("Error saving artwork:", error);
                 alert("Failed to save artwork");
             }
-        });
+        }
     };
 
     const handleDelete = (itemId) => {

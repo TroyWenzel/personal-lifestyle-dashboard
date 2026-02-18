@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useWeather, useSaveLocation, useDeleteItem, useSavedItems } from "@/api/queries";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Weather.css";
@@ -31,13 +31,25 @@ const WeatherPage = () => {
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const initAttempted = useRef(false);
+    const savedSectionRef = useRef(null);
     
     const navigate = useNavigate();
+    const location = useLocation();
     const { data: allSavedItems = [] } = useSavedItems();
     const saveLocationMutation = useSaveLocation();
     const deleteItemMutation = useDeleteItem();
     
     const savedLocations = allSavedItems.filter(item => item.type === 'location');
+
+    // Scroll to saved locations when navigated here from Dashboard
+    useEffect(() => {
+        if (location.state?.tab === 'saved') {
+            window.history.replaceState({}, document.title);
+            setTimeout(() => {
+                savedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 400);
+        }
+    }, [location]);
     
     const { data: weatherResponse, isLoading, error } = useWeather(currentCity, {
         enabled: !!currentCity
@@ -239,18 +251,16 @@ const WeatherPage = () => {
 
     const handleSaveLocation = () => {
         if (weatherData && weatherData.current && weatherData.location) {
-            const locationData = {
-                city: weatherData.location.name,
-                region: weatherData.location.region,
-                country: weatherData.location.country,
-                lat: weatherData.location.lat,
-                lon: weatherData.location.lon,
-                temp: weatherData.current.temperature,
-                condition: weatherData.current.weather_descriptions?.[0] || weatherData.current.weather_desc || 'Unknown',
-                icon: weatherData.current.weather_icons?.[0] || ''
+            // Pass full weatherData — contentService.saveLocation reads weatherData.location.name
+            // Also inject a top-level 'city' key into location so the card click handler can find it
+            const dataToSave = {
+                ...weatherData,
+                location: {
+                    ...weatherData.location,
+                    city: weatherData.location.name,  // explicit city field for saved card
+                }
             };
-            
-            saveLocationMutation.mutate(locationData, {
+            saveLocationMutation.mutate(dataToSave, {
                 onSuccess: () => alert("Location saved successfully!"),
                 onError: (error) => {
                     console.error("Error saving location:", error);
@@ -261,15 +271,13 @@ const WeatherPage = () => {
     };
 
     const handleDeleteLocation = (itemId) => {
-        if (window.confirm('Remove this location?')) {
-            deleteItemMutation.mutate(itemId, {
-                onSuccess: () => alert('Location removed!'),
-                onError: (error) => {
-                    console.error('Error deleting:', error);
-                    alert('Failed to remove location');
-                }
-            });
-        }
+        deleteItemMutation.mutate(itemId, {
+            onSuccess: () => alert('Location removed!'),
+            onError: (error) => {
+                console.error('Error deleting:', error);
+                alert('Failed to remove location');
+            }
+        });
     };
 
     const getWeatherIcon = (description) => {
@@ -458,14 +466,19 @@ const WeatherPage = () => {
                 )}
 
                 {savedLocations.length > 0 && (
-                    <div className="weather-saved-section">
+                    <div className="weather-saved-section" ref={savedSectionRef}>
                         <h3 className="weather-saved-title">📍 Saved Locations</h3>
                         <div className="weather-saved-grid">
                             {savedLocations.map(item => (
                                 <div key={item.id} className="glass-item-card weather-saved-card">
                                     <div onClick={() => {
-                                        setCurrentCity(item.metadata?.city || item.title);
-                                        setSearchCity(item.metadata?.city || item.title);
+                                        // contentService stores city name in metadata.location
+                                        const cityName = item.metadata?.location || item.metadata?.city || item.title?.split(',')[0];
+                                        if (cityName) {
+                                            setCurrentCity(cityName);
+                                            setSearchCity(cityName);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
                                     }}>
                                         <div className="weather-saved-icon">
                                             {getWeatherIcon(item.metadata?.condition || 'clear')}
