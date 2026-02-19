@@ -263,12 +263,11 @@ const DrinksPage = () => {
                                                 strAlcoholic: item.metadata?.alcoholic,
                                                 strGlass: item.metadata?.glass,
                                                 strInstructions: item.metadata?.instructions,
-                                                ...Object.fromEntries(
-                                                    item.metadata?.ingredients?.map((ing, i) => [
-                                                        [`strIngredient${i + 1}`, ing.name],
-                                                        [`strMeasure${i + 1}`, ing.measure]
-                                                    ]).flat() || []
-                                                )
+                                                ...(item.metadata?.ingredients?.reduce((acc, ing, i) => {
+                                                    acc[`strIngredient${i + 1}`] = ing.ingredient || ing.name;
+                                                    acc[`strMeasure${i + 1}`] = ing.measure;
+                                                    return acc;
+                                                }, {}) || {})
                                             };
                                             setSelectedDrink(drinkData);
                                             setShowModal(true);
