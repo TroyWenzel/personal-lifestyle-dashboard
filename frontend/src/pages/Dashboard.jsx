@@ -119,9 +119,8 @@ function DrinkCard({ item, onDelete, onView, isDeleting }) {
     return (
         <div className="dash-saved-card">
             {m.thumbnail && (
-                <div className="dash-card-img-wrap">
-                    <img src={m.thumbnail} alt={item.title} className="dash-card-img dash-card-img-cover" />
-                    <div className="dash-card-img-overlay" />
+                <div className="dash-card-img-wrap dash-art-img-wrap">
+                    <img src={m.thumbnail} alt={item.title} className="dash-card-img dash-card-img-contain" />
                 </div>
             )}
             <div className="dash-card-body">
@@ -257,6 +256,34 @@ function SavedItemCard({ item, onDelete, onView, isDeleting }) {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
+function BirthdayConfetti() {
+    const items = [
+        { emoji: "🎈", left: "5%",  delay: "0s",   dur: "3s"   },
+        { emoji: "🎉", left: "15%", delay: "0.3s", dur: "3.5s" },
+        { emoji: "🎈", left: "25%", delay: "0.6s", dur: "4s"   },
+        { emoji: "⭐",     left: "35%", delay: "0.2s", dur: "3.2s" },
+        { emoji: "🎊", left: "50%", delay: "0.5s", dur: "3.8s" },
+        { emoji: "🎈", left: "60%", delay: "0.1s", dur: "3.3s" },
+        { emoji: "🎉", left: "72%", delay: "0.7s", dur: "4.2s" },
+        { emoji: "🎈", left: "83%", delay: "0.4s", dur: "3.6s" },
+        { emoji: "🎊", left: "92%", delay: "0.8s", dur: "3.1s" },
+    ];
+    return (
+        <div style={{ position:"fixed", top:0, left:0, width:"100%", height:"100%",
+                       pointerEvents:"none", zIndex:9999, overflow:"hidden" }}>
+            {items.map((item, i) => (
+                <div key={i} style={{
+                    position: "absolute", left: item.left, top: "-60px",
+                    fontSize: "2rem",
+                    animation: `birthdayFall ${item.dur} ${item.delay} ease-in infinite`,
+                }}>
+                    {item.emoji}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function Dashboard() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -340,6 +367,8 @@ function Dashboard() {
 
                 {/* ── Birthday banner ── */}
                 {birthdayData.isBirthdayToday && (
+                    <>
+                    <BirthdayConfetti />
                     <div style={{
                         background:"linear-gradient(135deg,rgba(255,107,107,0.2),rgba(255,142,83,0.2))",
                         border:"2px solid rgba(255,107,107,0.3)",
@@ -357,6 +386,7 @@ function Dashboard() {
                             </p>
                         )}
                     </div>
+                    </>
                 )}
 
                 {/* ── Birthday countdown ── */}
@@ -385,6 +415,26 @@ function Dashboard() {
                     SECTION 1 — Recently Saved Items (TOP)
                 ══════════════════════════════════════════════ */}
                 <div style={{ marginBottom:"3rem" }}>
+                    <h2 className="dash-section-title">📊 Your Collection</h2>
+                    <p style={{ color:"var(--text-secondary)", marginBottom:"1.25rem", marginTop:"-0.75rem", fontSize:"0.9rem" }}>
+                        Click any card to jump to your saved items in that section
+                    </p>
+                    <div className="dash-stat-grid">
+                        {STAT_CARDS.map(s => (
+                            <div key={s.path} className="dash-stat-card" onClick={() => goToSaved(s.path)}>
+                                <span className="dash-stat-icon">{s.icon}</span>
+                                <span className="dash-stat-count">{s.val}</span>
+                                <span className="dash-stat-label">{s.label}</span>
+                                <span className="dash-stat-hint">→ {s.sub}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ══════════════════════════════════════════════
+                    SECTION 2 — Explore / Stats (merged nav)
+                ══════════════════════════════════════════════ */}
+                <div style={{ marginBottom:"3rem" }}>
                     <h2 className="dash-section-title">🕐 Recently Saved</h2>
 
                     {savedItems.length === 0 ? (
@@ -408,36 +458,6 @@ function Dashboard() {
                     )}
                 </div>
 
-                {/* ══════════════════════════════════════════════
-                    SECTION 2 — Explore / Stats (merged nav)
-                ══════════════════════════════════════════════ */}
-                <div style={{ marginBottom:"3rem" }}>
-                    <h2 className="dash-section-title">📊 Your Collection</h2>
-                    <p style={{ color:"var(--text-secondary)", marginBottom:"1.25rem", marginTop:"-0.75rem", fontSize:"0.9rem" }}>
-                        Click any card to jump to your saved items in that section
-                    </p>
-                    <div className="dash-stat-grid">
-                        {STAT_CARDS.map(s => (
-                            <div key={s.path} className="dash-stat-card" onClick={() => goToSaved(s.path)}>
-                                <span className="dash-stat-icon">{s.icon}</span>
-                                <span className="dash-stat-count">{s.val}</span>
-                                <span className="dash-stat-label">{s.label}</span>
-                                <span className="dash-stat-hint">→ {s.sub}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ── Logout ── */}
-                <div style={{ textAlign:"center", paddingTop:"1rem" }}>
-                    <button
-                        className="glass-btn-secondary"
-                        onClick={handleLogout}
-                        style={{ background:"rgba(239,68,68,0.2)", borderColor:"rgba(239,68,68,0.3)" }}
-                    >
-                        🚪 Logout
-                    </button>
-                </div>
 
             </div>
         </div>

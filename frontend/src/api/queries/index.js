@@ -331,20 +331,6 @@ export const useRandomDrink = () => {
 };
 
 // ============================================
-// Activity/Hobby Queries
-// ============================================
-
-export const useRandomActivity = (params = {}, options = {}) => {
-    return useQuery({
-        queryKey: queryKeys.randomActivity(params),
-        queryFn: () => getRandomActivity(params),
-        staleTime: 0, // Always fetch fresh random activity
-        cacheTime: 0, // Don't cache random results
-        ...options,
-    });
-};
-
-// ============================================
 // Space Queries
 // ============================================
 

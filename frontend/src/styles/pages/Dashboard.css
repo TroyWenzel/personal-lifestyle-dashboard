@@ -251,3 +251,9 @@
         border-bottom: 1px solid var(--glass-border);
     }
 }
+
+/* ── Birthday celebration animation ── */
+@keyframes birthdayFall {
+    0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+    100% { transform: translateY(110vh)  rotate(360deg); opacity: 0.3; }
+}
