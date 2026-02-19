@@ -47,7 +47,6 @@ def create_app():
      from app.routes.nasa_routes import nasa_bp
      from app.routes.book_routes import book_bp
      from app.routes.drink_routes import drink_bp
-     from app.routes.hobby_routes import hobby_bp
 
      app.register_blueprint(auth_bp)
      app.register_blueprint(user_bp)
@@ -58,6 +57,5 @@ def create_app():
      app.register_blueprint(nasa_bp)
      app.register_blueprint(book_bp)
      app.register_blueprint(drink_bp)
-     app.register_blueprint(hobby_bp)
 
      return app
