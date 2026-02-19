@@ -10,7 +10,7 @@ const ProfilePage = () => {
     const { toasts, toast, removeToast } = useToast();
     const [confirmStep, setConfirmStep] = useState(0);
     const navigate = useNavigate();
-    const { user: authUser, token } = useContext(AuthContext);
+    const { user: authUser, token, logout } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -152,7 +152,7 @@ const ProfilePage = () => {
         try {
             setSaving(true);
             await apiClient.delete('/auth/delete-account');
-            localStorage.clear();
+            logout();
             navigate('/register');
         } catch (err) {
             console.error('Delete account error:', err);
