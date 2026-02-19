@@ -60,21 +60,37 @@ function Login() {
     };
 
     return (
-        <div className="glass-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-            <div className="glass-card" style={{ maxWidth: '450px', width: '100%', margin: '2rem' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div className="glass-page" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            minHeight: '100vh' 
+        }}>
+            <div className="glass-card" style={{ 
+                maxWidth: '450px', 
+                width: '100%', 
+                margin: '2rem',
+                padding: '2.5rem'
+            }}>
+                <div style={{ 
+                    textAlign: 'center', 
+                    marginBottom: '2rem' 
+                }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
-                    <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>Welcome Back!</h2>
+                    <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>
+                        Welcome Back!
+                    </h2>
                     <p style={{ color: 'var(--text-secondary)' }}>Sign in to continue to LifeHub</p>
                 </div>
 
                 {message && (
                     <div className="glass-card" style={{ 
                         marginBottom: '1.5rem', 
+                        padding: '1rem',
                         background: message.includes('successful') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                         borderColor: message.includes('successful') ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
                     }}>
-                        <p style={{ color: message.includes('successful') ? '#10b981' : '#ef4444', margin: 0 }}>
+                        <p style={{ color: message.includes('successful') ? '#10b981' : '#ef4444', margin: 0, textAlign: 'center' }}>
                             {message.includes('successful') ? '✅' : '❌'} {message}
                         </p>
                     </div>
@@ -82,7 +98,12 @@ function Login() {
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Email Address
                         </label>
                         <input
@@ -101,8 +122,13 @@ function Login() {
                         )}
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                    <div style={{ marginBottom: '2rem' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Password
                         </label>
                         <input

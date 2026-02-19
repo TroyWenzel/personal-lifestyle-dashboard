@@ -1,6 +1,14 @@
 import apiClient from "../client";
 
-// Fetch current weather for a location
+// ═══════════════════════════════════════════════════════════════
+// Weather Service
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Fetch current weather for a location
+ * @param {string} location - City name or coordinates
+ * @returns {Promise<Object>} - Weather data
+ */
 export const searchWeather = async (location) => {
     try {
         const response = await apiClient.get(`/api/weather/current?location=${encodeURIComponent(location)}`);
@@ -13,7 +21,6 @@ export const searchWeather = async (location) => {
     } catch (error) {
         console.error('Error fetching weather:', error);
 
-        // Provide mock data in development mode for easier testing
         if (import.meta.env.DEV) {
             console.log('Using mock weather data for development');
             return getMockWeatherData(location);
@@ -23,7 +30,12 @@ export const searchWeather = async (location) => {
     }
 };
 
-// Fetch weather forecast for multiple days
+/**
+ * Fetch weather forecast for multiple days
+ * @param {string} location - City name or coordinates
+ * @param {number} days - Number of days to forecast (default: 3)
+ * @returns {Promise<Object>} - Forecast data
+ */
 export const getWeatherForecast = async (location, days = 3) => {
     try {
         const response = await apiClient.get(`/api/weather/forecast?location=${encodeURIComponent(location)}&days=${days}`);
@@ -39,7 +51,8 @@ export const getWeatherForecast = async (location, days = 3) => {
     }
 };
 
-// Mock weather data for development/testing
+// ─── Mock Data (Development Only) ─────────────────────────────
+
 const getMockWeatherData = (location) => {
     const locations = {
         'chicago': { temp: 2, feelslike: -1, desc: 'Partly cloudy', humidity: 65, wind: 15, lat: 41.85, lon: -87.65 },
@@ -93,9 +106,7 @@ const getMockWeatherData = (location) => {
     };
 };
 
-// Re-export save function for consistent import pattern
 export { saveLocation } from './contentService';
 
-// Aliases for TanStack Query compatibility
 export const getCurrentWeather = searchWeather;
 export const searchLocation = searchWeather;

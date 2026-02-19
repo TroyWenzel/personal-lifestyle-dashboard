@@ -4,6 +4,10 @@ import { AuthContext } from "@/context/AuthContext";
 import "@/styles/GlassDesignSystem.css";
 import apiClient from '../api/client';
 
+// ═══════════════════════════════════════════════════════════════
+// Register Page
+// ═══════════════════════════════════════════════════════════════
+
 function Register() {
     const [formData, setFormData] = useState({
         name: "",
@@ -100,21 +104,37 @@ function Register() {
     };
 
     return (
-        <div className="glass-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem 1rem' }}>
-            <div className="glass-card" style={{ maxWidth: '500px', width: '100%' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div className="glass-page" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            minHeight: '100vh',
+            padding: '2rem 1rem'
+        }}>
+            <div className="glass-card" style={{ 
+                maxWidth: '500px', 
+                width: '100%', 
+                padding: '2.5rem'
+            }}>
+                <div style={{ 
+                    textAlign: 'center', 
+                    marginBottom: '2rem' 
+                }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✨</div>
-                    <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>Create Account</h2>
+                    <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>
+                        Create Account
+                    </h2>
                     <p style={{ color: 'var(--text-secondary)' }}>Join LifeHub today!</p>
                 </div>
 
                 {message && (
                     <div className="glass-card" style={{ 
                         marginBottom: '1.5rem', 
+                        padding: '1rem',
                         background: message.includes('successful') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                         borderColor: message.includes('successful') ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
                     }}>
-                        <p style={{ color: message.includes('successful') ? '#10b981' : '#ef4444', margin: 0 }}>
+                        <p style={{ color: message.includes('successful') ? '#10b981' : '#ef4444', margin: 0, textAlign: 'center' }}>
                             {message.includes('successful') ? '✅' : '❌'} {message}
                         </p>
                     </div>
@@ -122,7 +142,12 @@ function Register() {
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Full Name *
                         </label>
                         <input
@@ -135,11 +160,20 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        {errors.name && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.name}</small>}
+                        {errors.name && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.name}
+                            </small>
+                        )}
                     </div>
 
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Email Address *
                         </label>
                         <input
@@ -152,11 +186,20 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        {errors.email && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.email}</small>}
+                        {errors.email && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.email}
+                            </small>
+                        )}
                     </div>
 
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Birthday * 🎂
                         </label>
                         <input
@@ -168,14 +211,23 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                        <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', display: 'block', marginTop: '0.25rem' }}>
                             We'll celebrate with you!
                         </small>
-                        {errors.birthday && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.birthday}</small>}
+                        {errors.birthday && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.birthday}
+                            </small>
+                        )}
                     </div>
 
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Phone Number (Optional)
                         </label>
                         <input
@@ -187,11 +239,20 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        {errors.phoneNumber && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.phoneNumber}</small>}
+                        {errors.phoneNumber && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.phoneNumber}
+                            </small>
+                        )}
                     </div>
 
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Password *
                         </label>
                         <input
@@ -204,11 +265,20 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        {errors.password && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</small>}
+                        {errors.password && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.password}
+                            </small>
+                        )}
                     </div>
 
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        <label style={{ 
+                            display: 'block', 
+                            marginBottom: '0.5rem', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: '500' 
+                        }}>
                             Confirm Password *
                         </label>
                         <input
@@ -221,7 +291,11 @@ function Register() {
                             className="glass-input"
                             style={{ width: '100%' }}
                         />
-                        {errors.confirmPassword && <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>{errors.confirmPassword}</small>}
+                        {errors.confirmPassword && (
+                            <small style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                                {errors.confirmPassword}
+                            </small>
+                        )}
                     </div>
 
                     <button 

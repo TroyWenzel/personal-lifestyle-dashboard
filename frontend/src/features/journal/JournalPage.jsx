@@ -5,6 +5,10 @@ import '@/styles/GlassDesignSystem.css';
 import '@/styles/features/Journal.css';
 import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
+// ═══════════════════════════════════════════════════════════════
+// Personal Journal Page
+// ═══════════════════════════════════════════════════════════════
+
 const JournalPage = () => {
     const { toasts, toast, removeToast } = useToast();
     const [confirmDelete, setConfirmDelete] = useState({ show: false, entryId: null });
@@ -21,9 +25,9 @@ const JournalPage = () => {
     const updateEntryMutation = useUpdateJournalEntry();
     const deleteEntryMutation = useDeleteItem();
 
-    // Filter only journal entries
     const journalEntries = savedItems.filter(item => item.type === 'journal');
 
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.savedItem) {
             setSelectedEntry(location.state.savedItem);
@@ -44,6 +48,8 @@ const JournalPage = () => {
         { value: 'anxious', label: '😰 Anxious' },
         { value: 'grateful', label: '🙏 Grateful' }
     ];
+
+    // ─── Event Handlers ───────────────────────────────────────
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -122,7 +128,7 @@ const JournalPage = () => {
     };
 
     const handleDelete = (entryId) => {
-        setConfirmDelete({ show: true, entryId, mutation: 'entry' });
+        setConfirmDelete({ show: true, entryId });
     };
 
     const doDeleteEntry = (entryId) => {
@@ -150,16 +156,20 @@ const JournalPage = () => {
         });
     };
 
+    // ─── Render ───────────────────────────────────────────────
+
     return (
         <div className="journal-page">
             <div className="glass-container">
+                {/* ─── Header ───────────────────────────────── */}
                 <div className="journal-page-header">
                     <div className="journal-icon">📓</div>
                     <h2>Personal Journal</h2>
                     <p className="subtitle">Record your thoughts, feelings, and daily experiences</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center' }}>
+                {/* ─── Tab Switcher ─────────────────────────── */}
+                <div className="journal-tabs">
                     <button 
                         className={showForm ? 'journal-btn-primary' : 'journal-btn-secondary'}
                         onClick={() => { setShowForm(true); setSelectedEntry(null); }}
@@ -174,21 +184,20 @@ const JournalPage = () => {
                     </button>
                 </div>
 
+                {/* ─── Form Tab ──────────────────────────────── */}
                 {showForm ? (
                     <div className="journal-form-card">
                         <form onSubmit={editingEntry ? handleUpdateEntry : handleSubmit}>
                             {editingEntry && (
-                                <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
-                                    <p style={{ color: 'var(--text-primary)', margin: 0 }}>
+                                <div className="journal-edit-banner">
+                                    <p>
                                         ✏️ Editing entry from {formatDate(editingEntry.metadata?.date || editingEntry.createdAt)}
                                     </p>
                                 </div>
                             )}
 
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600' }}>
-                                    Entry Title
-                                </label>
+                            <div className="journal-form-group">
+                                <label>Entry Title</label>
                                 <input
                                     type="text"
                                     value={title}
@@ -199,10 +208,8 @@ const JournalPage = () => {
                                 />
                             </div>
 
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600' }}>
-                                    How are you feeling? {moods.find(m => m.value === mood)?.label.split(' ')[0] || '😊'}
-                                </label>
+                            <div className="journal-form-group">
+                                <label>How are you feeling?</label>
                                 <div className="mood-selector">
                                     {moods.map((moodOption) => (
                                         <button
@@ -217,10 +224,8 @@ const JournalPage = () => {
                                 </div>
                             </div>
 
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600' }}>
-                                    Your Thoughts
-                                </label>
+                            <div className="journal-form-group">
+                                <label>Your Thoughts</label>
                                 <textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
@@ -254,6 +259,7 @@ const JournalPage = () => {
                         </form>
                     </div>
                 ) : (
+                    /* ─── Entries Tab ─────────────────────────── */
                     <div className="journal-entries-section">
                         {isLoading ? (
                             <div className="glass-loading">
@@ -310,63 +316,39 @@ const JournalPage = () => {
                     </div>
                 )}
 
+                {/* ─── Full Entry Modal ───────────────────────── */}
                 {selectedEntry && (
                     <div 
-                        style={{ 
-                            position: 'fixed', 
-                            top: 0, 
-                            left: 0, 
-                            right: 0, 
-                            bottom: 0, 
-                            background: 'rgba(0,0,0,0.8)', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            zIndex: 1000,
-                            padding: '2rem'
-                        }} 
+                        className="modal-overlay"
                         onClick={() => setSelectedEntry(null)}
                     >
                         <div 
-                            className="glass-card" 
-                            style={{ 
-                                maxWidth: '700px', 
-                                width: '100%', 
-                                maxHeight: '80vh', 
-                                overflow: 'auto'
-                            }} 
+                            className="glass-card journal-full-entry"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button 
                                 onClick={() => setSelectedEntry(null)} 
-                                style={{ 
-                                    float: 'right', 
-                                    background: 'none', 
-                                    border: 'none', 
-                                    fontSize: '1.5rem', 
-                                    cursor: 'pointer', 
-                                    color: 'var(--text-primary)' 
-                                }}
+                                className="modal-close-btn"
                             >
                                 ✕
                             </button>
                             
-                            <div style={{ marginBottom: '1rem' }}>
-                                <span className="journal-entry-mood" style={{ display: 'inline-block' }}>
+                            <div className="journal-full-mood">
+                                <span className="journal-entry-mood">
                                     {moods.find(m => m.value === selectedEntry.metadata?.mood)?.label || '😐 Neutral'}
                                 </span>
                             </div>
                             
-                            <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{selectedEntry.title}</h2>
-                            <p style={{ color: 'var(--text-tertiary)', marginBottom: '2rem' }}>
+                            <h2 className="journal-full-title">{selectedEntry.title}</h2>
+                            <p className="journal-full-date">
                                 {formatDate(selectedEntry.metadata?.date || selectedEntry.createdAt)}
                             </p>
                             
-                            <div style={{ color: 'var(--text-secondary)', lineHeight: '1.8', whiteSpace: 'pre-wrap' }}>
+                            <div className="journal-full-content">
                                 {selectedEntry.user_notes || selectedEntry.content}
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <div className="journal-full-actions">
                                 <button 
                                     className="glass-btn"
                                     onClick={() => {
@@ -377,12 +359,11 @@ const JournalPage = () => {
                                     ✏️ Edit Entry
                                 </button>
                                 <button 
-                                    className="glass-btn-secondary"
+                                    className="glass-btn-secondary journal-delete-btn"
                                     onClick={() => {
                                         setSelectedEntry(null);
                                         handleDelete(selectedEntry.id);
                                     }}
-                                    style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                                 >
                                     🗑️ Delete
                                 </button>
@@ -391,6 +372,20 @@ const JournalPage = () => {
                     </div>
                 )}
             </div>
+
+            {/* ─── Confirm Delete Dialog ─────────────────────── */}
+            {confirmDelete.show && (
+                <ConfirmDialog
+                    message="Are you sure you want to delete this journal entry? This cannot be undone."
+                    confirmLabel="Delete Entry"
+                    onConfirm={() => {
+                        doDeleteEntry(confirmDelete.entryId);
+                        setConfirmDelete({ show: false, entryId: null });
+                    }}
+                    onCancel={() => setConfirmDelete({ show: false, entryId: null })}
+                />
+            )}
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

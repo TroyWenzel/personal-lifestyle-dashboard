@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import '@/styles/GlassDesignSystem.css';
 import '@/styles/features/Pokemon.css';
-import { useToast, ToastContainer } from '@/components/ui/Toast';  // Removed ConfirmDialog since it's not used
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 
-// ─── Type colours & chart ────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// Pokémon Hub - Type Colors & Charts
+// ═══════════════════════════════════════════════════════════════
 
 const TYPE_COLORS = {
     normal:'#A8A878', fire:'#F08030', water:'#6890F0', electric:'#F8D030',
@@ -39,7 +41,9 @@ function getTypeEffectiveness(moveType, defenderTypes) {
     return (defenderTypes || []).reduce((eff, t) => eff * (chart[t] ?? 1), 1);
 }
 
-// ─── Moves database ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// Moves Database
+// ═══════════════════════════════════════════════════════════════
 
 const MOVES = {
     'tackle':        { name:'tackle',        displayName:'Tackle',        type:'normal',   category:'physical', power:40, accuracy:100, pp:35 },
@@ -83,7 +87,9 @@ function getMovesForPokemon(name) {
     return set.map(n => MOVES[n] ? { ...MOVES[n], maxPP: MOVES[n].pp } : null).filter(Boolean);
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// Helper Functions
+// ═══════════════════════════════════════════════════════════════
 
 function normalizePokemon(p) {
     if (!p) return null;
@@ -115,7 +121,9 @@ function saveTeam(team) {
     localStorage.setItem('pokemonTeam', JSON.stringify(team));
 }
 
-// ─── TypeBadge ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// UI Components
+// ═══════════════════════════════════════════════════════════════
 
 function TypeBadge({ type }) {
     return (
@@ -124,8 +132,6 @@ function TypeBadge({ type }) {
         </span>
     );
 }
-
-// ─── StatBar ─────────────────────────────────────────────────────────────────
 
 function StatBar({ label, value }) {
     const pct = Math.min(100, Math.round((value / 255) * 100));
@@ -141,11 +147,11 @@ function StatBar({ label, value }) {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // TAB 1 — POKÉDEX
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
-function PokedexTab({ toast }) {  // Pass toast as prop
+function PokedexTab({ toast }) {
     const [searchInput, setSearchInput] = useState('');
     const [pokemon, setPokemon] = useState(null);
     const [currentId, setCurrentId] = useState(1);
@@ -213,7 +219,7 @@ function PokedexTab({ toast }) {  // Pass toast as prop
 
     return (
         <div>
-            {/* Search */}
+            {/* ─── Search ───────────────────────────────────── */}
             <div className="glass-search-section">
                 <form onSubmit={handleSubmit} className="glass-search-box">
                     <input
@@ -236,7 +242,7 @@ function PokedexTab({ toast }) {  // Pass toast as prop
 
             {!loading && !error && pokemon && (
                 <div className="poke-card-layout">
-                    {/* Left — sprite + types */}
+                    {/* ─── Left: Sprite & Types ─────────────── */}
                     <div className="glass-card poke-sprite-card">
                         <img src={sprite} alt={pokemon.name} className="poke-sprite-large" />
                         <h2 className="poke-name">
@@ -258,14 +264,14 @@ function PokedexTab({ toast }) {  // Pass toast as prop
                         </button>
                     </div>
 
-                    {/* Right — stats + abilities */}
+                    {/* ─── Right: Stats & Abilities ─────────── */}
                     <div className="glass-card poke-info-card">
                         <h3 className="poke-section-title">Base Stats</h3>
                         {pokemon.stats.map(s => (
                             <StatBar key={s.stat.name} label={statMap[s.stat.name] || s.stat.name.toUpperCase()} value={s.base_stat} />
                         ))}
 
-                        <h3 className="poke-section-title" style={{ marginTop:'1.5rem' }}>Abilities</h3>
+                        <h3 className="poke-section-title">Abilities</h3>
                         <div className="poke-ability-list">
                             {pokemon.abilities.map(a => (
                                 <span key={a.ability.name} className={`poke-ability-tag ${a.is_hidden ? 'hidden' : ''}`}>
@@ -274,7 +280,7 @@ function PokedexTab({ toast }) {  // Pass toast as prop
                             ))}
                         </div>
 
-                        <h3 className="poke-section-title" style={{ marginTop:'1.5rem' }}>Info</h3>
+                        <h3 className="poke-section-title">Info</h3>
                         <div className="poke-info-grid">
                             <div className="poke-info-item"><span>Height</span><strong>{(pokemon.height / 10).toFixed(1)} m</strong></div>
                             <div className="poke-info-item"><span>Weight</span><strong>{(pokemon.weight / 10).toFixed(1)} kg</strong></div>
@@ -288,11 +294,11 @@ function PokedexTab({ toast }) {  // Pass toast as prop
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // TAB 2 — MY TEAM
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
-function TeamTab({ toast }) {  // Pass toast as prop
+function TeamTab({ toast }) {
     const [team, setTeam] = useState(getTeam);
     const [confirmClear, setConfirmClear] = useState(false);
 
@@ -330,15 +336,14 @@ function TeamTab({ toast }) {  // Pass toast as prop
                 </div>
             )}
 
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem', flexWrap:'wrap', gap:'1rem' }}>
-                <p style={{ color:'var(--text-secondary)' }}>
+            <div className="poke-team-header">
+                <p className="poke-team-count">
                     {team.length}/6 Pokémon — {team.length < 6 ? 'Search the Pokédex to add more!' : 'Team full!'}
                 </p>
-                <div style={{ display:'flex', gap:'0.75rem' }}>
+                <div className="poke-team-actions">
                     <button className="glass-btn-secondary" onClick={refreshTeam}>🔄 Refresh</button>
                     {team.length > 0 && (
-                        <button className="glass-btn-secondary" onClick={() => setConfirmClear(true)}
-                            style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.4)' }}>
+                        <button className="glass-btn-secondary" onClick={() => setConfirmClear(true)}>
                             🗑️ Clear Team
                         </button>
                     )}
@@ -350,12 +355,12 @@ function TeamTab({ toast }) {  // Pass toast as prop
                     <div key={p.id} className="glass-card poke-team-card">
                         <img src={p.sprite} alt={p.name} className="poke-team-sprite" />
                         <h3 className="poke-team-name">{p.name.charAt(0).toUpperCase() + p.name.slice(1)}</h3>
-                        <div className="poke-types" style={{ justifyContent:'center', marginBottom:'0.5rem' }}>
+                        <div className="poke-types">
                             {(p.types || []).map(t => <TypeBadge key={t} type={t} />)}
                         </div>
-                        <p style={{ color:'var(--text-tertiary)', fontSize:'0.85rem', marginBottom:'0.75rem' }}>Lv. {p.level || 5}</p>
+                        <p className="poke-team-level">Lv. {p.level || 5}</p>
                         <div className="poke-mini-hp">
-                            <span style={{ color:'var(--text-secondary)', fontSize:'0.8rem' }}>
+                            <span className="poke-mini-hp-text">
                                 HP {Math.floor(p.currentHP ?? p.stats?.hp ?? 50)}/{p.stats?.hp ?? 50}
                             </span>
                             <div className="poke-mini-hp-bar">
@@ -364,22 +369,21 @@ function TeamTab({ toast }) {  // Pass toast as prop
                             </div>
                         </div>
                         <button className="glass-btn-secondary poke-remove-btn"
-                            onClick={() => removePokemon(p.id)}
-                            style={{ background:'rgba(239,68,68,0.15)', borderColor:'rgba(239,68,68,0.3)', marginTop:'0.75rem' }}>
+                            onClick={() => removePokemon(p.id)}>
                             Remove
                         </button>
                     </div>
                 ))}
                 {emptySlots.map((_, i) => (
                     <div key={`empty-${i}`} className="glass-card poke-empty-slot">
-                        <span style={{ fontSize:'2.5rem', opacity:0.3 }}>⚪</span>
-                        <p style={{ color:'var(--text-tertiary)', marginTop:'0.5rem', fontSize:'0.9rem' }}>Empty Slot</p>
+                        <span className="poke-empty-icon">⚪</span>
+                        <p className="poke-empty-text">Empty Slot</p>
                     </div>
                 ))}
             </div>
 
             {team.length === 0 && (
-                <div className="glass-empty-state" style={{ marginTop:'2rem' }}>
+                <div className="glass-empty-state">
                     <span className="glass-empty-icon">🎒</span>
                     <h3>No Pokémon yet!</h3>
                     <p>Head to the Pokédex tab to search and add Pokémon to your team.</p>
@@ -389,9 +393,9 @@ function TeamTab({ toast }) {  // Pass toast as prop
     );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // TAB 3 — BATTLE
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 const BATTLE_OPPONENTS = [
     { id:6,   name:'charizard',  level:15, types:['fire','flying'] },
@@ -427,8 +431,8 @@ function HPBar({ current, max }) {
     );
 }
 
-function BattleTab({ toast }) {  // Pass toast as prop
-    const [screen, setScreen] = useState('select'); // select | battle | result
+function BattleTab({ toast }) {
+    const [screen, setScreen] = useState('select');
     const [team, setTeam] = useState(getTeam);
     const [selectedIdx, setSelectedIdx] = useState(0);
     const [selectedOpp, setSelectedOpp] = useState(0);
@@ -478,7 +482,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
             move.pp--;
 
             const logs = [];
-            // Player attacks
             if (Math.random() * 100 <= move.accuracy) {
                 if (move.category === 'status') {
                     logs.push(`${b.player.name} used ${move.displayName}!`);
@@ -501,7 +504,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
             return b;
         });
 
-        // Check result then AI turn
         setWaiting(true);
         setTimeout(() => {
             setBattle(prev => {
@@ -511,7 +513,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
                     setScreen('result');
                     return prev;
                 }
-                // AI attacks
                 const b = JSON.parse(JSON.stringify(prev));
                 const availMoves = b.oppMoves.filter(m => m.pp > 0 && m.category !== 'status');
                 const aiMove = availMoves.length ? availMoves[Math.floor(Math.random() * availMoves.length)] : b.oppMoves[0];
@@ -553,7 +554,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
         });
         setItems(prev => prev.map(i => i.name === item.name ? { ...i, qty: i.qty - 1 } : i));
         addLog(`Used ${item.name}! Restored ${heal} HP!`);
-        // AI still gets a turn
         setWaiting(true);
         setTimeout(() => {
             setBattle(prev => {
@@ -591,7 +591,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
 
     const flee = () => { setConfirmFlee(true); };
 
-    // ── Select Screen ──────────────────────────────────────────────────────────
     if (screen === 'select') {
         const freshTeam = getTeam();
         return (
@@ -603,17 +602,16 @@ function BattleTab({ toast }) {  // Pass toast as prop
                             <p>Are you sure you want to run away? This will end the battle.</p>
                             <div className="confirm-dialog-actions">
                                 <button className="glass-btn-secondary" onClick={() => setConfirmFlee(false)}>Cancel</button>
-                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }} style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.3)' }}>Flee</button>
+                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }}>Flee</button>
                             </div>
                         </div>
                     </div>
                 )}
                 <div className="poke-battle-setup">
-                    {/* Choose your pokemon */}
                     <div className="glass-card poke-setup-card">
-                        <h3 style={{ color:'var(--text-primary)', marginBottom:'1rem' }}>🎒 Your Pokémon</h3>
+                        <h3>🎒 Your Pokémon</h3>
                         {freshTeam.length === 0 ? (
-                            <p style={{ color:'var(--text-secondary)' }}>Add Pokémon to your team in the Team tab first!</p>
+                            <p className="poke-setup-empty">Add Pokémon to your team in the Team tab first!</p>
                         ) : (
                             <div className="poke-select-grid">
                                 {freshTeam.map((p, i) => (
@@ -629,9 +627,8 @@ function BattleTab({ toast }) {  // Pass toast as prop
                         )}
                     </div>
 
-                    {/* Choose opponent */}
                     <div className="glass-card poke-setup-card">
-                        <h3 style={{ color:'var(--text-primary)', marginBottom:'1rem' }}>⚔️ Choose Opponent</h3>
+                        <h3>⚔️ Choose Opponent</h3>
                         <div className="poke-select-grid">
                             {BATTLE_OPPONENTS.map((opp, i) => (
                                 <div key={opp.id}
@@ -646,7 +643,7 @@ function BattleTab({ toast }) {  // Pass toast as prop
                     </div>
                 </div>
 
-                <div style={{ textAlign:'center', marginTop:'2rem' }}>
+                <div className="poke-start-btn-container">
                     <button className="glass-btn poke-start-btn" onClick={startBattle} disabled={!freshTeam.length}>
                         ⚔️ Start Battle!
                     </button>
@@ -655,14 +652,13 @@ function BattleTab({ toast }) {  // Pass toast as prop
         );
     }
 
-    // ── Result Screen ──────────────────────────────────────────────────────────
     if (screen === 'result') {
         return (
             <div className="poke-result-screen">
-                <div className="glass-card" style={{ textAlign:'center', padding:'3rem' }}>
-                    <div style={{ fontSize:'4rem', marginBottom:'1rem' }}>{resultMsg.startsWith('🏆') ? '🏆' : '💀'}</div>
-                    <h2 style={{ color:'var(--text-primary)', fontSize:'2rem', marginBottom:'1rem' }}>{resultMsg}</h2>
-                    <div style={{ display:'flex', gap:'1rem', justifyContent:'center', flexWrap:'wrap' }}>
+                <div className="glass-card poke-result-card">
+                    <div className="poke-result-icon">{resultMsg.startsWith('🏆') ? '🏆' : '💀'}</div>
+                    <h2 className="poke-result-message">{resultMsg}</h2>
+                    <div className="poke-result-actions">
                         <button className="glass-btn" onClick={() => { setBattle(null); setScreen('select'); setItems([{ name:'Potion', heal:20, qty:3 },{ name:'Super Potion', heal:50, qty:1 },{ name:'Max Potion', heal:999, qty:1 }]); }}>
                             🔄 Battle Again
                         </button>
@@ -672,7 +668,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
         );
     }
 
-    // ── Battle Screen ──────────────────────────────────────────────────────────
     if (screen === 'battle' && battle) {
         const { player, opp, playerMoves } = battle;
 
@@ -685,14 +680,12 @@ function BattleTab({ toast }) {  // Pass toast as prop
                             <p>Are you sure you want to run away? This will end the battle.</p>
                             <div className="confirm-dialog-actions">
                                 <button className="glass-btn-secondary" onClick={() => setConfirmFlee(false)}>Cancel</button>
-                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }} style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.3)' }}>Flee</button>
+                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }}>Flee</button>
                             </div>
                         </div>
                     </div>
                 )}
-                {/* Field */}
                 <div className="poke-battle-field glass-card">
-                    {/* Opponent */}
                     <div className="poke-fighter opp-fighter">
                         <div className="poke-fighter-info">
                             <div className="poke-fighter-name">{opp.name.charAt(0).toUpperCase()+opp.name.slice(1)}</div>
@@ -703,7 +696,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
                         <img src={opp.sprite} alt={opp.name} className="poke-fighter-sprite opp-sprite" />
                     </div>
 
-                    {/* Player */}
                     <div className="poke-fighter player-fighter">
                         <img src={player.sprite} alt={player.name} className="poke-fighter-sprite player-sprite" />
                         <div className="poke-fighter-info">
@@ -715,23 +707,19 @@ function BattleTab({ toast }) {  // Pass toast as prop
                     </div>
                 </div>
 
-                {/* Battle log + controls */}
                 <div className="poke-battle-lower">
-                    {/* Log */}
                     <div className="glass-card poke-battle-log">
-                        <h4 style={{ color:'var(--text-secondary)', marginBottom:'0.5rem', fontSize:'0.85rem' }}>BATTLE LOG</h4>
+                        <h4>BATTLE LOG</h4>
                         <div className="poke-log-entries">
                             {log.map((l, i) => <div key={i} className="poke-log-entry">{l}</div>)}
                         </div>
                     </div>
 
-                    {/* Commands */}
                     <div className="glass-card poke-battle-commands">
                         <p className="poke-command-title">
                             {waiting ? '⏳ Opponent is thinking…' : `What will ${player.name} do?`}
                         </p>
 
-                        {/* Main action buttons */}
                         {!showMoves && !showItems && !showSwitch && (
                             <div className="poke-action-btns">
                                 <button className="poke-action-btn fight" onClick={() => setShowMoves(true)} disabled={waiting}>⚔️ ATTACK</button>
@@ -741,7 +729,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
                             </div>
                         )}
 
-                        {/* Move list */}
                         {showMoves && (
                             <div>
                                 <div className="poke-move-grid">
@@ -751,7 +738,7 @@ function BattleTab({ toast }) {  // Pass toast as prop
                                             onClick={() => executeAttack(m.name)}
                                             disabled={m.pp <= 0 || waiting}>
                                             <span className="poke-move-name">{m.displayName}</span>
-                                            <span className="poke-type-badge" style={{ background: TYPE_COLORS[m.type] || '#888', fontSize:'0.7rem' }}>{m.type}</span>
+                                            <span className="poke-type-badge">{m.type}</span>
                                             <span className="poke-move-pp">PP {m.pp}/{m.maxPP}</span>
                                             {m.power > 0 && <span className="poke-move-pwr">PWR {m.power}</span>}
                                         </button>
@@ -761,7 +748,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
                             </div>
                         )}
 
-                        {/* Item list */}
                         {showItems && (
                             <div>
                                 <div className="poke-item-grid">
@@ -769,7 +755,7 @@ function BattleTab({ toast }) {  // Pass toast as prop
                                         <button key={item.name} className="poke-item-btn"
                                             onClick={() => useItem(item)}
                                             disabled={item.qty <= 0 || waiting}>
-                                            🧪 {item.name} <span style={{ color:'var(--text-tertiary)' }}>x{item.qty}</span>
+                                            🧪 {item.name} x{item.qty}
                                         </button>
                                     ))}
                                 </div>
@@ -777,7 +763,6 @@ function BattleTab({ toast }) {  // Pass toast as prop
                             </div>
                         )}
 
-                        {/* Switch list */}
                         {showSwitch && (
                             <div>
                                 <div className="poke-switch-grid">
@@ -789,9 +774,9 @@ function BattleTab({ toast }) {  // Pass toast as prop
                                             <button key={p.id} className="poke-switch-btn"
                                                 onClick={() => switchPokemon(i)}
                                                 disabled={isCurrent || fainted || waiting}>
-                                                <img src={p.sprite} alt={p.name} style={{ width:40, height:40 }} />
+                                                <img src={p.sprite} alt={p.name} />
                                                 <span>{p.name.charAt(0).toUpperCase()+p.name.slice(1)}</span>
-                                                <span style={{ fontSize:'0.75rem', color: fainted ? '#f87171' : isCurrent ? '#4ade80' : 'var(--text-tertiary)' }}>
+                                                <span className="poke-switch-status">
                                                     {isCurrent ? '(Active)' : fainted ? 'Fainted' : `HP ${Math.ceil(norm.currentHP)}`}
                                                 </span>
                                             </button>
@@ -810,9 +795,9 @@ function BattleTab({ toast }) {  // Pass toast as prop
     return null;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // MAIN PAGE COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 const TABS = [
     { key:'pokedex', label:'📖 Pokédex' },
@@ -821,25 +806,22 @@ const TABS = [
 ];
 
 export default function PokemonPage() {
-    const { toasts, toast, removeToast } = useToast();  // Add this line!
+    const { toasts, toast, removeToast } = useToast();
     const [activeTab, setActiveTab] = useState('pokedex');
 
     return (
-        <div className="pokemon-page glass-page" style={{ background:'linear-gradient(135deg, #0f1923 0%, #1a1035 50%, #0d2137 100%)' }}>
-            {/* Pokéball decorative orbs */}
+        <div className="pokemon-page glass-page">
             <div className="poke-bg-orb poke-orb-1" />
             <div className="poke-bg-orb poke-orb-2" />
             <div className="poke-bg-orb poke-orb-3" />
 
-            <div className="glass-container" style={{ position:'relative', zIndex:1 }}>
-                {/* Header */}
+            <div className="glass-container">
                 <div className="glass-page-header">
                     <h1>⚡ Pokémon Hub</h1>
                     <p className="subtitle">Browse the Pokédex, build your dream team, and battle!</p>
                 </div>
 
-                {/* Tabs */}
-                <div className="glass-tabs" style={{ marginBottom:'2rem' }}>
+                <div className="glass-tabs">
                     {TABS.map(t => (
                         <button
                             key={t.key}
@@ -851,11 +833,11 @@ export default function PokemonPage() {
                     ))}
                 </div>
 
-                {/* Tab Content - pass toast to each tab */}
                 {activeTab === 'pokedex' && <PokedexTab toast={toast} />}
                 {activeTab === 'team'    && <TeamTab toast={toast} />}
                 {activeTab === 'battle'  && <BattleTab toast={toast} />}
             </div>
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

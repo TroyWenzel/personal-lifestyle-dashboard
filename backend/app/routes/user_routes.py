@@ -1,12 +1,21 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# Create blueprint for user-related routes
+# ═══════════════════════════════════════════════════════════════
+# User Routes
+# ═══════════════════════════════════════════════════════════════
+
 user_bp = Blueprint("user", __name__, url_prefix="/user")
 
-@user_bp.route("/me")
+@user_bp.route("/me", methods=["GET"])
 @jwt_required()
 def me():
-    # Extract user ID from the JWT token
+    # ═══════════════════════════════════════════════════════════════
+    # ────────────Get current user's ID from JWT token───────────────
+    # ═══════════════════════════════════════════════════════════════     
     user_id = get_jwt_identity()
-    return jsonify(user_id=user_id)
+    
+    return jsonify({
+        "success": True,
+        "user_id": user_id
+    }), 200

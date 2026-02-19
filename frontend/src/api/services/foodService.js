@@ -1,6 +1,14 @@
+// ═══════════════════════════════════════════════════════════════
+// TheMealDB API Service
+// ═══════════════════════════════════════════════════════════════
+
 const API_BASE = 'https://www.themealdb.com/api/json/v1/1';
 
-// Helper function to extract ingredients and measurements from meal object
+/**
+ * Extract ingredients and measurements from meal object
+ * @param {Object} meal - Raw meal data from TheMealDB
+ * @returns {Array} - Array of {ingredient, measure} objects
+ */
 export const extractIngredients = (meal) => {
     const ingredients = [];
     for (let i = 1; i <= 20; i++) {
@@ -16,7 +24,11 @@ export const extractIngredients = (meal) => {
     return ingredients;
 };
 
-// Search for meals by name
+/**
+ * Search for meals by name
+ * @param {string} query - Meal name to search for
+ * @returns {Promise<Object>} - Search results
+ */
 export const searchMeals = async (query) => {
     try {
         const response = await fetch(`${API_BASE}/search.php?s=${encodeURIComponent(query)}`);
@@ -33,7 +45,11 @@ export const searchMeals = async (query) => {
     }
 };
 
-// Get detailed meal information by ID
+/**
+ * Get detailed meal information by ID
+ * @param {string} id - Meal ID
+ * @returns {Promise<Object>} - Meal details
+ */
 export const getMealById = async (id) => {
     try {
         const response = await fetch(`${API_BASE}/lookup.php?i=${id}`);
@@ -50,7 +66,10 @@ export const getMealById = async (id) => {
     }
 };
 
-// Get a random meal
+/**
+ * Get a random meal
+ * @returns {Promise<Object>} - Random meal data
+ */
 export const getRandomMeal = async () => {
     try {
         const response = await fetch(`${API_BASE}/random.php`);
@@ -67,5 +86,4 @@ export const getRandomMeal = async () => {
     }
 };
 
-// Re-export save function from contentService for consistent import pattern
 export { saveMeal } from './contentService';

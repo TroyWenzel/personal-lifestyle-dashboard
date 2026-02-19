@@ -6,15 +6,23 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App'
 import '@/styles/index.css'
 
+// ═══════════════════════════════════════════════════════════════
+// React Query Client Configuration
+// ═══════════════════════════════════════════════════════════════
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 5,      // 5 minutes
       refetchOnWindowFocus: false,
       retry: 1,
     },
   },
 })
+
+// ═══════════════════════════════════════════════════════════════
+// Application Entry Point
+// ═══════════════════════════════════════════════════════════════
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

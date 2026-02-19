@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════════
+// NASA APOD API Service
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Fetch Astronomy Picture of the Day from NASA API
+ * @param {string} date - Optional date in YYYY-MM-DD format
+ * @returns {Promise<Object>} - APOD data
+ */
 export const getAstronomyPicture = async (date = '') => {
     try {
         const apiKey = import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
@@ -43,6 +52,12 @@ export const getAstronomyPicture = async (date = '') => {
     }
 };
 
+/**
+ * Fetch multiple APODs for a date range
+ * @param {string} startDate - Start date in YYYY-MM-DD format
+ * @param {string} endDate - End date in YYYY-MM-DD format
+ * @returns {Promise<Array>} - Array of APOD data
+ */
 export const getAstronomyPictures = async (startDate, endDate) => {
     try {
         const apiKey = import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
@@ -58,6 +73,10 @@ export const getAstronomyPictures = async (startDate, endDate) => {
     }
 };
 
+/**
+ * Fetch a random APOD from available dates
+ * @returns {Promise<Object>} - Random APOD data
+ */
 export const getRandomAstronomyPicture = async () => {
     try {
         const start = new Date(1995, 5, 16);
@@ -76,6 +95,8 @@ export const getTodaysAstronomyPicture = async () => {
     return await getAstronomyPicture();
 };
 
+// ─── LocalStorage Fallback Functions ──────────────────────────
+
 export const saveSpacePhoto = async (photoData) => {
     try {
         const savedPhotos = JSON.parse(localStorage.getItem('savedSpacePhotos') || '[]');
@@ -85,7 +106,6 @@ export const saveSpacePhoto = async (photoData) => {
         if (!exists) {
             savedPhotos.push(photoData);
             localStorage.setItem('savedSpacePhotos', JSON.stringify(savedPhotos));
-
             return { success: true, message: 'Photo saved locally' };
         } else {
             return { success: false, message: 'Photo already saved' };
@@ -118,5 +138,4 @@ export const removeSavedSpacePhoto = (date) => {
     }
 };
 
-// Alias for TanStack Query compatibility
 export const getSpacePhoto = getAstronomyPicture;

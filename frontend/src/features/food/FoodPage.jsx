@@ -6,6 +6,10 @@ import "@/styles/GlassDesignSystem.css";
 import { addItem as slAdd } from "@/api/services/shoppingListService";
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
+// ═══════════════════════════════════════════════════════════════
+// Food & Recipes Page
+// ═══════════════════════════════════════════════════════════════
+
 const FoodPage = () => {
     const [query, setQuery] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +27,7 @@ const FoodPage = () => {
     const meals = mealsData?.meals || [];
     const savedMeals = allSavedItems.filter(item => item.type === 'meal');
 
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.savedItem) {
             const item = location.state.savedItem;
@@ -34,6 +39,8 @@ const FoodPage = () => {
             window.history.replaceState({}, document.title);
         }
     }, [location]);
+
+    // ─── Event Handlers ───────────────────────────────────────
 
     const handleSearch = () => {
         if (query.trim()) {
@@ -55,7 +62,7 @@ const FoodPage = () => {
         });
     };
 
-    const doRemove = (itemId) => {
+    const handleDelete = (itemId) => {
         deleteItemMutation.mutate(itemId, {
             onSuccess: () => {
                 refetchSaved();
@@ -96,11 +103,13 @@ const FoodPage = () => {
         setSelectedMeal(null);
     };
 
-    const handleAddToList = (ingredient, measure) => {
-        slAdd('food', ingredient, measure);
+    const handleAddToList = async (ingredient, measure) => {
+        try { await slAdd('food', ingredient, measure); } catch {}
         setAddedToList(ingredient);
         setTimeout(() => setAddedToList(null), 1500);
     };
+
+    // ─── Render ───────────────────────────────────────────────
 
     return (
         <div className="glass-page">
@@ -264,7 +273,7 @@ const FoodPage = () => {
                                         <button 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                doRemove(item.id);
+                                                handleDelete(item.id);
                                             }}
                                             className="glass-btn-secondary"
                                             disabled={deleteItemMutation.isLoading}
@@ -431,7 +440,7 @@ const FoodPage = () => {
                                         className="glass-btn-secondary"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            doRemove(selectedMeal.savedItemId);
+                                            handleDelete(selectedMeal.savedItemId);
                                             closeMealDetails();
                                         }}
                                         disabled={deleteItemMutation.isLoading}
@@ -482,6 +491,7 @@ const FoodPage = () => {
                     </div>
                 )}
             </div>
+
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

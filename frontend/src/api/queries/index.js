@@ -23,9 +23,10 @@ import { searchDrinks, getRandomDrink } from '../services/drinkService';
 import { getSpacePhoto } from '../services/spaceService';
 import { getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry } from '../services/journalService';
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Query Keys - Centralized for easy management
-// ============================================
+// ═══════════════════════════════════════════════════════════════
+
 export const queryKeys = {
     // User
     user: ['user'],
@@ -54,9 +55,6 @@ export const queryKeys = {
     drinks: (query) => ['drinks', 'search', query],
     randomDrink: ['randomDrink'],
     
-    // Activities
-    randomActivity: (params) => ['activity', 'random', params],
-    
     // Space
     spacePhoto: (date) => ['spacePhoto', date],
     
@@ -65,15 +63,15 @@ export const queryKeys = {
     journalEntry: (id) => ['journalEntry', id],
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // User Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useUser = () => {
     return useQuery({
         queryKey: queryKeys.user,
         queryFn: getCurrentUser,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
     });
 };
 
@@ -83,20 +81,20 @@ export const useUpdateUserProfile = () => {
     return useMutation({
         mutationFn: updateUserProfile,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.user });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user });
         },
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Content/Dashboard Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSavedItems = () => {
     return useQuery({
         queryKey: queryKeys.savedItems,
         queryFn: getSavedItems,
-        staleTime: 1000 * 60 * 2, // 2 minutes
+        staleTime: 0,
     });
 };
 
@@ -104,7 +102,7 @@ export const useDashboardStats = () => {
     return useQuery({
         queryKey: queryKeys.dashboardStats,
         queryFn: getDashboardStats,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 0,
     });
 };
 
@@ -114,16 +112,15 @@ export const useDeleteItem = () => {
     return useMutation({
         mutationFn: deleteItem,
         onSuccess: () => {
-        // Invalidate both saved items and stats when an item is deleted
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Save Item Mutations
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSaveMeal = () => {
     const queryClient = useQueryClient();
@@ -131,8 +128,8 @@ export const useSaveMeal = () => {
     return useMutation({
         mutationFn: saveMeal,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -143,8 +140,8 @@ export const useSaveLocation = () => {
     return useMutation({
         mutationFn: saveLocation,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -155,8 +152,8 @@ export const useSaveArtwork = () => {
     return useMutation({
         mutationFn: saveArtwork,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -167,8 +164,8 @@ export const useSaveBook = () => {
     return useMutation({
         mutationFn: saveBook,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -179,20 +176,8 @@ export const useSaveDrink = () => {
     return useMutation({
         mutationFn: saveDrink,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
-        },
-    });
-};
-
-export const useSaveActivity = () => {
-    const queryClient = useQueryClient();
-    
-    return useMutation({
-        mutationFn: saveActivity,
-        onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -203,8 +188,8 @@ export const useSaveSpacePhoto = () => {
     return useMutation({
         mutationFn: saveSpacePhoto,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -215,23 +200,23 @@ export const useSaveJournalEntry = () => {
     return useMutation({
         mutationFn: saveJournal,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
-        queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
         },
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Food/Meal Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useRandomMeal = () => {
     return useQuery({
         queryKey: queryKeys.randomMeal,
         queryFn: getRandomMeal,
-        staleTime: 0, // Always fetch fresh random meal
-        cacheTime: 0, // Don't cache random results
+        staleTime: 0,
+        cacheTime: 0,
     });
 };
 
@@ -239,22 +224,22 @@ export const useSearchMeals = (query, options = {}) => {
     return useQuery({
         queryKey: queryKeys.searchMeals(query),
         queryFn: () => searchMeals(query),
-        enabled: !!query && query.length > 0, // Only run if query exists
-        staleTime: 1000 * 60 * 10, // 10 minutes
+        enabled: !!query && query.length > 0,
+        staleTime: 1000 * 60 * 10,
         ...options,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Weather Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useWeather = (location, options = {}) => {
     return useQuery({
         queryKey: queryKeys.weather(location),
         queryFn: () => getCurrentWeather(location),
-        enabled: !!location, // Only run if location is provided
-        staleTime: 1000 * 60 * 10, // 10 minutes (weather changes slowly)
+        enabled: !!location,
+        staleTime: 1000 * 60 * 10,
         ...options,
     });
 };
@@ -263,22 +248,22 @@ export const useSearchLocations = (query, options = {}) => {
     return useQuery({
         queryKey: queryKeys.searchLocations(query),
         queryFn: () => searchLocation(query),
-        enabled: !!query && query.length > 2, // Only run if query is 3+ chars
-        staleTime: 1000 * 60 * 30, // 30 minutes (locations don't change)
+        enabled: !!query && query.length > 2,
+        staleTime: 1000 * 60 * 30,
         ...options,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Art Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSearchArtworks = (query, page = 1, options = {}) => {
     return useQuery({
         queryKey: queryKeys.artworks(query, page),
         queryFn: () => searchArtworks(query, page),
         enabled: !!query && query.length > 0,
-        staleTime: 1000 * 60 * 15, // 15 minutes
+        staleTime: 1000 * 60 * 15,
         ...options,
     });
 };
@@ -288,35 +273,35 @@ export const useArtworkDetails = (id, options = {}) => {
         queryKey: queryKeys.artworkDetails(id),
         queryFn: () => getArtworkDetails(id),
         enabled: !!id,
-        staleTime: 1000 * 60 * 30, // 30 minutes
+        staleTime: 1000 * 60 * 30,
         ...options,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Book Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSearchBooks = (query, options = {}) => {
     return useQuery({
         queryKey: queryKeys.books(query),
         queryFn: () => searchBooks(query),
         enabled: !!query && query.length > 0,
-        staleTime: 1000 * 60 * 15, // 15 minutes
+        staleTime: 1000 * 60 * 15,
         ...options,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Drink Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSearchDrinks = (query, options = {}) => {
     return useQuery({
         queryKey: queryKeys.drinks(query),
         queryFn: () => searchDrinks(query),
         enabled: !!query && query.length > 0,
-        staleTime: 1000 * 60 * 10, // 10 minutes
+        staleTime: 1000 * 60 * 10,
         ...options,
     });
 };
@@ -325,33 +310,33 @@ export const useRandomDrink = () => {
     return useQuery({
         queryKey: queryKeys.randomDrink,
         queryFn: getRandomDrink,
-        staleTime: 0, // Always fetch fresh random drink
-        cacheTime: 0, // Don't cache random results
+        staleTime: 0,
+        cacheTime: 0,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Space Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useSpacePhoto = (date = null, options = {}) => {
     return useQuery({
         queryKey: queryKeys.spacePhoto(date),
         queryFn: () => getSpacePhoto(date),
-        staleTime: 1000 * 60 * 60, // 1 hour (NASA APOD changes daily)
+        staleTime: 1000 * 60 * 60,
         ...options,
     });
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // Journal Queries
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 export const useJournalEntries = () => {
     return useQuery({
         queryKey: queryKeys.journalEntries,
         queryFn: getJournalEntries,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
     });
 };
 
@@ -361,9 +346,9 @@ export const useCreateJournalEntry = () => {
     return useMutation({
         mutationFn: createJournalEntry,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };
@@ -374,8 +359,8 @@ export const useUpdateJournalEntry = () => {
     return useMutation({
         mutationFn: ({ id, data }) => updateJournalEntry(id, data),
         onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
-        queryClient.invalidateQueries({ queryKey: queryKeys.journalEntry(variables.id) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
+            queryClient.invalidateQueries({ queryKey: queryKeys.journalEntry(variables.id) });
         },
     });
 };
@@ -386,9 +371,9 @@ export const useDeleteJournalEntry = () => {
     return useMutation({
         mutationFn: deleteJournalEntry,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
-        queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
+            queryClient.invalidateQueries({ queryKey: queryKeys.journalEntries });
+            queryClient.invalidateQueries({ queryKey: queryKeys.savedItems });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
         },
     });
 };

@@ -1,6 +1,13 @@
 import apiClient from '../client';
 
-// Get current user from backend
+// ═══════════════════════════════════════════════════════════════
+// User Service
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Get current user from backend
+ * @returns {Promise<Object>} - User data
+ */
 export const getCurrentUser = async () => {
     try {
         const response = await apiClient.get('/api/users/me');
@@ -11,10 +18,12 @@ export const getCurrentUser = async () => {
     }
 };
 
-// Get user profile
+/**
+ * Get user profile
+ * @returns {Promise<Object>} - User profile data
+ */
 export const getUserProfile = async () => {
     try {
-        // Try to get from backend first
         const response = await apiClient.get('/api/users/profile');
         return response;
     } catch (error) {
@@ -24,7 +33,6 @@ export const getUserProfile = async () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No user logged in');
         
-        // Decode JWT to get user info (basic implementation)
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const payload = JSON.parse(window.atob(base64));
@@ -38,12 +46,15 @@ export const getUserProfile = async () => {
     }
 };
 
-// Update user profile
+/**
+ * Update user profile
+ * @param {Object} profileData - Updated profile data
+ * @returns {Promise<Object>} - API response
+ */
 export const updateUserProfile = async (profileData) => {
     try {
         const response = await apiClient.put('/api/users/profile', profileData);
         
-        // Also update localStorage
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const updatedUser = { ...currentUser, ...profileData };
         localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -55,7 +66,12 @@ export const updateUserProfile = async (profileData) => {
     }
 };
 
-// Update email
+/**
+ * Update user email
+ * @param {string} newEmail - New email address
+ * @param {string} currentPassword - Current password for verification
+ * @returns {Promise<Object>} - API response
+ */
 export const updateUserEmail = async (newEmail, currentPassword) => {
     try {
         const response = await apiClient.put('/api/users/email', {
@@ -69,7 +85,12 @@ export const updateUserEmail = async (newEmail, currentPassword) => {
     }
 };
 
-// Update password
+/**
+ * Update user password
+ * @param {string} currentPassword - Current password
+ * @param {string} newPassword - New password
+ * @returns {Promise<Object>} - API response
+ */
 export const updateUserPassword = async (currentPassword, newPassword) => {
     try {
         const response = await apiClient.put('/api/users/password', {
@@ -83,7 +104,8 @@ export const updateUserPassword = async (currentPassword, newPassword) => {
     }
 };
 
-// Birthday utility functions
+// ─── Birthday Utility Functions ───────────────────────────────
+
 export const isUserBirthday = (birthday) => {
     if (!birthday) return false;
     
@@ -118,22 +140,20 @@ export const getBirthdayCountdown = (birthday) => {
     const birthDate = new Date(birthday);
     const currentYear = today.getFullYear();
     
-    // Get next birthday
     let nextBirthday = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
     
-    // If birthday already passed this year, use next year
     if (nextBirthday < today) {
         nextBirthday = new Date(currentYear + 1, birthDate.getMonth(), birthDate.getDate());
     }
     
-    // Calculate days until birthday
     const diffTime = nextBirthday - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     return diffDays;
 };
 
-// Get user data from localStorage (development/fallback)
+// ─── LocalStorage Fallback Functions ──────────────────────────
+
 export const getUserFromLocalStorage = () => {
     try {
         const userStr = localStorage.getItem('user');
@@ -144,7 +164,6 @@ export const getUserFromLocalStorage = () => {
     }
 };
 
-// Save user data to localStorage (development/fallback)
 export const saveUserToLocalStorage = (userData) => {
     try {
         localStorage.setItem('user', JSON.stringify(userData));

@@ -8,17 +8,23 @@ from .config import Config
 import os
 from dotenv import load_dotenv
 
+# ─── Load Environment Variables ─────────────────────────────────
 load_dotenv()
+
+# ═══════════════════════════════════════════════════════════════
+# Initialize Extensions
+# ═══════════════════════════════════════════════════════════════
 
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 
 def create_app():
-
+     # ─── App Configuration ───────────────────────────────────────
      app = Flask(__name__)
      app.config.from_object(Config)
 
+     # ─── CORS Configuration ──────────────────────────────────────
      CORS(app,
           origins=[
                "https://steady-rugelach-889cba.netlify.app",
@@ -32,12 +38,15 @@ def create_app():
           automatic_options=True
      )
 
+     # ─── Initialize Extensions ───────────────────────────────────
      db.init_app(app)
      migrate.init_app(app, db)
      jwt.init_app(app)
 
-     from app.models import User, SavedItem
+     # ─── Import Models ───────────────────────────────────────────
+     from app.models import User, SavedItem, ShoppingListItem
 
+     # ─── Register Blueprints ─────────────────────────────────────
      from app.routes.auth_routes import auth_bp
      from app.routes.user_routes import user_bp
      from app.routes.content_routes import content_bp
@@ -47,6 +56,7 @@ def create_app():
      from app.routes.nasa_routes import nasa_bp
      from app.routes.book_routes import book_bp
      from app.routes.drink_routes import drink_bp
+     from app.routes.shopping_routes import shopping_bp
 
      app.register_blueprint(auth_bp)
      app.register_blueprint(user_bp)
@@ -57,5 +67,6 @@ def create_app():
      app.register_blueprint(nasa_bp)
      app.register_blueprint(book_bp)
      app.register_blueprint(drink_bp)
+     app.register_blueprint(shopping_bp)
 
      return app

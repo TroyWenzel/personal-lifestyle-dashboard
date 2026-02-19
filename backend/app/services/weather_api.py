@@ -2,100 +2,103 @@ import requests
 import os
 from flask import current_app
 
-class WeatherAPI:
+# ═══════════════════════════════════════════════════════════════
+# WeatherStack API Service
+# ═══════════════════════════════════════════════════════════════
 
+class WeatherAPI:
+    # ═══════════════════════════════════════════════════════════════
+    # ──────Handles all communication with WeatherStack API──────────
+    # ═══════════════════════════════════════════════════════════════    
     def __init__(self):
-        # Get API key from environment variable - now using your real key!
         self.api_key = os.getenv('WEATHERSTACK_API_KEY')
         self.base_url = "http://api.weatherstack.com"
         
-        # Warn if API key is not set (shouldn't happen now that you have one)
         if not self.api_key:
-            print("ERROR: WEATHERSTACK_API_KEY environment variable not set!")
-            print("Please add it to your .env file or environment variables.")
+            current_app.logger.error("WEATHERSTACK_API_KEY environment variable not set")
     
     def get_current_weather(self, city):
-
-        # Check if API key is configured
+        # ═══════════════════════════════════════════════════════════════
+        # ──────────────Get current weather for a city───────────────────
+        # ═══════════════════════════════════════════════════════════════        
+        # ─── Validate API Key ───────────────────────────────────
         if not self.api_key:
-            current_app.logger.error("Weather API key not configured")
-            return {
-                'error': 'api_key_missing',
-                'message': 'Weather service is not configured properly.'
-            }
+            return self._error_response(
+                'api_key_missing',
+                'Weather service is not configured properly'
+            )
         
+        # ─── Make API Request ───────────────────────────────────
         try:
-            # Make request to WeatherStack current weather endpoint
             response = requests.get(
                 f"{self.base_url}/current",
                 params={
                     "access_key": self.api_key,
                     "query": city,
-                    "units": "m"  # Metric units (Celsius, km/h, mm)
+                    "units": "m"  # Metric units
                 },
                 timeout=10
             )
             
-            # Check if request was successful
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check if API returned an error
+                # Check for API error
                 if 'error' in data:
                     error_code = data['error'].get('code', 'unknown')
-                    error_info = data['error'].get('info', 'Unknown error')
                     
-                    # Handle specific error codes
                     if '404' in str(error_code):
-                        return {
-                            'error': 'location_not_found',
-                            'message': f"Could not find weather data for '{city}'. Please check the city name."
-                        }
-                    else:
-                        return {
-                            'error': 'api_error',
-                            'message': error_info
-                        }
+                        return self._error_response(
+                            'location_not_found',
+                            f"Could not find weather data for '{city}'"
+                        )
+                    
+                    return self._error_response(
+                        'api_error',
+                        data['error'].get('info', 'Weather service error')
+                    )
                 
-                # Success! Format city name properly
+                # Format city name
                 if 'location' in data and 'name' in data['location']:
                     data['location']['name'] = data['location']['name'].title()
                 
                 return data
-            else:
-                # Log unsuccessful status codes
-                current_app.logger.error(f"Weather API returned status code: {response.status_code}")
-                return {
-                    'error': 'api_unavailable',
-                    'message': 'Weather service is currently unavailable.'
-                }
+            
+            current_app.logger.error(f"Weather API error: {response.status_code}")
+            return self._error_response(
+                'api_unavailable',
+                'Weather service is currently unavailable'
+            )
                 
-        except requests.exceptions.ConnectionError:
-            current_app.logger.error("Weather API connection failed - check internet connection")
-            return {
-                'error': 'connection_error',
-                'message': 'Could not connect to weather service. Please check your internet connection.'
-            }
-            
         except requests.exceptions.Timeout:
-            current_app.logger.error("Weather API request timed out")
-            return {
-                'error': 'timeout',
-                'message': 'Weather service took too long to respond. Please try again.'
-            }
+            current_app.logger.error("Weather API timeout")
+            return self._error_response(
+                'timeout',
+                'Weather service took too long to respond'
+            )
             
-        except requests.exceptions.RequestException as e:
-            current_app.logger.error(f"Weather API request failed: {str(e)}")
-            return {
-                'error': 'request_failed',
-                'message': 'Failed to fetch weather data. Please try again.'
-            }
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error("Weather API connection error")
+            return self._error_response(
+                'connection_error',
+                'Could not connect to weather service'
+            )
             
         except Exception as e:
-            current_app.logger.error(f"Weather API unexpected error: {str(e)}")
-            return {
-                'error': 'internal_error',
-                'message': 'An unexpected error occurred.'
-            }
+            current_app.logger.error(f"Weather API error: {str(e)}")
+            return self._error_response(
+                'internal_error',
+                'Failed to fetch weather data'
+            )
+    
+    def _error_response(self, error_code, message):
+        # ═══════════════════════════════════════════════════════════════
+        # ────────Helper to create consistent error responses────────────
+        # ═══════════════════════════════════════════════════════════════
+        return {
+            'error': error_code,
+            'message': message
+        }
 
+# ─── Singleton Instance ────────────────────────────────────────
 weather_api = WeatherAPI()

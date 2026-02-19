@@ -7,6 +7,10 @@ import "@/styles/features/Drinks.css";
 import { addItem as slAdd } from "@/api/services/shoppingListService";
 import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
+// ═══════════════════════════════════════════════════════════════
+// Cocktail Bar Page
+// ═══════════════════════════════════════════════════════════════
+
 const DrinksPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [drinks, setDrinks] = useState([]);
@@ -24,13 +28,15 @@ const DrinksPage = () => {
     const saveDrinkMutation = useSaveDrink();
     const savedDrinks = allSavedItems.filter(item => item.type === 'drink');
 
-    // Switch to saved tab when navigated here from Dashboard
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.tab === 'saved') {
             setActiveTab('saved');
             window.history.replaceState({}, document.title);
         }
     }, [location]);
+
+    // ─── Event Handlers ───────────────────────────────────────
 
     const handleSearch = async (queryOverride = null) => {
         const query = queryOverride || searchQuery;
@@ -98,15 +104,17 @@ const DrinksPage = () => {
         });
     };
 
-    const handleAddToList = (name, measure) => {
-        slAdd('drinks', name, measure);
+    const handleAddToList = async (name, measure) => {
+        try { await slAdd('drinks', name, measure); } catch {}
         setAddedToList(name);
         setTimeout(() => setAddedToList(null), 1500);
     };
 
+    // ─── Render ───────────────────────────────────────────────
+
     return (
         <div className="glass-page">
-            {/* Bar Background - using local image */}
+            {/* ─── Bar Background ───────────────────────────── */}
             <div className="drinks-bar-background">
                 <img 
                     src="/assets/Bar_Background.jpg"
@@ -116,12 +124,13 @@ const DrinksPage = () => {
             </div>
 
             <div className="glass-container drinks-content-overlay">
+                {/* ─── Header ───────────────────────────────── */}
                 <div className="glass-page-header">
                     <h2>🍸 Cocktail Bar</h2>
                     <p className="subtitle">Discover amazing cocktail recipes from around the world</p>
                 </div>
 
-                {/* Single button for Saved Collection */}
+                {/* ─── Tab Switcher ─────────────────────────── */}
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                     <button 
                         className="glass-tab active"
@@ -132,6 +141,7 @@ const DrinksPage = () => {
                     </button>
                 </div>
 
+                {/* ─── Search Tab ────────────────────────────── */}
                 {activeTab === 'search' && (
                     <>
                         <div className="glass-search-section">
@@ -247,6 +257,7 @@ const DrinksPage = () => {
                     </>
                 )}
 
+                {/* ─── Saved Tab ─────────────────────────────── */}
                 {activeTab === 'saved' && (
                     <>
                         {savedDrinks.length > 0 ? (
@@ -271,7 +282,7 @@ const DrinksPage = () => {
                                                     return acc;
                                                 }, {}) || {})
                                             };
-                                            setSelectedDrink(drinkData);
+                                            setSelectedDrink({ ...drinkData, savedItemId: item.id });
                                             setShowModal(true);
                                         }}
                                     >
@@ -341,11 +352,11 @@ const DrinksPage = () => {
                 )}
             </div>
 
-            {/* Drink Recipe Modal with Full Image Background */}
+            {/* ─── Drink Recipe Modal ────────────────────────── */}
             {showModal && selectedDrink && (
                 <div className="drinks-modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="drinks-modal-content" onClick={(e) => e.stopPropagation()}>
-                        {/* Full drink image background */}
+                        {/* ─── Full drink image background ───── */}
                         <div 
                             className="drinks-modal-bg-full"
                             style={{
@@ -361,7 +372,7 @@ const DrinksPage = () => {
                         </button>
                         
                         <div className="drinks-modal-layout-new">
-                            {/* Left side - Featured drink image */}
+                            {/* ─── Left side - Featured drink ── */}
                             <div className="drinks-featured-section">
                                 <div className="drinks-featured-frame">
                                     <img 
@@ -379,7 +390,7 @@ const DrinksPage = () => {
                                 </div>
                             </div>
 
-                            {/* Right side - Recipe details */}
+                            {/* ─── Right side - Recipe details ── */}
                             <div className="drinks-recipe-section">
                                 <div className="drinks-ingredients-box">
                                     <h3>🍹 Ingredients</h3>
@@ -413,12 +424,22 @@ const DrinksPage = () => {
                                     </p>
                                 </div>
 
-                                <button 
-                                    onClick={() => handleSave(selectedDrink)}
-                                    className="glass-btn drinks-save-btn"
-                                >
-                                    💾 Save to Collection
-                                </button>
+                                {selectedDrink.savedItemId ? (
+                                    <button
+                                        onClick={() => { handleDelete(selectedDrink.savedItemId); setShowModal(false); }}
+                                        className="glass-btn drinks-save-btn"
+                                        style={{ background: 'rgba(239,68,68,0.2)', borderColor: 'rgba(239,68,68,0.4)' }}
+                                    >
+                                        🗑️ Remove from Collection
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleSave(selectedDrink)}
+                                        className="glass-btn drinks-save-btn"
+                                    >
+                                        💾 Save to Collection
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

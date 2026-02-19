@@ -1,13 +1,49 @@
 import { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";  // Add useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 import { useDashboardStats } from "@/api/queries";
+import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/services/userService";
 import "@/styles/pages/Home.css";
 import "@/styles/Animations.css";
 
+// ─── Simple CSS Confetti ─────────────────────────────────────────────────────
+
+function Confetti() {
+    const pieces = Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        color: ['#f97316','#8b5cf6','#ec4899','#10b981','#fbbf24','#3b82f6'][i % 6],
+        delay: `${Math.random() * 3}s`,
+        duration: `${2.5 + Math.random() * 2}s`,
+        size: `${6 + Math.random() * 8}px`,
+    }));
+    return (
+        <div style={{ position:'fixed', top:0, left:0, width:'100%', height:'100%', pointerEvents:'none', zIndex:9999, overflow:'hidden' }}>
+            <style>{`
+                @keyframes confettiFall {
+                    0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                }
+            `}</style>
+            {pieces.map(p => (
+                <div key={p.id} style={{
+                    position:'absolute', left: p.left, top:'-20px',
+                    width: p.size, height: p.size,
+                    background: p.color, borderRadius:'2px',
+                    animation: `confettiFall ${p.duration} ${p.delay} ease-in forwards`,
+                }} />
+            ))}
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Home Page
+// ═══════════════════════════════════════════════════════════════
+
 function Home() {
     const { token, user } = useContext(AuthContext);
-    const navigate = useNavigate();  // Add navigate hook
+    const navigate = useNavigate();
     
     const { data: stats = {
         meals: 0,
@@ -19,17 +55,32 @@ function Home() {
         artworks: 0
     } } = useDashboardStats();
     
-    const totalSavedItems = stats.meals + stats.locations + stats.artworks + 
-                        stats.books + stats.drinks + stats.spacePhotos;
+    // ─── Get user data for birthday ──────────────────────────
+    const userData = user ? {
+        birthday: user.birthday,
+        username: user.username || user.displayName || user.email?.split('@')[0] || 'Explorer'
+    } : null;
+    
+    const isBirthdayToday = userData?.birthday ? isUserBirthday(userData.birthday) : false;
+    const age = userData?.birthday ? calculateAge(userData.birthday) : null;
+    const countdown = userData?.birthday ? getBirthdayCountdown(userData.birthday) : null;
+    
+    const totalSavedItems = 
+        (Number(stats?.meals) || 0) + 
+        (Number(stats?.locations) || 0) + 
+        (Number(stats?.artworks) || 0) + 
+        (Number(stats?.books) || 0) + 
+        (Number(stats?.drinks) || 0) + 
+        (Number(stats?.spacePhotos) || 0);
     
     const activeFeatures = [
-        stats.meals > 0,
-        stats.locations > 0,
-        stats.artworks > 0,
-        stats.books > 0,
-        stats.drinks > 0,
-        stats.spacePhotos > 0,
-        stats.journalEntries > 0
+        Number(stats?.meals) > 0,
+        Number(stats?.locations) > 0,
+        Number(stats?.artworks) > 0,
+        Number(stats?.books) > 0,
+        Number(stats?.drinks) > 0,
+        Number(stats?.spacePhotos) > 0,
+        Number(stats?.journalEntries) > 0
     ].filter(Boolean).length;
 
     const features = [
@@ -107,7 +158,6 @@ function Home() {
         }
     ];
 
-    // Function to navigate to a random feature page
     const goToRandomFeature = () => {
         const randomIndex = Math.floor(Math.random() * features.length);
         const randomFeature = features[randomIndex];
@@ -115,6 +165,8 @@ function Home() {
     };
 
     const displayedFeatures = token ? features : features;
+
+    // ─── Render ───────────────────────────────────────────────
 
     return (
         <div className="home">
@@ -127,13 +179,38 @@ function Home() {
                 <div className="floating-circle circle-6"></div>
             </div>
 
+            {token && isBirthdayToday && <Confetti />}
+            {token && isBirthdayToday && (
+                <section className="birthday-banner" style={{ marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎂</div>
+                    <h2 style={{ color: 'var(--text-primary)' }}>
+                        Happy Birthday, {userData?.username}! 🎉
+                    </h2>
+                    {age && (
+                        <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                            You're turning {age} today!
+                        </p>
+                    )}
+                </section>
+            )}
+
+            {token && !isBirthdayToday && countdown && countdown <= 30 && (
+                <section className="birthday-countdown" style={{ marginBottom: '2rem' }}>
+                    <span style={{ fontSize: '1.5rem', marginRight: '0.5rem' }}>🎂</span>
+                    <span style={{ color: 'var(--text-primary)' }}>
+                        Your birthday is in {countdown} day{countdown !== 1 ? 's' : ''}!
+                        {countdown <= 7 && ' 🎉 So soon!'}
+                    </span>
+                </section>
+            )}
+
             <section className="hero-section glass-card">
                 <div className="hero-content">
                     {token ? (
                         <>
                             <span className="hero-greeting">Welcome back,</span>
                             <h1 className="hero-title">
-                                {user?.username || 'Explorer'}! 👋
+                                {userData?.username || 'Explorer'}! 👋
                             </h1>
                             <p className="hero-subtitle">
                                 Your dashboard awaits with personalized content and saved favorites.
@@ -194,7 +271,7 @@ function Home() {
                             <span className="stat-label">Days Streak</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-value">{stats.journalEntries}</span>
+                            <span className="stat-value">{Number(stats?.journalEntries) || 0}</span>
                             <span className="stat-label">Journal Entries</span>
                         </div>
                     </div>

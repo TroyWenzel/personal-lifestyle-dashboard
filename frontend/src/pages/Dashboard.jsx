@@ -2,40 +2,37 @@ import { useContext, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 import { useSavedItems, useDashboardStats, useDeleteItem } from "@/api/queries";
-import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/services/userService";
 import { getCurrentWeather } from "@/api/services/weatherService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/pages/Dashboard.css";
 import { loadList, addItem as slAdd, removeItem as slRemove, toggleItem as slToggle, clearChecked as slClear } from "@/api/services/shoppingListService";
-import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // ─── Weather Widget Component ────────────────────────────────────────────────
+
 function WeatherWidget() {
     const navigate = useNavigate();
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState('');
     const [unit, setUnit] = useState(() => {
-        // Get saved preference from localStorage, default to 'C'
         return localStorage.getItem('tempUnit') || 'C';
     });
 
-    // Save unit preference when it changes
+    // ─── Save unit preference ─────────────────────────────────
     useEffect(() => {
         localStorage.setItem('tempUnit', unit);
     }, [unit]);
 
     const toggleUnit = (e) => {
-        e.stopPropagation(); // Prevent widget click when toggling
+        e.stopPropagation();
         setUnit(prev => prev === 'C' ? 'F' : 'C');
     };
 
-    // Convert Celsius to Fahrenheit
     const toFahrenheit = (celsius) => {
         return Math.round((celsius * 9/5) + 32);
     };
 
-    // Display temperature based on selected unit
     const displayTemp = (celsius) => {
         if (unit === 'F') {
             return `${toFahrenheit(celsius)}°F`;
@@ -43,10 +40,10 @@ function WeatherWidget() {
         return `${Math.round(celsius)}°C`;
     };
 
+    // ─── Fetch weather data ──────────────────────────────────
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                // Try GPS first
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         async (position) => {
@@ -69,7 +66,6 @@ function WeatherWidget() {
 
         const fetchDirectWeather = async (lat, lon, locName) => {
             try {
-                // Direct call to Open-Meteo API (completely free, no key needed)
                 const response = await fetch(
                     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh`
                 );
@@ -127,7 +123,6 @@ function WeatherWidget() {
             setLoading(false);
         };
 
-        // Helper to convert Open-Meteo weather codes to descriptions
         const getWeatherDescription = (code) => {
             const weatherCodes = {
                 0: 'Clear sky',
@@ -171,7 +166,6 @@ function WeatherWidget() {
 
     if (!weather?.current) return null;
 
-    // Get weather condition emoji
     const getWeatherEmoji = (desc) => {
         const d = desc?.toLowerCase() || '';
         if (d.includes('sun') || d.includes('clear')) return '☀️';
@@ -468,21 +462,62 @@ function SavedItemCard({ item, onDelete, onView, isDeleting }) {
 }
 
 // ─── Shopping List ────────────────────────────────────────────────────────────
+
 function ShoppingList() {
-    const [list, setList] = useState(() => loadList());
+    const [list, setList] = useState({ food: [], drinks: [] });
     const [newItem, setNewItem] = useState('');
     const [section, setSection] = useState('food');
     const [added, setAdded] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const handleAdd = () => {
+    // ─── Load from DB on mount ───────────────────────────────
+    useEffect(() => {
+        loadList().then(data => { setList(data); setLoading(false); });
+    }, []);
+
+    const handleAdd = async () => {
         if (!newItem.trim()) return;
-        setList(slAdd(section, newItem.trim()));
-        setAdded(newItem.trim());
+        const name = newItem.trim();
         setNewItem('');
-        setTimeout(() => setAdded(null), 1500);
+        try {
+            const res = await slAdd(section, name);
+            if (!res.duplicate) {
+                setList(prev => ({ ...prev, [section]: [...prev[section], res.item] }));
+            }
+            setAdded(name);
+            setTimeout(() => setAdded(null), 1500);
+        } catch {}
+    };
+
+    const handleToggle = async (section, id) => {
+        try {
+            const updated = await slToggle(id);
+            setList(prev => ({ ...prev, [section]: prev[section].map(i => i.id === id ? updated : i) }));
+        } catch {}
+    };
+
+    const handleRemove = async (section, id) => {
+        try {
+            await slRemove(id);
+            setList(prev => ({ ...prev, [section]: prev[section].filter(i => i.id !== id) }));
+        } catch {}
+    };
+
+    const handleClear = async (section) => {
+        try {
+            await slClear(section);
+            setList(prev => ({ ...prev, [section]: prev[section].filter(i => !i.checked) }));
+        } catch {}
     };
 
     const total = list.food.length + list.drinks.length;
+
+    if (loading) return (
+        <div className="shopping-list">
+            <h3 className="shopping-list-title">🛒 Shopping List</h3>
+            <p className="shopping-list-empty">Loading...</p>
+        </div>
+    );
 
     return (
         <div className="shopping-list">
@@ -508,17 +543,17 @@ function ShoppingList() {
             {added && <p className="shopping-list-added">✓ "{added}" added</p>}
 
             <SectionList label="🍽️ Grocery" color="#f97316" items={list.food}
-                onToggle={id => setList(slToggle('food', id))}
-                onRemove={id => setList(slRemove('food', id))}
-                onClear={() => setList(slClear('food'))}
+                onToggle={id => handleToggle('food', id)}
+                onRemove={id => handleRemove('food', id)}
+                onClear={() => handleClear('food')}
             />
 
             <div className="shopping-list-divider" />
 
             <SectionList label="🍸 Liquor Store" color="#a78bfa" items={list.drinks}
-                onToggle={id => setList(slToggle('drinks', id))}
-                onRemove={id => setList(slRemove('drinks', id))}
-                onClear={() => setList(slClear('drinks'))}
+                onToggle={id => handleToggle('drinks', id)}
+                onRemove={id => handleRemove('drinks', id)}
+                onClear={() => handleClear('drinks')}
             />
         </div>
     );
@@ -568,30 +603,6 @@ function Dashboard() {
     }, isLoading: statsLoading } = useDashboardStats();
     const deleteItemMutation = useDeleteItem();
     const loading = itemsLoading || statsLoading;
-
-    const birthdayData = useMemo(() => {
-        if (!user) return { birthday: null, isBirthdayToday: false, countdown: null, displayName: "User" };
-        let userData = null;
-        if (user.uid) {
-            const s = localStorage.getItem(`user_${user.uid}`);
-            userData = s ? JSON.parse(s) : null;
-        }
-        if (!userData) {
-            const s = localStorage.getItem("user");
-            userData = s ? JSON.parse(s) : null;
-        }
-        const birthday    = userData?.birthday || null;
-        const displayName = userData?.username || userData?.displayName
-            || user.username || user.displayName
-            || user.email?.split("@")[0] || "User";
-        return {
-            birthday,
-            isBirthdayToday: isUserBirthday(birthday),
-            countdown:       getBirthdayCountdown(birthday),
-            displayName,
-        };
-    }, [user]);
-
     const handleLogout = () => { logout(); navigate("/login"); };
 
     const handleDelete = (id) => {
@@ -621,47 +632,22 @@ function Dashboard() {
     }
 
     const STAT_CARDS = [
-        { icon:"🍽️", val: stats.meals,           label:"Saved Meals",      sub:"Food",     path:"/food"    },
-        { icon:"⛅",  val: stats.locations,       label:"Saved Locations",  sub:"Weather",  path:"/weather" },
-        { icon:"🎨", val: stats.artworks,         label:"Saved Artworks",   sub:"Art",      path:"/art"     },
-        { icon:"📚", val: stats.books,            label:"Saved Books",      sub:"Books",    path:"/books"   },
-        { icon:"🍸", val: stats.drinks,           label:"Saved Drinks",     sub:"Drinks",   path:"/drinks"  },
+        { icon:"🍽️", val: Number(stats?.meals) || 0,           label:"Saved Meals",      sub:"Food",     path:"/food"    },
+        { icon:"⛅",  val: Number(stats?.locations) || 0,       label:"Saved Locations",  sub:"Weather",  path:"/weather" },
+        { icon:"🎨", val: Number(stats?.artworks) || 0,         label:"Saved Artworks",   sub:"Art",      path:"/art"     },
+        { icon:"📚", val: Number(stats?.books) || 0,            label:"Saved Books",      sub:"Books",    path:"/books"   },
+        { icon:"🍸", val: Number(stats?.drinks) || 0,           label:"Saved Drinks",     sub:"Drinks",   path:"/drinks"  },
         { icon:"⚡", val:"GO!",                   label:"Pokémon Hub",      sub:"Play",     path:"/pokemon" },
-        { icon:"🚀", val: stats.spacePhotos,      label:"Space Photos",     sub:"NASA",     path:"/space"   },
-        { icon:"📓", val: stats.journalEntries,   label:"Journal Entries",  sub:"Journal",  path:"/journal" },
+        { icon:"🚀", val: Number(stats?.spacePhotos) || 0,      label:"Space Photos",     sub:"NASA",     path:"/space"   },
+        { icon:"📓", val: Number(stats?.journalEntries) || 0,   label:"Journal Entries",  sub:"Journal",  path:"/journal" },
     ];
 
     return (
         <div className="glass-page" style={{ background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)" }}>
             <div className="glass-container">
-                {birthdayData.isBirthdayToday && (
-                    <div className="birthday-banner">
-                        <div style={{ fontSize:"3rem", marginBottom:"1rem" }}>🎂</div>
-                        <h2 style={{ color:"var(--text-primary)", marginBottom:"0.5rem" }}>
-                            Happy Birthday, {birthdayData.displayName}! 🎉
-                        </h2>
-                        <p style={{ color:"var(--text-secondary)" }}>We hope you have an amazing day!</p>
-                        {birthdayData.birthday && calculateAge(birthdayData.birthday) && (
-                            <p style={{ color:"var(--text-tertiary)", marginTop:"0.5rem" }}>
-                                You're turning {calculateAge(birthdayData.birthday)} today!
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {!birthdayData.isBirthdayToday && birthdayData.countdown && birthdayData.countdown <= 30 && (
-                    <div className="birthday-countdown">
-                        <span style={{ fontSize:"1.5rem", marginRight:"0.5rem" }}>🎂</span>
-                        <span style={{ color:"var(--text-primary)" }}>
-                            Your birthday is in {birthdayData.countdown} day{birthdayData.countdown !== 1 ? "s" : ""}!
-                            {birthdayData.countdown <= 7 && " 🎉 So soon!"}
-                        </span>
-                    </div>
-                )}
-
                 <div className="dashboard-header-row">
                     <div className="glass-page-header">
-                        <h2>Welcome, {birthdayData.displayName}! 👋</h2>
+                        <h2>Welcome, {user?.username || user?.displayName || 'Explorer'}! 👋</h2>
                         <p className="subtitle">Here's everything you've saved across LifeHub</p>
                     </div>
                     <WeatherWidget />
@@ -708,16 +694,6 @@ function Dashboard() {
                         )}
                     </div>
                     <ShoppingList />
-                </div>
-
-                <div className="logout-section">
-                    <button
-                        className="glass-btn-secondary"
-                        onClick={handleLogout}
-                        style={{ background:"rgba(239,68,68,0.2)", borderColor:"rgba(239,68,68,0.3)" }}
-                    >
-                        🚪 Logout
-                    </button>
                 </div>
             </div>
             <ToastContainer toasts={toasts} onRemove={removeToast} />

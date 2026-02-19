@@ -1,3 +1,10 @@
+/* ═══════════════════════════════════════════════════════════════
+    Drinks Page Styles
+    Extends GlassDesignSystem.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Bar Background ───────────────────────────────────────── */
+
 .drinks-bar-background {
     position: fixed;
     top: 0;
@@ -17,13 +24,15 @@
     filter: brightness(0.6) blur(2px);
 }
 
-/* Content overlay */
+/* ─── Content Overlay ──────────────────────────────────────── */
+
 .drinks-content-overlay {
     position: relative;
     z-index: 1;
 }
 
-/* Clickable drink cards */
+/* ─── Drink Cards ──────────────────────────────────────────── */
+
 .drinks-clickable {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -34,7 +43,54 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* NEW VIBRANT DRINK MODAL */
+.drinks-card-image {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    border-radius: 12px 12px 0 0;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.drinks-card-content {
+    padding: 1.5rem;
+}
+
+.drinks-card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.drinks-card-category {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.drinks-card-meta {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.drinks-card-saved-date {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.drinks-remove-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    z-index: 10;
+}
+
+/* ─── Drink Recipe Modal ───────────────────────────────────── */
+
 .drinks-modal-overlay {
     position: fixed;
     top: 0;
@@ -79,7 +135,6 @@
     }
 }
 
-/* Full vibrant drink image background */
 .drinks-modal-bg-full {
     position: absolute;
     top: 0;
@@ -93,7 +148,6 @@
     z-index: 0;
 }
 
-/* Gradient overlay for readability */
 .drinks-modal-bg-full::after {
     content: '';
     position: absolute;
@@ -133,7 +187,6 @@
     transform: rotate(90deg);
 }
 
-/* New layout - side by side */
 .drinks-modal-layout-new {
     position: relative;
     z-index: 1;
@@ -145,7 +198,8 @@
     overflow-y: auto;
 }
 
-/* Left side - Featured drink */
+/* ─── Left Side - Featured Drink ───────────────────────────── */
+
 .drinks-featured-section {
     display: flex;
     flex-direction: column;
@@ -214,7 +268,8 @@
     backdrop-filter: blur(10px);
 }
 
-/* Right side - Recipe details */
+/* ─── Right Side - Recipe Details ──────────────────────────── */
+
 .drinks-recipe-section {
     display: flex;
     flex-direction: column;
@@ -250,18 +305,19 @@
     gap: 0.75rem;
 }
 
-.drinks-ingredients-list-new li {
+.drinks-ingredient-item {
     display: flex;
     gap: 1rem;
     padding: 0.75rem;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    align-items: center;
 }
 
 .ingredient-measure-new {
     font-weight: 700;
-    color: #fbbf24; /* Vibrant yellow */
+    color: #fbbf24;
     min-width: 100px;
     flex-shrink: 0;
 }
@@ -269,6 +325,28 @@
 .ingredient-name-new {
     color: white;
     font-weight: 500;
+    flex: 1;
+}
+
+.drinks-add-btn {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    border-radius: 8px;
+    color: #a78bfa;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.drinks-add-btn.added {
+    background: rgba(134, 239, 172, 0.2);
+    border: 1px solid rgba(134, 239, 172, 0.4);
+    color: #86efac;
 }
 
 .drinks-instructions-new {
@@ -284,15 +362,7 @@
     font-size: 1.1rem;
 }
 
-/* Responsive */
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
+/* ─── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 900px) {
     .drinks-modal-layout-new {

@@ -14,13 +14,13 @@ function ToastItem({ toast, onRemove }) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Slide in
         requestAnimationFrame(() => setVisible(true));
-        // Auto-dismiss
+        
         const timer = setTimeout(() => {
             setVisible(false);
             setTimeout(() => onRemove(toast.id), 300);
         }, toast.duration || 3500);
+        
         return () => clearTimeout(timer);
     }, []);
 
@@ -98,7 +98,6 @@ export function useToast() {
 }
 
 // ─── Confirm Dialog ───────────────────────────────────────────────────────────
-// Drop-in replacement for window.confirm() that matches the glass design
 
 export function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmColor = 'rgba(239,68,68,0.8)' }) {
     return (

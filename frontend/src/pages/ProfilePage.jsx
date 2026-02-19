@@ -8,7 +8,7 @@ import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const ProfilePage = () => {
     const { toasts, toast, removeToast } = useToast();
-    const [confirmStep, setConfirmStep] = useState(0); // 0=none, 1=first, 2=second
+    const [confirmStep, setConfirmStep] = useState(0);
     const navigate = useNavigate();
     const { user: authUser, token } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
@@ -175,60 +175,85 @@ const ProfilePage = () => {
 
     return (
         <>
-        <div className="glass-page">
-            <div className="glass-container" style={{ maxWidth: '800px' }}>
-                <div className="glass-page-header">
-                    <h2>👤 My Profile</h2>
-                    <p className="subtitle">Manage your account settings and preferences</p>
-                </div>
-
-                {profile.birthday && isUserBirthday(profile.birthday) && (
-                    <div className="glass-card" style={{ textAlign: 'center', marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))' }}>
-                        <h3 style={{ color: 'var(--text-primary)' }}>🎂 Happy Birthday! You are {calculateAge(profile.birthday)} today! 🎉</h3>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="glass-card" style={{ marginBottom: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-                        <p style={{ color: '#ef4444', margin: 0 }}>❌ {error}</p>
-                    </div>
-                )}
-                
-                {success && (
-                    <div className="glass-card" style={{ marginBottom: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                        <p style={{ color: '#10b981', margin: 0 }}>✅ {success}</p>
-                    </div>
-                )}
-
-                <div className="glass-card" style={{ padding: 0 }}>
-                    <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--glass-border)', padding: '1.5rem' }}>
-                        <button 
-                            className={activeTab === 'profile' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
-                            onClick={() => setActiveTab('profile')}
-                        >
-                            📝 Profile Info
-                        </button>
-                        <button 
-                            className={activeTab === 'password' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
-                            onClick={() => setActiveTab('password')}
-                        >
-                            🔐 Password
-                        </button>
-                        <button 
-                            className={activeTab === 'account' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
-                            onClick={() => setActiveTab('account')}
-                        >
-                            ⚙️ Account
-                        </button>
+            <div className="glass-page">
+                <div className="glass-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                    <div className="glass-page-header">
+                        <h2>👤 My Profile</h2>
+                        <p className="subtitle">Manage your account settings and preferences</p>
                     </div>
 
-                    <div style={{ padding: '2rem' }}>
+                    {profile.birthday && isUserBirthday(profile.birthday) && (
+                        <div className="glass-card" style={{ 
+                            textAlign: 'center', 
+                            marginBottom: '2rem', 
+                            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))' 
+                        }}>
+                            <h3 style={{ color: 'var(--text-primary)' }}>
+                                🎂 Happy Birthday! You are {calculateAge(profile.birthday)} today! 🎉
+                            </h3>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="glass-card" style={{ 
+                            marginBottom: '1rem', 
+                            padding: '1rem',
+                            background: 'rgba(239, 68, 68, 0.1)', 
+                            borderColor: 'rgba(239, 68, 68, 0.3)' 
+                        }}>
+                            <p style={{ color: '#ef4444', margin: 0, textAlign: 'center' }}>❌ {error}</p>
+                        </div>
+                    )}
+                    
+                    {success && (
+                        <div className="glass-card" style={{ 
+                            marginBottom: '1rem', 
+                            padding: '1rem',
+                            background: 'rgba(16, 185, 129, 0.1)', 
+                            borderColor: 'rgba(16, 185, 129, 0.3)' 
+                        }}>
+                            <p style={{ color: '#10b981', margin: 0, textAlign: 'center' }}>✅ {success}</p>
+                        </div>
+                    )}
+
+                    <div className="glass-card" style={{ padding: '2rem' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '1rem', 
+                            borderBottom: '1px solid var(--glass-border)', 
+                            paddingBottom: '1rem',
+                            marginBottom: '2rem',
+                            justifyContent: 'center'
+                        }}>
+                            <button 
+                                className={activeTab === 'profile' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                📝 Profile Info
+                            </button>
+                            <button 
+                                className={activeTab === 'password' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
+                                onClick={() => setActiveTab('password')}
+                            >
+                                🔐 Password
+                            </button>
+                            <button 
+                                className={activeTab === 'account' ? 'glass-btn glass-btn-sm' : 'glass-btn-secondary glass-btn-sm'}
+                                onClick={() => setActiveTab('account')}
+                            >
+                                ⚙️ Account
+                            </button>
+                        </div>
+
                         {activeTab === 'profile' && (
                             <form onSubmit={handleProfileUpdate}>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Personal Information</h3>
-                                
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Display Name
                                     </label>
                                     <input
@@ -238,11 +263,17 @@ const ProfilePage = () => {
                                         onChange={handleInputChange}
                                         placeholder="Your display name"
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Email
                                     </label>
                                     <input
@@ -251,15 +282,20 @@ const ProfilePage = () => {
                                         value={profile.email}
                                         disabled
                                         className="glass-input"
-                                        style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                                        style={{ width: '100%', opacity: 0.6, cursor: 'not-allowed' }}
                                     />
-                                    <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                                    <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', display: 'block', marginTop: '0.25rem' }}>
                                         Email cannot be changed
                                     </small>
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Birthday
                                     </label>
                                     <input
@@ -268,16 +304,22 @@ const ProfilePage = () => {
                                         value={profile.birthday}
                                         onChange={handleInputChange}
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
                                     {profile.birthday && calculateAge(profile.birthday) && (
-                                        <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                                        <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', display: 'block', marginTop: '0.25rem' }}>
                                             Age: {calculateAge(profile.birthday)} years old
                                         </small>
                                     )}
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Phone Number
                                     </label>
                                     <input
@@ -287,10 +329,11 @@ const ProfilePage = () => {
                                         onChange={handleInputChange}
                                         placeholder="+1 (555) 123-4567"
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
                                     <button type="submit" className="glass-btn" disabled={saving}>
                                         {saving ? 'Saving...' : '💾 Save Changes'}
                                     </button>
@@ -303,10 +346,13 @@ const ProfilePage = () => {
 
                         {activeTab === 'password' && (
                             <form onSubmit={handlePasswordChange}>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Change Password</h3>
-                                
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Current Password
                                     </label>
                                     <input
@@ -317,11 +363,17 @@ const ProfilePage = () => {
                                         placeholder="Enter current password"
                                         required
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         New Password
                                     </label>
                                     <input
@@ -333,14 +385,20 @@ const ProfilePage = () => {
                                         required
                                         minLength={6}
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
-                                    <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                                    <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', display: 'block', marginTop: '0.25rem' }}>
                                         Must be at least 6 characters
                                     </small>
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        color: 'var(--text-secondary)', 
+                                        fontWeight: '500' 
+                                    }}>
                                         Confirm New Password
                                     </label>
                                     <input
@@ -351,33 +409,55 @@ const ProfilePage = () => {
                                         placeholder="Confirm new password"
                                         required
                                         className="glass-input"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
 
-                                <button type="submit" className="glass-btn" disabled={saving}>
-                                    {saving ? 'Changing...' : '🔐 Change Password'}
-                                </button>
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+                                    <button type="submit" className="glass-btn" disabled={saving}>
+                                        {saving ? 'Changing...' : '🔐 Change Password'}
+                                    </button>
+                                </div>
                             </form>
                         )}
 
                         {activeTab === 'account' && (
                             <div>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Account Information</h3>
+                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem', textAlign: 'center' }}>
+                                    Account Information
+                                </h3>
                                 
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        marginBottom: '0.75rem', 
+                                        paddingBottom: '0.75rem', 
+                                        borderBottom: '1px solid var(--glass-border)' 
+                                    }}>
                                         <span style={{ color: 'var(--text-secondary)' }}>Email:</span>
-                                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{profile.email}</span>
+                                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                            {profile.email}
+                                        </span>
                                     </div>
                                     
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        marginBottom: '0.75rem', 
+                                        paddingBottom: '0.75rem', 
+                                        borderBottom: '1px solid var(--glass-border)' 
+                                    }}>
                                         <span style={{ color: 'var(--text-secondary)' }}>Account Created:</span>
                                         <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
                                             {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}
                                         </span>
                                     </div>
                                     
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between' 
+                                    }}>
                                         <span style={{ color: 'var(--text-secondary)' }}>Last Login:</span>
                                         <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
                                             {profile.lastLogin ? new Date(profile.lastLogin).toLocaleDateString() : 'N/A'}
@@ -385,7 +465,12 @@ const ProfilePage = () => {
                                     </div>
                                 </div>
 
-                                <div className="glass-card" style={{ marginTop: '2rem', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                                <div className="glass-card" style={{ 
+                                    background: 'rgba(239, 68, 68, 0.1)', 
+                                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                                    textAlign: 'center',
+                                    padding: '1.5rem'
+                                }}>
                                     <h4 style={{ color: '#ef4444', marginBottom: '0.75rem' }}>⚠️ Danger Zone</h4>
                                     <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.95rem' }}>
                                         Once you delete your account, there is no going back. Please be certain.
@@ -394,7 +479,12 @@ const ProfilePage = () => {
                                         className="glass-btn-secondary" 
                                         onClick={handleDeleteAccount}
                                         disabled={saving}
-                                        style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#ef4444' }}
+                                        style={{ 
+                                            background: 'rgba(239, 68, 68, 0.2)', 
+                                            borderColor: 'rgba(239, 68, 68, 0.3)', 
+                                            color: '#ef4444',
+                                            margin: '0 auto'
+                                        }}
                                     >
                                         {saving ? 'Deleting...' : '🗑️ Delete Account'}
                                     </button>
@@ -404,7 +494,6 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </div>
-        </div>
 
             {confirmStep === 1 && (
                 <ConfirmDialog
@@ -422,6 +511,7 @@ const ProfilePage = () => {
                     onCancel={() => setConfirmStep(0)}
                 />
             )}
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </>
     );

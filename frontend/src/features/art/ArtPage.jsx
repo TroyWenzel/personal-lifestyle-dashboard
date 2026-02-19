@@ -5,7 +5,11 @@ import { getArtworkById } from "@/api/services/artService";
 import { saveItem } from "@/api/services/contentService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Art.css";
-import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
+
+// ═══════════════════════════════════════════════════════════════
+// Art Discovery Page
+// ═══════════════════════════════════════════════════════════════
 
 const ArtPage = () => {
     const { toasts, toast, removeToast } = useToast();
@@ -15,7 +19,7 @@ const ArtPage = () => {
     const [selectedArtwork, setSelectedArtwork] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [backgroundArt, setBackgroundArt] = useState([]);
-    const [savedArtworksData, setSavedArtworksData] = useState({}); // Store full artwork data by saved item ID
+    const [savedArtworksData, setSavedArtworksData] = useState({});
     const location = useLocation();
 
     const { data: artResponse, isLoading } = useSearchArtworks(currentQuery, 1, {
@@ -28,14 +32,13 @@ const ArtPage = () => {
     const { data: allSavedItems = [], refetch: refetchSaved } = useSavedItems();
     const deleteItemMutation = useDeleteItem();
     
-    // Filter for artwork items - check both 'art' and 'artwork' types
+    // Filter for artwork items
     const savedArtworks = allSavedItems.filter(item => 
         item.type === 'art' || item.type === 'artwork' || item.category === 'art'
     );
 
-    // Load saved artworks data from localStorage or context on mount
+    // ─── Load saved artworks data from localStorage ───────────
     useEffect(() => {
-        // Try to load saved artworks data from localStorage
         try {
             const stored = localStorage.getItem('savedArtworksData');
             if (stored) {
@@ -46,7 +49,7 @@ const ArtPage = () => {
         }
     }, []);
 
-    // Save savedArtworksData to localStorage whenever it changes
+    // ─── Save artworks data to localStorage ───────────────────
     useEffect(() => {
         try {
             localStorage.setItem('savedArtworksData', JSON.stringify(savedArtworksData));
@@ -55,8 +58,7 @@ const ArtPage = () => {
         }
     }, [savedArtworksData]);
 
-
-    // Switch to saved tab when navigated from Dashboard
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.tab === 'saved') {
             setActiveTab('saved');
@@ -64,6 +66,7 @@ const ArtPage = () => {
         }
     }, [location]);
 
+    // ─── Load background art mosaic ───────────────────────────
     useEffect(() => {
         const fetchBackgroundArt = async () => {
             try {
@@ -85,6 +88,8 @@ const ArtPage = () => {
         fetchBackgroundArt();
     }, []);
 
+    // ─── Event Handlers ───────────────────────────────────────
+
     const handleSearch = () => {
         if (searchQuery.trim()) {
             setCurrentQuery(searchQuery.trim());
@@ -93,37 +98,38 @@ const ArtPage = () => {
     };
 
     const handleArtworkClick = async (artwork) => {
-        // If we have a valid ID, try to fetch full details
+        const savedMatch = savedArtworks.find(
+            s => s.external_id === String(artwork.id || artwork.external_id)
+        );
+        const savedItemId = artwork.savedItemId || savedMatch?.id || null;
+
         if (artwork?.id && artwork.id !== 'null' && artwork.id !== 'undefined') {
             try {
-                // Use the imported service function
                 const detailedArtwork = await getArtworkById(artwork.id);
-                setSelectedArtwork(detailedArtwork);
+                setSelectedArtwork({ ...detailedArtwork, savedItemId });
                 setShowModal(true);
                 return;
             } catch (error) {
                 console.error('Error fetching artwork details:', error);
-                // If fetch fails, fall back to the artwork data we have
             }
         }
-        
-        // If no valid ID or fetch failed, show what we have
-        setSelectedArtwork(artwork);
+
+        setSelectedArtwork({ ...artwork, savedItemId });
         setShowModal(true);
     };
 
     const handleSave = async (artwork) => {
         const artworkId = artwork.id || artwork.external_id;
-        if (!artworkId) { toast.error('Cannot save artwork: Invalid ID'); return; }
+        if (!artworkId) { 
+            toast.error('Cannot save artwork: Invalid ID'); 
+            return; 
+        }
 
         const image_id = artwork.image_id;
         const thumbnailUrl = image_id
             ? `https://www.artic.edu/iiif/2/${image_id}/full/400,/0/default.jpg`
             : null;
 
-        // Call saveItem directly so we fully control the metadata shape
-        // (avoids the double-wrap bug where saveArtwork re-reads artData.image_id
-        //  which is undefined on a pre-formatted object)
         try {
             const result = await saveItem({
                 category: "art",
@@ -142,16 +148,18 @@ const ArtPage = () => {
                     department: artwork.department_title,
                 }
             });
+            
             if (result?.id) {
                 setSavedArtworksData(prev => ({
                     ...prev,
                     [result.id]: { ...artwork, id: artworkId, image_id }
                 }));
             }
-            // Manually refetch so the saved list updates
+            
             saveArtworkMutation.reset();
             refetchSaved();
             toast.success("Artwork saved to your collection!");
+            
         } catch (error) {
             if (error?.response?.status === 409) {
                 toast.info("Already in your collection!");
@@ -165,7 +173,6 @@ const ArtPage = () => {
     const handleDelete = (itemId) => {
         deleteItemMutation.mutate(itemId, {
             onSuccess: () => {
-                // Remove from savedArtworksData when deleted
                 setSavedArtworksData(prev => {
                     const newData = { ...prev };
                     delete newData[itemId];
@@ -180,22 +187,11 @@ const ArtPage = () => {
         });
     };
 
-    // Helper function to extract image_id from thumbnail URL
-    const extractImageIdFromThumbnail = (thumbnailUrl) => {
-        if (!thumbnailUrl) return null;
-        
-        try {
-            // The pattern is: https://www.artic.edu/iiif/2/[image_id]/full/400,/0/default.jpg
-            const matches = thumbnailUrl.match(/\/iiif\/2\/([^\/]+)\/full\//);
-            return matches ? matches[1] : null;
-        } catch (e) {
-            console.error('Error extracting image_id:', e);
-        }
-        return null;
-    };
+    // ─── Render ───────────────────────────────────────────────
 
     return (
         <div className="glass-page">
+            {/* ─── Background Art Mosaic ────────────────────── */}
             <div className="art-mosaic-background">
                 <div className="art-mosaic-grid">
                     {backgroundArt.map((art, index) => (
@@ -215,11 +211,13 @@ const ArtPage = () => {
             </div>
 
             <div className="glass-container art-content-overlay">
+                {/* ─── Header ───────────────────────────────── */}
                 <div className="glass-page-header">
                     <h2>🎨 Art Discovery</h2>
                     <p className="subtitle">Explore masterpieces from museums worldwide</p>
                 </div>
 
+                {/* ─── Tab Switcher ─────────────────────────── */}
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                     <button 
                         className="glass-tab active"
@@ -230,6 +228,7 @@ const ArtPage = () => {
                     </button>
                 </div>
 
+                {/* ─── Search Tab ────────────────────────────── */}
                 {activeTab === 'search' && (
                     <>
                         <div className="glass-search-section">
@@ -267,7 +266,7 @@ const ArtPage = () => {
                                         className="glass-item-card art-clickable"
                                         onClick={() => handleArtworkClick(artwork)}
                                     >
-                                        {artwork.image_id && (
+                                        {artwork.image_id ? (
                                             <img 
                                                 src={`https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg`}
                                                 alt={artwork.title}
@@ -280,44 +279,22 @@ const ArtPage = () => {
                                                 loading="lazy"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
-                                                    e.target.parentElement.querySelector('.fallback-image')?.classList.remove('hidden');
                                                 }}
                                             />
-                                        )}
-                                        {!artwork.image_id && (
-                                            <div className="fallback-image" style={{
-                                                width: '100%',
-                                                height: '250px',
-                                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                borderRadius: '12px 12px 0 0',
-                                                fontSize: '3rem'
-                                            }}>
+                                        ) : (
+                                            <div className="art-fallback-image">
                                                 🎨
                                             </div>
                                         )}
                                         <div style={{ padding: '1.5rem' }}>
-                                            <h3 style={{ 
-                                                fontSize: '1.1rem', 
-                                                marginBottom: '0.5rem',
-                                                color: 'var(--text-primary)'
-                                            }}>
+                                            <h3 className="art-card-title">
                                                 {artwork.title || "Untitled"}
                                             </h3>
-                                            <p style={{ 
-                                                color: 'var(--text-secondary)',
-                                                marginBottom: '0.5rem'
-                                            }}>
+                                            <p className="art-card-artist">
                                                 {artwork.artist_title || "Unknown Artist"}
                                             </p>
                                             {artwork.date_display && (
-                                                <p style={{ 
-                                                    fontSize: '0.85rem',
-                                                    color: 'var(--text-tertiary)',
-                                                    marginBottom: '0.25rem'
-                                                }}>
+                                                <p className="art-card-date">
                                                     📅 {artwork.date_display}
                                                 </p>
                                             )}
@@ -337,6 +314,7 @@ const ArtPage = () => {
                             </div>
                         )}
 
+                        {/* ─── Empty States ───────────────────── */}
                         {artworks.length === 0 && !isLoading && currentQuery && (
                             <div className="glass-empty-state">
                                 <span className="glass-empty-icon">🎨</span>
@@ -367,15 +345,14 @@ const ArtPage = () => {
                     </>
                 )}
 
+                {/* ─── Saved Tab ─────────────────────────────── */}
                 {activeTab === 'saved' && (
                     <>
                         {savedArtworks.length > 0 ? (
                             <div className="glass-grid">
                                 {savedArtworks.map(item => {
-                                    // Get the full artwork data if we have it
                                     const fullArtworkData = savedArtworksData[item.id];
                                     
-                                    // Determine artist name - check all possible sources
                                     const artistName = 
                                         fullArtworkData?.artist_title || 
                                         fullArtworkData?.artist_display ||
@@ -384,19 +361,13 @@ const ArtPage = () => {
                                         item.metadata?.artist_display ||
                                         "Unknown Artist";
                                     
-                                    // Determine image URL
                                     let imageUrl = null;
                                     
-                                    // Try to get from full data first
                                     if (fullArtworkData?.image_id) {
                                         imageUrl = `https://www.artic.edu/iiif/2/${fullArtworkData.image_id}/full/400,/0/default.jpg`;
-                                    } 
-                                    // Then try from metadata
-                                    else if (item.metadata?.image_id) {
+                                    } else if (item.metadata?.image_id) {
                                         imageUrl = `https://www.artic.edu/iiif/2/${item.metadata.image_id}/full/400,/0/default.jpg`;
-                                    }
-                                    // Then try from stored thumbnail
-                                    else if (item.metadata?.thumbnail) {
+                                    } else if (item.metadata?.thumbnail) {
                                         imageUrl = item.metadata.thumbnail;
                                     }
                                     
@@ -427,65 +398,30 @@ const ArtPage = () => {
                                                 <img 
                                                     src={imageUrl}
                                                     alt={item.title}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '250px',
-                                                        objectFit: 'cover',
-                                                        borderRadius: '12px 12px 0 0'
-                                                    }}
+                                                    className="art-card-image"
                                                     loading="lazy"
                                                     onError={(e) => {
                                                         e.target.style.display = 'none';
-                                                        const parent = e.target.parentElement;
-                                                        const fallback = document.createElement('div');
-                                                        fallback.className = 'fallback-image';
-                                                        fallback.style.cssText = 'width: 100%; height: 250px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0; font-size: 3rem;';
-                                                        fallback.textContent = '🎨';
-                                                        parent.insertBefore(fallback, e.target);
                                                     }}
                                                 />
                                             ) : (
-                                                <div style={{
-                                                    width: '100%',
-                                                    height: '250px',
-                                                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    borderRadius: '12px 12px 0 0',
-                                                    fontSize: '3rem'
-                                                }}>
+                                                <div className="art-fallback-image">
                                                     🎨
                                                 </div>
                                             )}
                                             <div style={{ padding: '1.5rem' }}>
-                                                <h3 style={{ 
-                                                    fontSize: '1.1rem', 
-                                                    marginBottom: '0.5rem',
-                                                    color: 'var(--text-primary)'
-                                                }}>
+                                                <h3 className="art-card-title">
                                                     {item.title}
                                                 </h3>
-                                                <p style={{ 
-                                                    color: 'var(--text-secondary)',
-                                                    marginBottom: '0.5rem'
-                                                }}>
+                                                <p className="art-card-artist">
                                                     {artistName}
                                                 </p>
                                                 {(item.metadata?.date || fullArtworkData?.date_display) && (
-                                                    <p style={{ 
-                                                        fontSize: '0.85rem',
-                                                        color: 'var(--text-tertiary)',
-                                                        marginBottom: '0.25rem'
-                                                    }}>
+                                                    <p className="art-card-date">
                                                         📅 {item.metadata?.date || fullArtworkData?.date_display}
                                                     </p>
                                                 )}
-                                                <p style={{ 
-                                                    fontSize: '0.8rem',
-                                                    color: 'var(--text-tertiary)',
-                                                    marginBottom: '1rem'
-                                                }}>
+                                                <p className="art-card-saved-date">
                                                     Saved {new Date(item.createdAt).toLocaleDateString()}
                                                 </p>
                                                 <button 
@@ -520,6 +456,7 @@ const ArtPage = () => {
                 )}
             </div>
 
+            {/* ─── Artwork Detail Modal ──────────────────────── */}
             {showModal && selectedArtwork && (
                 <div className="art-modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="art-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -539,23 +476,10 @@ const ArtPage = () => {
                                         className="art-modal-image"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
-                                            const parent = e.target.parentElement;
-                                            const fallback = document.createElement('div');
-                                            fallback.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
-                                            fallback.textContent = '🎨';
-                                            parent.appendChild(fallback);
                                         }}
                                     />
                                 ) : (
-                                    <div style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '5rem',
-                                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)'
-                                    }}>
+                                    <div className="art-fallback-image-large">
                                         🎨
                                     </div>
                                 )}
@@ -624,19 +548,31 @@ const ArtPage = () => {
                                     </div>
                                 )}
 
-                                <button 
-                                    onClick={() => handleSave(selectedArtwork)}
-                                    className="glass-btn"
-                                    style={{ marginTop: '2rem' }}
-                                    disabled={saveArtworkMutation.isLoading}
-                                >
-                                    {saveArtworkMutation.isLoading ? '💾 Saving...' : '💾 Save to Collection'}
-                                </button>
+                                {selectedArtwork.savedItemId ? (
+                                    <button
+                                        onClick={() => { handleDelete(selectedArtwork.savedItemId); setShowModal(false); }}
+                                        className="glass-btn"
+                                        style={{ marginTop: '2rem', background: 'rgba(239,68,68,0.2)', borderColor: 'rgba(239,68,68,0.4)' }}
+                                        disabled={deleteItemMutation.isLoading}
+                                    >
+                                        🗑️ Remove from Collection
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleSave(selectedArtwork)}
+                                        className="glass-btn"
+                                        style={{ marginTop: '2rem' }}
+                                        disabled={saveArtworkMutation.isLoading}
+                                    >
+                                        {saveArtworkMutation.isLoading ? '💾 Saving...' : '💾 Save to Collection'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

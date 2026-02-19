@@ -1,8 +1,10 @@
 import apiClient from "../client";
 
-// ============================================
-// Generic Save Functions
-// ============================================
+// ═══════════════════════════════════════════════════════════════
+// Content Service - Handles all saved items
+// ═══════════════════════════════════════════════════════════════
+
+// ─── Generic Save Functions ───────────────────────────────────
 
 /**
  * Generic function to save any type of content item to the backend
@@ -19,9 +21,7 @@ export const saveItem = async (itemData) => {
     }
 };
 
-// ============================================
-// Food/Meal Functions
-// ============================================
+// ─── Food/Meal Functions ──────────────────────────────────────
 
 /**
  * Format and save a meal from TheMealDB API
@@ -29,7 +29,6 @@ export const saveItem = async (itemData) => {
  * @returns {Promise} - API response
  */
 export const saveMeal = async (meal) => {
-    // Extract ingredients from MealDB format (up to 20 ingredients)
     const ingredients = [];
     for (let i = 1; i <= 20; i++) {
         const ingredient = meal[`strIngredient${i}`];
@@ -45,7 +44,7 @@ export const saveMeal = async (meal) => {
     return saveItem({
         category: "food",
         type: "meal",
-        external_id: meal.idMeal, // Store original API ID to prevent duplicates
+        external_id: meal.idMeal,
         title: meal.strMeal,
         description: `${meal.strCategory} - ${meal.strArea}`,
         metadata: {
@@ -58,9 +57,7 @@ export const saveMeal = async (meal) => {
     });
 };
 
-// ============================================
-// Weather/Location Functions
-// ============================================
+// ─── Weather/Location Functions ───────────────────────────────
 
 /**
  * Format and save weather location data
@@ -68,7 +65,6 @@ export const saveMeal = async (meal) => {
  * @returns {Promise} - API response
  */
 export const saveLocation = async (weatherData) => {
-    // Handle both WeatherStack and OpenWeatherMap formats
     const location = weatherData.location || weatherData;
     const current = weatherData.current || weatherData;
     
@@ -92,9 +88,7 @@ export const saveLocation = async (weatherData) => {
     });
 };
 
-// ============================================
-// Art Functions
-// ============================================
+// ─── Art Functions ─────────────────────────────────────────────
 
 /**
  * Format and save artwork from Art Institute of Chicago API
@@ -126,9 +120,8 @@ export const saveArtwork = async (artData) => {
     });
 };
 
-// ============================================
-// Journal Functions
-// ============================================
+// ─── Journal Functions ─────────────────────────────────────────
+
 export const saveJournal = async (journalData) => {
     return saveItem({
         category: "personal",
@@ -142,9 +135,9 @@ export const saveJournal = async (journalData) => {
         }
     });
 };
-// ============================================
-// Book Functions
-// ============================================
+
+// ─── Book Functions ────────────────────────────────────────────
+
 export const saveBook = async (book) => {
     return saveItem({
         category: "books",
@@ -166,9 +159,7 @@ export const saveBook = async (book) => {
     });
 };
 
-// ============================================
-// Drink Functions
-// ============================================
+// ─── Drink Functions ───────────────────────────────────────────
 
 /**
  * Format and save a drink from TheCocktailDB API
@@ -176,7 +167,6 @@ export const saveBook = async (book) => {
  * @returns {Promise} - API response
  */
 export const saveDrink = async (drink) => {
-    // Extract ingredients from CocktailDB format (up to 15 ingredients)
     const ingredients = [];
     for (let i = 1; i <= 15; i++) {
         const ingredient = drink[`strIngredient${i}`];
@@ -207,9 +197,7 @@ export const saveDrink = async (drink) => {
     });
 };
 
-// ============================================
-// Space Functions
-// ============================================
+// ─── Space Functions ───────────────────────────────────────────
 
 /**
  * Format and save a NASA APOD photo
@@ -235,9 +223,7 @@ export const saveSpacePhoto = async (photo) => {
     });
 };
 
-// ============================================
-// Fetch Functions
-// ============================================
+// ─── Fetch Functions ───────────────────────────────────────────
 
 /**
  * Fetch all saved items for the current user
@@ -249,7 +235,6 @@ export const getSavedItems = async () => {
         return response.content || [];
     } catch (error) {
         console.error('Error fetching saved items:', error);
-        // Fallback to localStorage in development mode
         if (import.meta.env.DEV) {
             console.log('Using localStorage fallback for saved items');
             return getLocalStorageItems();
@@ -265,15 +250,13 @@ export const getSavedItems = async () => {
 export const getDashboardStats = async () => {
     try {
         const response = await apiClient.get('/api/content/stats');
-        return response;
+        return response.stats || response;
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
-        // Fallback to localStorage in development mode
         if (import.meta.env.DEV) {
             console.log('Using localStorage fallback for stats');
             return getLocalStorageStats();
         }
-        // Return empty stats if API fails
         return {
             meals: 0,
             journalEntries: 0,
@@ -302,9 +285,9 @@ export const deleteItem = async (itemId) => {
     }
 };
 
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 // LocalStorage Fallback Functions (Development Only)
-// ============================================
+// ═══════════════════════════════════════════════════════════════
 
 /**
  * Get all saved items from localStorage (development fallback)
@@ -321,18 +304,16 @@ const getLocalStorageItems = () => {
         const savedLocations = JSON.parse(localStorage.getItem('savedLocations') || '[]');
         const savedArtworks = JSON.parse(localStorage.getItem('savedArtworks') || '[]');
         
-        // Format items to match API response structure
         const formatItem = (item, type) => ({
             id: item.id || Date.now() + Math.random(),
             type: type,
             category: type === 'meal' ? 'food' : 
-                     type === 'location' ? 'weather' :
-                     type === 'artwork' ? 'art' : 
-                     type === 'journal' ? 'personal' :
-                     type === 'activity' ? 'hobby' :
-                     type === 'book' ? 'books' :
-                     type === 'drink' ? 'drinks' :
-                     type === 'space' ? 'space' : 'other',
+                    type === 'location' ? 'weather' :
+                    type === 'artwork' ? 'art' : 
+                    type === 'journal' ? 'personal' :
+                    type === 'book' ? 'books' :
+                    type === 'drink' ? 'drinks' :
+                    type === 'space' ? 'space' : 'other',
             title: item.title || item.strMeal || item.name || item.activity || 'Untitled',
             description: item.description || '',
             user_notes: item.user_notes || item.content || '',
@@ -351,7 +332,6 @@ const getLocalStorageItems = () => {
             ...savedArtworks.map(item => formatItem(item, 'artwork'))
         ];
         
-        // Sort by date, newest first
         return allItems.sort((a, b) => 
             new Date(b.createdAt) - new Date(a.createdAt)
         );
@@ -389,72 +369,5 @@ const getLocalStorageStats = () => {
             locations: 0,
             artworks: 0
         };
-    }
-};
-
-// ============================================
-// LocalStorage Save Functions (Development Only)
-// ============================================
-
-/**
- * Save a meal to localStorage (development fallback)
- * @param {Object} meal - Meal data to save
- */
-export const saveMealToLocalStorage = (meal) => {
-    try {
-        const savedMeals = JSON.parse(localStorage.getItem('savedMeals') || '[]');
-        const newMeal = {
-            id: Date.now(),
-            ...meal,
-            savedAt: new Date().toISOString()
-        };
-        savedMeals.unshift(newMeal);
-        localStorage.setItem('savedMeals', JSON.stringify(savedMeals));
-        return newMeal;
-    } catch (error) {
-        console.error('Error saving meal to localStorage:', error);
-        throw error;
-    }
-};
-
-/**
- * Save a location to localStorage (development fallback)
- * @param {Object} location - Location data to save
- */
-export const saveLocationToLocalStorage = (location) => {
-    try {
-        const savedLocations = JSON.parse(localStorage.getItem('savedLocations') || '[]');
-        const newLocation = {
-            id: Date.now(),
-            ...location,
-            savedAt: new Date().toISOString()
-        };
-        savedLocations.unshift(newLocation);
-        localStorage.setItem('savedLocations', JSON.stringify(savedLocations));
-        return newLocation;
-    } catch (error) {
-        console.error('Error saving location to localStorage:', error);
-        throw error;
-    }
-};
-
-/**
- * Save an artwork to localStorage (development fallback)
- * @param {Object} artwork - Artwork data to save
- */
-export const saveArtworkToLocalStorage = (artwork) => {
-    try {
-        const savedArtworks = JSON.parse(localStorage.getItem('savedArtworks') || '[]');
-        const newArtwork = {
-            id: Date.now(),
-            ...artwork,
-            savedAt: new Date().toISOString()
-        };
-        savedArtworks.unshift(newArtwork);
-        localStorage.setItem('savedArtworks', JSON.stringify(savedArtworks));
-        return newArtwork;
-    } catch (error) {
-        console.error('Error saving artwork to localStorage:', error);
-        throw error;
     }
 };

@@ -1,5 +1,14 @@
+// ═══════════════════════════════════════════════════════════════
+// Open Library API Service
+// ═══════════════════════════════════════════════════════════════
+
 const API_BASE = 'https://openlibrary.org';
 
+/**
+ * Search for books using Open Library API
+ * @param {string} query - Search term (title, author, ISBN)
+ * @returns {Promise<Object>} - Search results with books data
+ */
 export const searchBooks = async (query) => {
     try {
         const response = await fetch(

@@ -3,6 +3,10 @@ import { AuthContext } from "../../context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import "../../styles/components/Navbar.css";
 
+// ═══════════════════════════════════════════════════════════════
+// Navigation Component
+// ═══════════════════════════════════════════════════════════════
+
 const Navbar = () => {
     const { token, logout, user } = useContext(AuthContext);
     const location = useLocation();
@@ -27,6 +31,7 @@ const Navbar = () => {
 
     return (
         <nav className="navbar glass-nav">
+            {/* ─── Brand ───────────────────────────────────── */}
             <div className="navbar-brand">
                 <Link to="/" className="brand-link" onClick={closeMobileMenu}>
                     <span className="brand-icon">✨</span>
@@ -34,6 +39,7 @@ const Navbar = () => {
                 </Link>
             </div>
             
+            {/* ─── Mobile Menu Button ──────────────────────── */}
             <button 
                 className={`mobile-menu-btn ${mobileMenuOpen ? 'active' : ''}`}
                 aria-label="Toggle menu"
@@ -44,16 +50,16 @@ const Navbar = () => {
                 <span className="hamburger-line"></span>
             </button>
 
+            {/* ─── Navigation Links ────────────────────────── */}
             <div className={`navbar-links-container ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="navbar-links">
-                    {navItems.map((item, index) => {
+                    {navItems.map((item) => {
                         if (item.public || (item.protected && token)) {
                             return (
                                 <Link 
                                     key={item.path}
                                     to={item.path} 
                                     className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
-                                    style={{ '--index': index }}
                                     onClick={closeMobileMenu}
                                 >
                                     <span className="nav-label">
@@ -68,6 +74,7 @@ const Navbar = () => {
                     })}
                 </div>
                 
+                {/* ─── Mobile Auth Menu ─────────────────────── */}
                 <div className="navbar-auth-mobile">
                     {token ? (
                         <>
@@ -95,6 +102,7 @@ const Navbar = () => {
                 </div>
             </div>
 
+            {/* ─── Desktop Auth Menu ───────────────────────── */}
             <div className="navbar-auth">
                 {token ? (
                     <div className="user-menu">
@@ -102,7 +110,9 @@ const Navbar = () => {
                             <div className="user-greeting">
                                 <span className="greeting-emoji">👋</span>
                                 <span className="greeting-text">
-                                    Hello, <span className="user-name">{user?.username || user?.email?.split('@')[0] || 'Explorer'}</span>
+                                    Hello, <span className="user-name">
+                                        {user?.username || user?.email?.split('@')[0] || 'Explorer'}
+                                    </span>
                                 </span>
                             </div>
                         </Link>
@@ -129,6 +139,7 @@ const Navbar = () => {
                 )}
             </div>
 
+            {/* ─── Mobile Menu Overlay ─────────────────────── */}
             {mobileMenuOpen && (
                 <div 
                     className="mobile-menu-overlay" 

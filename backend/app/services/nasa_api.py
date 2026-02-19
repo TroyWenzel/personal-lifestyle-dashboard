@@ -1,31 +1,32 @@
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import current_app
 
-class NASAAPI:
+# ═══════════════════════════════════════════════════════════════
+# NASA API Service
+# ═══════════════════════════════════════════════════════════════
 
+class NASAAPI:
+    # ═══════════════════════════════════════════════════════════════
+    # ─────────Handles all communication with NASA APIs─────────────
+    # ═══════════════════════════════════════════════════════════════    
     def __init__(self):
         self.api_key = os.getenv('NASA_API_KEY')
         self.base_url = "https://api.nasa.gov"
         
         if not self.api_key:
-            print("ERROR: NASA_API_KEY environment variable not set!")
-            print("Please add it to your .env file or environment variables.")
+            current_app.logger.error("NASA_API_KEY environment variable not set")
     
     def get_apod(self, date=None):
-
+        # ═══════════════════════════════════════════════════════════════
+        # ──────────────Get Astronomy Picture of the Day─────────────────
+        # ═══════════════════════════════════════════════════════════════        
         if not self.api_key:
-            return {
-                'error': 'api_key_missing',
-                'message': 'NASA API key is not configured.'
-            }
+            return self._error_response('api_key_missing', 'NASA API key is not configured')
         
         try:
-            params = {
-                'api_key': self.api_key
-            }
-            
+            params = {'api_key': self.api_key}
             if date:
                 params['date'] = date
             
@@ -37,22 +38,26 @@ class NASAAPI:
             
             if response.status_code == 200:
                 return response.json()
-            else:
-                current_app.logger.error(f"NASA APOD API error: {response.status_code}")
-                return {
-                    'error': 'api_error',
-                    'message': 'Failed to fetch Astronomy Picture of the Day.'
-                }
+            
+            current_app.logger.error(f"NASA APOD error: {response.status_code}")
+            return self._error_response('api_error', 'Failed to fetch Astronomy Picture of the Day')
                 
+        except requests.exceptions.Timeout:
+            current_app.logger.error("NASA APOD timeout")
+            return self._error_response('timeout', 'NASA API request timed out')
+            
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error("NASA APOD connection error")
+            return self._error_response('connection_error', 'Could not connect to NASA API')
+            
         except Exception as e:
             current_app.logger.error(f"NASA APOD error: {str(e)}")
-            return {
-                'error': 'internal_error',
-                'message': 'Failed to fetch NASA data.'
-            }
+            return self._error_response('internal_error', 'Failed to fetch NASA data')
     
     def get_mars_rover_photos(self, rover='curiosity', earth_date=None, page=1):
-
+        # ═══════════════════════════════════════════════════════════════
+        # ────────────────Get photos from Mars rovers────────────────────
+        # ═══════════════════════════════════════════════════════════════        
         if not self.api_key:
             return {'error': 'api_key_missing'}
         
@@ -65,7 +70,6 @@ class NASAAPI:
             if earth_date:
                 params['earth_date'] = earth_date
             else:
-                # Default to today's date
                 params['earth_date'] = datetime.now().strftime('%Y-%m-%d')
             
             response = requests.get(
@@ -76,34 +80,26 @@ class NASAAPI:
             
             if response.status_code == 200:
                 return response.json()
-            else:
-                return {'error': 'api_error', 'photos': []}
+            
+            return {'error': 'api_error', 'photos': []}
                 
         except Exception as e:
-            current_app.logger.error(f"Mars Rover API error: {str(e)}")
+            current_app.logger.error(f"Mars Rover error: {str(e)}")
             return {'error': 'internal_error', 'photos': []}
     
     def get_space_backgrounds(self, count=10):
-        """Get multiple APODs for rotating backgrounds"""
+        # ═══════════════════════════════════════════════════════════════
+        # ────────Get multiple APODs for rotating backgrounds────────────
+        # ═══════════════════════════════════════════════════════════════        
         if not self.api_key:
-            current_app.logger.error("NASA API key is missing!")
-            return {
-                'error': 'api_key_missing',
-                'message': 'NASA API key is not configured.'
-            }
+            return self._error_response('api_key_missing', 'NASA API key is not configured')
         
         try:
-            # Instead of using count parameter (which might not work),
-            # fetch recent APODs from the past days
-            from datetime import datetime, timedelta
-            
             images = []
             today = datetime.now()
             
-            current_app.logger.info(f"Fetching {count} NASA backgrounds from recent days...")
-            
-            # Try to fetch APOD from the last 15 days to get 10 images
-            for i in range(15):
+            # Fetch APOD from recent days
+            for i in range(min(count * 2, 30)):  # Try up to 30 days
                 if len(images) >= count:
                     break
                     
@@ -115,30 +111,19 @@ class NASAAPI:
                 }
                 
                 try:
-                    current_app.logger.info(f"Fetching APOD for {date}...")
                     response = requests.get(
                         f"{self.base_url}/planetary/apod",
                         params=params,
                         timeout=10
                     )
                     
-                    current_app.logger.info(f"APOD {date} status: {response.status_code}")
-                    
                     if response.status_code == 200:
                         apod = response.json()
-                        media_type = apod.get('media_type')
-                        current_app.logger.info(f"APOD {date} media type: {media_type}")
-                        # Only add if it's an image (not video)
-                        if media_type == 'image':
+                        if apod.get('media_type') == 'image':
                             images.append(apod)
-                            current_app.logger.info(f"Added image from {date}, total: {len(images)}")
-                    else:
-                        current_app.logger.error(f"APOD {date} failed: {response.text}")
-                except Exception as e:
-                    current_app.logger.error(f"Failed to fetch APOD for {date}: {str(e)}")
+                            
+                except Exception:
                     continue
-            
-            current_app.logger.info(f"Successfully fetched {len(images)} background images")
             
             return {
                 'success': True,
@@ -147,11 +132,16 @@ class NASAAPI:
                 
         except Exception as e:
             current_app.logger.error(f"NASA backgrounds error: {str(e)}")
-            import traceback
-            current_app.logger.error(traceback.format_exc())
-            return {
-                'error': 'internal_error',
-                'message': f'Failed to fetch NASA data: {str(e)}'
-            }
+            return self._error_response('internal_error', 'Failed to fetch NASA backgrounds')
+    
+    def _error_response(self, error_code, message):
+        # ═══════════════════════════════════════════════════════════════
+        # ────────Helper to create consistent error responses────────────
+        # ═══════════════════════════════════════════════════════════════ 
+        return {
+            'error': error_code,
+            'message': message
+        }
 
+# ─── Singleton Instance ────────────────────────────────────────
 nasa_api = NASAAPI()

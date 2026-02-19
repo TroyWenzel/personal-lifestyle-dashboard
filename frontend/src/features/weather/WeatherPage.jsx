@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useWeather, useSaveLocation, useDeleteItem, useSavedItems } from "@/api/queries";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Weather.css";
-import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 
-// Load Leaflet CSS and JS once globally
+// ─── Load Leaflet CSS and JS once globally ───────────────────
 if (typeof window !== 'undefined' && !window.leafletLoaded) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -19,6 +19,10 @@ if (typeof window !== 'undefined' && !window.leafletLoaded) {
     
     window.leafletLoaded = true;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// Weather Page
+// ═══════════════════════════════════════════════════════════════
 
 const WeatherPage = () => {
     const { toasts, toast, removeToast } = useToast();
@@ -46,7 +50,7 @@ const WeatherPage = () => {
     
     const savedLocations = allSavedItems.filter(item => item.type === 'location');
 
-    // Scroll to saved locations when navigated here from Dashboard
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.tab === 'saved') {
             window.history.replaceState({}, document.title);
@@ -63,56 +67,25 @@ const WeatherPage = () => {
     const weatherData = weatherResponse?.data;
 
     const cityStateMap = {
-        'New York': 'New York',
-        'Los Angeles': 'California',
-        'Chicago': 'Illinois',
-        'Houston': 'Texas',
-        'Phoenix': 'Arizona',
-        'Philadelphia': 'Pennsylvania',
-        'San Antonio': 'Texas',
-        'San Diego': 'California',
-        'Dallas': 'Texas',
-        'San Jose': 'California',
-        'Austin': 'Texas',
-        'Jacksonville': 'Florida',
-        'Fort Worth': 'Texas',
-        'Columbus': 'Ohio',
-        'Charlotte': 'North Carolina',
-        'San Francisco': 'California',
-        'Indianapolis': 'Indiana',
-        'Seattle': 'Washington',
-        'Denver': 'Colorado',
-        'Washington': 'District of Columbia',
-        'Boston': 'Massachusetts',
-        'Nashville': 'Tennessee',
-        'Detroit': 'Michigan',
-        'Portland': 'Oregon',
-        'Las Vegas': 'Nevada',
-        'Memphis': 'Tennessee',
-        'Louisville': 'Kentucky',
-        'Baltimore': 'Maryland',
-        'Milwaukee': 'Wisconsin',
-        'Albuquerque': 'New Mexico',
-        'Tucson': 'Arizona',
-        'Fresno': 'California',
-        'Sacramento': 'California',
-        'Mesa': 'Arizona',
-        'Kansas City': 'Missouri',
-        'Atlanta': 'Georgia',
-        'Miami': 'Florida',
-        'Raleigh': 'North Carolina',
-        'Omaha': 'Nebraska',
-        'Colorado Springs': 'Colorado',
-        'Virginia Beach': 'Virginia',
-        'Oakland': 'California',
-        'Minneapolis': 'Minnesota',
-        'Tulsa': 'Oklahoma',
-        'Tampa': 'Florida',
-        'Arlington': 'Texas',
-        'New Orleans': 'Louisiana'
+        'New York': 'New York', 'Los Angeles': 'California', 'Chicago': 'Illinois',
+        'Houston': 'Texas', 'Phoenix': 'Arizona', 'Philadelphia': 'Pennsylvania',
+        'San Antonio': 'Texas', 'San Diego': 'California', 'Dallas': 'Texas',
+        'San Jose': 'California', 'Austin': 'Texas', 'Jacksonville': 'Florida',
+        'Fort Worth': 'Texas', 'Columbus': 'Ohio', 'Charlotte': 'North Carolina',
+        'San Francisco': 'California', 'Indianapolis': 'Indiana', 'Seattle': 'Washington',
+        'Denver': 'Colorado', 'Washington': 'District of Columbia', 'Boston': 'Massachusetts',
+        'Nashville': 'Tennessee', 'Detroit': 'Michigan', 'Portland': 'Oregon',
+        'Las Vegas': 'Nevada', 'Memphis': 'Tennessee', 'Louisville': 'Kentucky',
+        'Baltimore': 'Maryland', 'Milwaukee': 'Wisconsin', 'Albuquerque': 'New Mexico',
+        'Tucson': 'Arizona', 'Fresno': 'California', 'Sacramento': 'California',
+        'Mesa': 'Arizona', 'Kansas City': 'Missouri', 'Atlanta': 'Georgia',
+        'Miami': 'Florida', 'Raleigh': 'North Carolina', 'Omaha': 'Nebraska',
+        'Colorado Springs': 'Colorado', 'Virginia Beach': 'Virginia', 'Oakland': 'California',
+        'Minneapolis': 'Minnesota', 'Tulsa': 'Oklahoma', 'Tampa': 'Florida',
+        'Arlington': 'Texas', 'New Orleans': 'Louisiana'
     };
 
-    // Initialize map with robust error handling and retry logic
+    // ─── Initialize Map ───────────────────────────────────────
     useEffect(() => {
         if (initAttempted.current) return;
         
@@ -207,7 +180,7 @@ const WeatherPage = () => {
         };
     }, []);
 
-    // Handle map resize when tab becomes visible
+    // ─── Handle map resize when tab becomes visible ──────────
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (!document.hidden && mapRef.current && mapReady) {
@@ -224,7 +197,7 @@ const WeatherPage = () => {
         };
     }, [mapReady]);
 
-    // Update marker when weather changes
+    // ─── Update marker when weather changes ──────────────────
     useEffect(() => {
         if (!weatherData || !weatherData.location || !mapReady || !mapRef.current || !window.L) {
             return;
@@ -270,6 +243,8 @@ const WeatherPage = () => {
             setSearchCity(defaultCity);
         }
     }, []);
+
+    // ─── Event Handlers ───────────────────────────────────────
 
     const handleSearch = () => {
         if (searchCity.trim()) {
@@ -372,18 +347,23 @@ const WeatherPage = () => {
         return displayParts.join(', ');
     };
 
+    // ─── Render ───────────────────────────────────────────────
+
     return (
         <div className="glass-page">
+            {/* ─── Map Background ───────────────────────────── */}
             <div className="weather-map-background">
                 <div ref={mapContainerRef} className="world-map-container"></div>
             </div>
 
             <div className="glass-container weather-content-overlay">
+                {/* ─── Header ───────────────────────────────── */}
                 <div className="glass-page-header">
                     <h2>⛅ Weather</h2>
                     <p className="subtitle">Check weather conditions around the world</p>
                 </div>
 
+                {/* ─── Search Section ────────────────────────── */}
                 <div className="glass-search-section weather-search-section">
                     <div className="glass-search-box">
                         <input 
@@ -410,6 +390,7 @@ const WeatherPage = () => {
                     )}
                 </div>
 
+                {/* ─── Loading State ─────────────────────────── */}
                 {isLoading && (
                     <div className="glass-loading">
                         <div className="glass-spinner"></div>
@@ -417,6 +398,7 @@ const WeatherPage = () => {
                     </div>
                 )}
 
+                {/* ─── Error State ───────────────────────────── */}
                 {error && !isLoading && (
                     <div className="glass-empty-state">
                         <span className="glass-empty-icon">⚠️</span>
@@ -426,6 +408,7 @@ const WeatherPage = () => {
                     </div>
                 )}
 
+                {/* ─── Current Weather Display ───────────────── */}
                 {weatherData && weatherData.current && !isLoading && (
                     <div className="glass-card weather-current-card">
                         <div className="weather-location-header">
@@ -468,27 +451,22 @@ const WeatherPage = () => {
                                 <p className="weather-detail-label">💧 Humidity</p>
                                 <p className="weather-detail-value">{weatherData.current.humidity}%</p>
                             </div>
-
                             <div className="weather-detail-card">
                                 <p className="weather-detail-label">💨 Wind Speed</p>
                                 <p className="weather-detail-value">{weatherData.current.wind_speed} km/h</p>
                             </div>
-
                             <div className="weather-detail-card">
                                 <p className="weather-detail-label">🧭 Wind Direction</p>
                                 <p className="weather-detail-value">{weatherData.current.wind_dir}</p>
                             </div>
-
                             <div className="weather-detail-card">
                                 <p className="weather-detail-label">👁️ Visibility</p>
                                 <p className="weather-detail-value">{weatherData.current.visibility} km</p>
                             </div>
-
                             <div className="weather-detail-card">
                                 <p className="weather-detail-label">🌡️ Pressure</p>
                                 <p className="weather-detail-value">{weatherData.current.pressure} mb</p>
                             </div>
-
                             <div className="weather-detail-card">
                                 <p className="weather-detail-label">☁️ Cloud Cover</p>
                                 <p className="weather-detail-value">{weatherData.current.cloudcover}%</p>
@@ -514,6 +492,7 @@ const WeatherPage = () => {
                     </div>
                 )}
 
+                {/* ─── Saved Locations ───────────────────────── */}
                 {savedLocations.length > 0 && (
                     <div className="weather-saved-section" ref={savedSectionRef}>
                         <h3 className="weather-saved-title">📍 Saved Locations</h3>
@@ -567,6 +546,7 @@ const WeatherPage = () => {
                     </div>
                 )}
 
+                {/* ─── Empty State ───────────────────────────── */}
                 {!weatherData && !isLoading && !error && !currentCity && (
                     <div className="glass-empty-state">
                         <span className="glass-empty-icon">⛅</span>
@@ -581,6 +561,7 @@ const WeatherPage = () => {
                     </div>
                 )}
             </div>
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

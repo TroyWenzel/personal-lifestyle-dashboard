@@ -1,10 +1,18 @@
+/* ═══════════════════════════════════════════════════════════════
+    Dashboard Page Styles
+    Extends GlassDesignSystem.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Saved Items Grid ─────────────────────────────────────── */
+
 .dash-saved-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
 }
 
-/* ── Base card ── */
+/* ─── Base Card ────────────────────────────────────────────── */
+
 .dash-saved-card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -17,19 +25,20 @@
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     animation: fadeInScale 0.4s ease backwards;
 }
+
 .dash-saved-card:hover {
     background: var(--glass-bg-hover);
     transform: translateY(-3px);
     box-shadow: 0 12px 36px rgba(0,0,0,0.25);
 }
 
-/* Horizontal row layout */
 .dash-saved-card-row {
     flex-direction: row;
     align-items: stretch;
 }
 
-/* ── Image area ── */
+/* ─── Image Area ───────────────────────────────────────────── */
+
 .dash-card-img-wrap {
     position: relative;
     width: 100%;
@@ -39,7 +48,6 @@
     background: rgba(0,0,0,0.35);
 }
 
-/* Art gets taller so paintings aren't squashed */
 .dash-art-img-wrap {
     height: 210px;
     display: flex;
@@ -52,8 +60,17 @@
     height: 100%;
     display: block;
 }
-.dash-card-img-cover   { object-fit: cover;   object-position: center; }
-.dash-card-img-contain { object-fit: contain; object-position: center; padding: 0.5rem; }
+
+.dash-card-img-cover {
+    object-fit: cover;
+    object-position: center;
+}
+
+.dash-card-img-contain {
+    object-fit: contain;
+    object-position: center;
+    padding: 0.5rem;
+}
 
 .dash-card-img-overlay {
     position: absolute;
@@ -72,7 +89,8 @@
     border-bottom: 1px solid var(--glass-border);
 }
 
-/* ── Card body ── */
+/* ─── Card Body ────────────────────────────────────────────── */
+
 .dash-card-body {
     padding: 1rem 1.1rem 1.1rem;
     display: flex;
@@ -86,8 +104,15 @@
     justify-content: space-between;
     align-items: center;
 }
-.dash-card-emoji { font-size: 1.1rem; }
-.dash-card-date  { font-size: 0.75rem; color: var(--text-tertiary); }
+
+.dash-card-emoji {
+    font-size: 1.1rem;
+}
+
+.dash-card-date {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
 
 .dash-card-title {
     font-size: 0.95rem;
@@ -100,6 +125,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 .dash-card-subtitle {
     font-size: 0.82rem;
     color: var(--text-secondary);
@@ -108,6 +134,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .dash-card-excerpt {
     font-size: 0.8rem;
     color: var(--text-secondary);
@@ -125,6 +152,7 @@
     gap: 0.3rem;
     margin-top: 0.15rem;
 }
+
 .dash-card-tag {
     padding: 0.2rem 0.55rem;
     background: rgba(139,92,246,0.15);
@@ -145,7 +173,8 @@
     padding-top: 0.65rem;
 }
 
-/* ── Book cover ── */
+/* ─── Book Cover ───────────────────────────────────────────── */
+
 .dash-book-cover {
     width: 85px;
     min-width: 85px;
@@ -154,6 +183,7 @@
     border-right: 1px solid var(--glass-border);
     flex-shrink: 0;
 }
+
 .dash-book-cover-placeholder {
     width: 85px;
     min-width: 85px;
@@ -166,7 +196,8 @@
     flex-shrink: 0;
 }
 
-/* ── Weather icon side ── */
+/* ─── Weather Icon Side ────────────────────────────────────── */
+
 .dash-weather-icon {
     width: 85px;
     min-width: 85px;
@@ -178,8 +209,12 @@
     flex-shrink: 0;
 }
 
-/* ── Journal mood side ── */
-.dash-saved-card-journal { background: rgba(139,92,246,0.06) !important; }
+/* ─── Journal Mood Side ────────────────────────────────────── */
+
+.dash-saved-card-journal {
+    background: rgba(139,92,246,0.06) !important;
+}
+
 .dash-journal-mood {
     width: 75px;
     min-width: 75px;
@@ -192,13 +227,15 @@
     flex-shrink: 0;
 }
 
-/* ── Stat / nav cards ── */
+/* ─── Stat / Nav Cards ─────────────────────────────────────── */
+
 .dash-stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
     margin-bottom: 0;
 }
+
 .dash-stat-card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -213,18 +250,39 @@
     align-items: center;
     gap: 0.4rem;
 }
+
 .dash-stat-card:hover {
     background: var(--glass-bg-hover);
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     border-color: rgba(139,92,246,0.4);
 }
-.dash-stat-icon  { font-size: 2rem; }
-.dash-stat-count { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
-.dash-stat-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; }
-.dash-stat-hint  { font-size: 0.68rem; color: var(--text-tertiary); margin-top: 0.1rem; }
 
-/* ── Section headings ── */
+.dash-stat-icon {
+    font-size: 2rem;
+}
+
+.dash-stat-count {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.dash-stat-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.dash-stat-hint {
+    font-size: 0.68rem;
+    color: var(--text-tertiary);
+    margin-top: 0.1rem;
+}
+
+/* ─── Section Headings ─────────────────────────────────────── */
+
 .dash-section-title {
     color: var(--text-primary);
     font-size: 1.4rem;
@@ -232,9 +290,8 @@
     margin-bottom: 1.25rem;
 }
 
-/* ── New Dashboard Layout Styles ── */
+/* ─── Dashboard Layout ─────────────────────────────────────── */
 
-/* Header row with welcome + weather */
 .dashboard-header-row {
     display: flex;
     justify-content: space-between;
@@ -250,7 +307,8 @@
     min-width: 280px;
 }
 
-/* Weather Widget Styles */
+/* ─── Weather Widget ───────────────────────────────────────── */
+
 .weather-widget {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -369,15 +427,8 @@
     color: #4facfe;
 }
 
-/* Responsive adjustment */
-@media (max-width: 480px) {
-    .weather-unit-toggle {
-        font-size: 0.65rem;
-        padding: 0.1rem 0.35rem;
-    }
-}
+/* ─── Collection Section ───────────────────────────────────── */
 
-/* Collection section (full width) */
 .collection-section {
     margin-bottom: 3rem;
     width: 100%;
@@ -390,7 +441,8 @@
     font-size: 0.9rem;
 }
 
-/* Content row with recent items + shopping list */
+/* ─── Content Row ──────────────────────────────────────────── */
+
 .dashboard-content-row {
     display: flex;
     gap: 2rem;
@@ -408,7 +460,8 @@
     padding-top: 1rem;
 }
 
-/* Shopping List Styles - moved from inline */
+/* ─── Shopping List ────────────────────────────────────────── */
+
 .shopping-list {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -538,7 +591,8 @@
     flex-shrink: 0;
 }
 
-/* Birthday banner and countdown */
+/* ─── Birthday Elements ────────────────────────────────────── */
+
 .birthday-banner {
     background: linear-gradient(135deg,rgba(255,107,107,0.2),rgba(255,142,83,0.2));
     border: 2px solid rgba(255,107,107,0.3);
@@ -557,7 +611,15 @@
     text-align: center;
 }
 
-/* Responsive */
+/* ─── Animations ───────────────────────────────────────────── */
+
+@keyframes birthdayFall {
+    0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+    100% { transform: translateY(110vh)  rotate(360deg); opacity: 0.3; }
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+
 @media (max-width: 768px) {
     .dashboard-header-row {
         flex-direction: column;
@@ -587,25 +649,25 @@
 }
 
 @media (max-width: 640px) {
-    .dash-saved-grid  { 
-        grid-template-columns: 1fr; 
+    .dash-saved-grid {
+        grid-template-columns: 1fr;
     }
     
-    .dash-stat-grid   { 
-        grid-template-columns: repeat(4, 1fr); 
-        gap: 0.6rem; 
+    .dash-stat-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
     }
     
-    .dash-stat-count  { 
-        font-size: 1.2rem; 
+    .dash-stat-count {
+        font-size: 1.2rem;
     }
     
-    .dash-stat-label  { 
-        font-size: 0.68rem; 
+    .dash-stat-label {
+        font-size: 0.68rem;
     }
 
-    .dash-saved-card-row { 
-        flex-direction: column; 
+    .dash-saved-card-row {
+        flex-direction: column;
     }
     
     .dash-book-cover,
@@ -636,10 +698,9 @@
     .weather-widget-temp {
         font-size: 1.4rem;
     }
-}
-
-/* ── Birthday celebration animation ── */
-@keyframes birthdayFall {
-    0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
-    100% { transform: translateY(110vh)  rotate(360deg); opacity: 0.3; }
+    
+    .weather-unit-toggle {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.35rem;
+    }
 }

@@ -6,6 +6,10 @@ import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Books.css";
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
+// ═══════════════════════════════════════════════════════════════
+// Book Discovery Page
+// ═══════════════════════════════════════════════════════════════
+
 const BooksPage = () => {
     const { toasts, toast, removeToast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
@@ -23,7 +27,7 @@ const BooksPage = () => {
     const saveBookMutation = useSaveBook();
     const savedBooks = allSavedItems.filter(item => item.type === 'book');
 
-    // Switch to saved tab when navigated here from Dashboard
+    // ─── Handle navigation from Dashboard ─────────────────────
     useEffect(() => {
         if (location.state?.tab === 'saved') {
             setActiveTab('saved');
@@ -31,7 +35,7 @@ const BooksPage = () => {
         }
     }, [location]);
 
-    // Load background book cover mosaic
+    // ─── Load background book cover mosaic ────────────────────
     useEffect(() => {
         const fetchBackgroundBooks = async () => {
             try {
@@ -43,12 +47,13 @@ const BooksPage = () => {
                 setBackgroundBooks(booksWithCovers);
             } catch (error) {
                 console.error('Error loading background books:', error);
-                // Silent fail - background is optional
             }
         };
 
         fetchBackgroundBooks();
     }, []);
+
+    // ─── Event Handlers ───────────────────────────────────────
 
     const handleSearch = async (queryOverride = null) => {
         const query = queryOverride || searchQuery;
@@ -85,7 +90,6 @@ const BooksPage = () => {
                 toast.success("Book saved to your collection!");
             },
             onError: (error) => {
-                // Check if it's a 409 conflict (already saved)
                 if (error.response?.status === 409) {
                     toast.info("This book is already in your collection!");
                 } else {
@@ -109,17 +113,16 @@ const BooksPage = () => {
         });
     };
 
-    // Helper function to check if a book is already saved
+    // ─── Helper Functions ─────────────────────────────────────
+
     const isBookSaved = (book) => {
         if (!book) return false;
-        // Check by external_id (which should be the book key from Open Library)
         return savedBooks.some(saved => 
             saved.external_id === book.key || 
             saved.title === book.title
         );
     };
 
-    // Find the saved item ID for a book if it exists
     const getSavedItemId = (book) => {
         if (!book) return null;
         const saved = savedBooks.find(saved => 
@@ -129,9 +132,11 @@ const BooksPage = () => {
         return saved?.id || null;
     };
 
+    // ─── Render ───────────────────────────────────────────────
+
     return (
         <div className="glass-page">
-            {/* Book Cover Mosaic Background */}
+            {/* ─── Background Book Mosaic ────────────────────── */}
             <div className="books-mosaic-background">
                 <div className="books-mosaic-grid">
                     {backgroundBooks.map((book, index) => (
@@ -154,12 +159,13 @@ const BooksPage = () => {
             </div>
 
             <div className="glass-container books-content-overlay">
+                {/* ─── Header ───────────────────────────────── */}
                 <div className="glass-page-header">
                     <h2>📚 Book Discovery</h2>
                     <p className="subtitle">Explore millions of books from Open Library</p>
                 </div>
 
-                {/* Single button for Saved Collection */}
+                {/* ─── Tab Switcher ─────────────────────────── */}
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                     <button 
                         className="glass-tab active"
@@ -170,6 +176,7 @@ const BooksPage = () => {
                     </button>
                 </div>
 
+                {/* ─── Search Tab ────────────────────────────── */}
                 {activeTab === 'search' && (
                     <>
                         <div className="glass-search-section">
@@ -211,39 +218,22 @@ const BooksPage = () => {
                                             <img 
                                                 src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
                                                 alt={book.title}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '350px',
-                                                    objectFit: 'contain',
-                                                    borderRadius: '12px 12px 0 0',
-                                                    background: 'rgba(0, 0, 0, 0.2)'
-                                                }}
+                                                className="books-card-image"
                                                 loading="lazy"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
                                                 }}
                                             />
                                         )}
-                                        <div style={{ padding: '1.5rem' }}>
-                                            <h3 style={{ 
-                                                fontSize: '1.1rem', 
-                                                marginBottom: '0.5rem',
-                                                color: 'var(--text-primary)'
-                                            }}>
+                                        <div className="books-card-content">
+                                            <h3 className="books-card-title">
                                                 {book.title}
                                             </h3>
-                                            <p style={{ 
-                                                color: 'var(--text-secondary)',
-                                                marginBottom: '0.5rem'
-                                            }}>
+                                            <p className="books-card-author">
                                                 {book.author_name?.join(', ') || "Unknown Author"}
                                             </p>
                                             {book.first_publish_year && (
-                                                <p style={{ 
-                                                    fontSize: '0.85rem',
-                                                    color: 'var(--text-tertiary)',
-                                                    marginBottom: '0.25rem'
-                                                }}>
+                                                <p className="books-card-year">
                                                     📅 {book.first_publish_year}
                                                 </p>
                                             )}
@@ -263,6 +253,7 @@ const BooksPage = () => {
                             </div>
                         )}
 
+                        {/* ─── Empty States ───────────────────── */}
                         {books.length === 0 && !isLoading && searchQuery && (
                             <div className="glass-empty-state">
                                 <span className="glass-empty-icon">📚</span>
@@ -292,6 +283,7 @@ const BooksPage = () => {
                     </>
                 )}
 
+                {/* ─── Saved Tab ─────────────────────────────── */}
                 {activeTab === 'saved' && (
                     <>
                         {savedBooks.length > 0 ? (
@@ -314,52 +306,32 @@ const BooksPage = () => {
                                             setSelectedBook(bookData);
                                             setShowModal(true);
                                         }}
+                                        style={{ position: 'relative' }}
                                     >
                                         {item.metadata?.coverUrl && (
                                             <img 
                                                 src={item.metadata.coverUrl}
                                                 alt={item.title}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '350px',
-                                                    objectFit: 'contain',
-                                                    borderRadius: '12px 12px 0 0',
-                                                    background: 'rgba(0, 0, 0, 0.2)'
-                                                }}
+                                                className="books-card-image"
                                                 loading="lazy"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
                                                 }}
                                             />
                                         )}
-                                        <div style={{ padding: '1.5rem' }}>
-                                            <h3 style={{ 
-                                                fontSize: '1.1rem', 
-                                                marginBottom: '0.5rem',
-                                                color: 'var(--text-primary)'
-                                            }}>
+                                        <div className="books-card-content">
+                                            <h3 className="books-card-title">
                                                 {item.title}
                                             </h3>
-                                            <p style={{ 
-                                                color: 'var(--text-secondary)',
-                                                marginBottom: '0.5rem'
-                                            }}>
+                                            <p className="books-card-author">
                                                 {item.metadata?.author || "Unknown Author"}
                                             </p>
                                             {item.metadata?.year && (
-                                                <p style={{ 
-                                                    fontSize: '0.85rem',
-                                                    color: 'var(--text-tertiary)',
-                                                    marginBottom: '0.25rem'
-                                                }}>
+                                                <p className="books-card-year">
                                                     📅 {item.metadata.year}
                                                 </p>
                                             )}
-                                            <p style={{ 
-                                                fontSize: '0.8rem',
-                                                color: 'var(--text-tertiary)',
-                                                marginBottom: '1rem'
-                                            }}>
+                                            <p className="books-card-saved-date">
                                                 Saved {new Date(item.createdAt).toLocaleDateString()}
                                             </p>
                                             <button 
@@ -367,7 +339,7 @@ const BooksPage = () => {
                                                     e.stopPropagation();
                                                     handleDelete(item.id);
                                                 }}
-                                                className="glass-btn-secondary"
+                                                className="glass-btn-secondary books-remove-btn"
                                                 disabled={deleteItemMutation.isLoading}
                                             >
                                                 🗑️ Remove
@@ -393,7 +365,7 @@ const BooksPage = () => {
                 )}
             </div>
 
-            {/* Book Detail Modal */}
+            {/* ─── Book Detail Modal ─────────────────────────── */}
             {showModal && selectedBook && (
                 <div className="books-modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="books-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -405,7 +377,7 @@ const BooksPage = () => {
                         </button>
                         
                         <div className="books-modal-layout">
-                            {/* Left side - Cover */}
+                            {/* ─── Left: Cover ───────────────── */}
                             <div className="books-modal-image-section">
                                 {selectedBook.cover_i ? (
                                     <img 
@@ -421,21 +393,14 @@ const BooksPage = () => {
                                 )}
                             </div>
 
-                            {/* Right side - Details */}
+                            {/* ─── Right: Details ─────────────── */}
                             <div className="books-modal-details">
                                 <h2 className="books-modal-title">
                                     {selectedBook.title}
                                 </h2>
                                 
-                                {/* Subtitle if available */}
                                 {selectedBook.subtitle && (
-                                    <p style={{ 
-                                        fontSize: '1.2rem',
-                                        color: 'var(--text-secondary)',
-                                        marginTop: '0.5rem',
-                                        marginBottom: '1.5rem',
-                                        fontStyle: 'italic'
-                                    }}>
+                                    <p className="books-modal-subtitle">
                                         {selectedBook.subtitle}
                                     </p>
                                 )}
@@ -478,7 +443,7 @@ const BooksPage = () => {
                                     {selectedBook.number_of_pages_median && (
                                         <div className="books-info-item">
                                             <span className="books-info-label">📄 Pages:</span>
-                                            <span className="books-info-value">{selectedBook.number_of_pages_median} (median)</span>
+                                            <span className="books-info-value">{selectedBook.number_of_pages_median}</span>
                                         </div>
                                     )}
 
@@ -495,13 +460,6 @@ const BooksPage = () => {
                                         <div className="books-info-item">
                                             <span className="books-info-label">🔢 ISBN:</span>
                                             <span className="books-info-value">{selectedBook.isbn[0]}</span>
-                                        </div>
-                                    )}
-
-                                    {selectedBook.lccn && selectedBook.lccn[0] && (
-                                        <div className="books-info-item">
-                                            <span className="books-info-label">📖 LCCN:</span>
-                                            <span className="books-info-value">{selectedBook.lccn[0]}</span>
                                         </div>
                                     )}
 
@@ -534,56 +492,44 @@ const BooksPage = () => {
                                     )}
                                 </div>
 
-                                {/* Reading Stats */}
+                                {/* ─── Reading Stats ──────────── */}
                                 {(selectedBook.want_to_read_count || selectedBook.currently_reading_count || selectedBook.already_read_count) && (
                                     <div className="books-modal-description">
                                         <h3>📊 Reading Statistics</h3>
-                                        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                                        <div className="books-stats-grid">
                                             {selectedBook.want_to_read_count > 0 && (
-                                                <div>
-                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                                                        {selectedBook.want_to_read_count.toLocaleString()}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                        Want to Read
-                                                    </div>
+                                                <div className="books-stat">
+                                                    <div className="books-stat-value">{selectedBook.want_to_read_count.toLocaleString()}</div>
+                                                    <div className="books-stat-label">Want to Read</div>
                                                 </div>
                                             )}
                                             {selectedBook.currently_reading_count > 0 && (
-                                                <div>
-                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                                                        {selectedBook.currently_reading_count.toLocaleString()}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                        Currently Reading
-                                                    </div>
+                                                <div className="books-stat">
+                                                    <div className="books-stat-value">{selectedBook.currently_reading_count.toLocaleString()}</div>
+                                                    <div className="books-stat-label">Currently Reading</div>
                                                 </div>
                                             )}
                                             {selectedBook.already_read_count > 0 && (
-                                                <div>
-                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                                                        {selectedBook.already_read_count.toLocaleString()}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                        Already Read
-                                                    </div>
+                                                <div className="books-stat">
+                                                    <div className="books-stat-value">{selectedBook.already_read_count.toLocaleString()}</div>
+                                                    <div className="books-stat-label">Already Read</div>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* First Sentence / Opening */}
+                                {/* ─── First Sentence ─────────── */}
                                 {selectedBook.first_sentence && selectedBook.first_sentence.length > 0 && (
                                     <div className="books-modal-description">
                                         <h3>📜 Opening Line</h3>
-                                        <p style={{ fontStyle: 'italic', fontSize: '1.05rem' }}>
+                                        <p className="books-opening-line">
                                             "{selectedBook.first_sentence[0]}"
                                         </p>
                                     </div>
                                 )}
 
-                                {/* Subjects/Genres */}
+                                {/* ─── Subjects/Genres ─────────── */}
                                 {selectedBook.subject && selectedBook.subject.length > 0 && (
                                     <div className="books-modal-subjects">
                                         <h3>🏷️ Subjects & Genres</h3>
@@ -597,7 +543,7 @@ const BooksPage = () => {
                                     </div>
                                 )}
 
-                                {/* People mentioned in the book */}
+                                {/* ─── People Featured ─────────── */}
                                 {selectedBook.person && selectedBook.person.length > 0 && (
                                     <div className="books-modal-subjects">
                                         <h3>👤 People Featured</h3>
@@ -611,7 +557,7 @@ const BooksPage = () => {
                                     </div>
                                 )}
 
-                                {/* Places mentioned */}
+                                {/* ─── Places Featured ─────────── */}
                                 {selectedBook.place && selectedBook.place.length > 0 && (
                                     <div className="books-modal-subjects">
                                         <h3>🗺️ Places Featured</h3>
@@ -625,7 +571,7 @@ const BooksPage = () => {
                                     </div>
                                 )}
 
-                                {/* Conditional button based on whether book is saved */}
+                                {/* ─── Action Button ───────────── */}
                                 {isBookSaved(selectedBook) ? (
                                     <button 
                                         onClick={() => {
@@ -635,12 +581,7 @@ const BooksPage = () => {
                                                 setShowModal(false);
                                             }
                                         }}
-                                        className="glass-btn-secondary"
-                                        style={{ 
-                                            marginTop: '2rem',
-                                            background: 'rgba(239, 68, 68, 0.2)',
-                                            borderColor: 'rgba(239, 68, 68, 0.3)'
-                                        }}
+                                        className="glass-btn-secondary books-remove-btn"
                                         disabled={deleteItemMutation.isLoading}
                                     >
                                         {deleteItemMutation.isLoading ? '🗑️ Removing...' : '🗑️ Remove from Collection'}
@@ -660,6 +601,7 @@ const BooksPage = () => {
                     </div>
                 </div>
             )}
+            
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );

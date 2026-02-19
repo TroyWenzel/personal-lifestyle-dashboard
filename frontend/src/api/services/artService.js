@@ -1,6 +1,14 @@
+// ═══════════════════════════════════════════════════════════════
+// Art Institute of Chicago API Service
+// ═══════════════════════════════════════════════════════════════
+
 const ART_API_BASE = 'https://api.artic.edu/api/v1';
 
-// Search for artworks using Art Institute of Chicago API
+/**
+ * Search for artworks using Art Institute of Chicago API
+ * @param {string} query - Search term (artist, title, style)
+ * @returns {Promise<Object>} - API response with artworks data
+ */
 export const searchArt = async (query) => {
     try {
         const response = await fetch(
@@ -19,7 +27,11 @@ export const searchArt = async (query) => {
     }
 };
 
-// Get detailed information about a specific artwork
+/**
+ * Get detailed information about a specific artwork
+ * @param {string} id - Artwork ID
+ * @returns {Promise<Object>} - Detailed artwork data
+ */
 export const getArtworkById = async (id) => {
     try {
         const response = await fetch(

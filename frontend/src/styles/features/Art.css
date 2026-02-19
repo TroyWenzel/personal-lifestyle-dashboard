@@ -1,3 +1,10 @@
+/* ═══════════════════════════════════════════════════════════════
+    Art Page Styles
+    Extends GlassDesignSystem.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Background Mosaic ────────────────────────────────────── */
+
 .art-mosaic-background {
     position: fixed;
     top: 0;
@@ -32,18 +39,15 @@
     filter: grayscale(30%) blur(1px);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+/* ─── Content Overlay ──────────────────────────────────────── */
 
-/* Content overlay */
 .art-content-overlay {
     position: relative;
     z-index: 1;
 }
 
-/* Clickable art cards */
+/* ─── Art Cards ────────────────────────────────────────────── */
+
 .art-clickable {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -54,7 +58,49 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* Art Detail Modal */
+.art-fallback-image {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px 12px 0 0;
+    font-size: 3rem;
+}
+
+.art-card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.art-card-artist {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.art-card-date {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: 0.25rem;
+}
+
+.art-card-saved-date {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.art-card-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+}
+
+/* ─── Art Detail Modal ─────────────────────────────────────── */
+
 .art-modal-overlay {
     position: fixed;
     top: 0;
@@ -83,7 +129,6 @@
 }
 
 .art-modal-content {
-    /* Home page gradient background */
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -137,26 +182,36 @@
     grid-template-columns: 400px 1fr;
     gap: 2rem;
     padding: 2rem;
-    align-items: start; /* Align to top instead of stretch */
+    align-items: start;
 }
 
 .art-modal-image-section {
     display: flex;
-    align-items: flex-start; /* Align to top */
+    align-items: flex-start;
     justify-content: center;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 16px;
     padding: 1.5rem;
-    align-self: start; /* Don't stretch vertically */
+    align-self: start;
 }
 
 .art-modal-image {
     width: 100%;
     max-width: 350px;
     height: auto;
-    max-height: 500px; /* Fixed max height */
+    max-height: 500px;
     object-fit: contain;
     border-radius: 8px;
+}
+
+.art-fallback-image-large {
+    width: 100%;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
 }
 
 .art-modal-details {
@@ -210,18 +265,21 @@
     margin-bottom: 1rem;
 }
 
-.art-modal-description p {
-    color: rgba(255, 255, 255, 0.85); /* Much lighter text */
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
-}
-
-/* Make all HTML content in description lighter */
+.art-modal-description p,
 .art-modal-description * {
-    color: rgba(255, 255, 255, 0.85) !important;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
 }
 
-/* Responsive */
+/* ─── Animations ───────────────────────────────────────────── */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+
 @media (max-width: 900px) {
     .art-modal-layout {
         grid-template-columns: 1fr;
@@ -245,116 +303,4 @@
     .art-modal-content {
         padding: 1rem;
     }
-}
-
-/* ============================================
-   Art Page - Search & Saved Grid Styles
-   ============================================ */
-
-.art-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.art-tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.tab-btn {
-    padding: 0.6rem 1.4rem;
-    border: 2px solid #a18cd1;
-    border-radius: 8px;
-    background: transparent;
-    color: #a18cd1;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-}
-
-.tab-btn.active,
-.tab-btn:hover {
-    background: #a18cd1;
-    color: #fff;
-}
-
-.art-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
-}
-
-.art-card {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Natural proportions - no fixed height so images are never cropped */
-.art-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.art-info {
-    padding: 1rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.art-info h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.art-info .artist {
-    color: #555;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.art-info .date,
-.art-info .medium {
-    color: #888;
-    font-size: 0.8rem;
-    margin: 0;
-}
-
-.save-button {
-    margin-top: auto;
-    padding: 0.5rem 1rem;
-    background: #a18cd1;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-}
-
-.save-button:hover {
-    background: #8b6cc7;
-}
-
-.save-button.remove-button {
-    background: #c0392b;
-}
-
-.save-button.remove-button:hover {
-    background: #a93226;
-}
-
-.no-items {
-    text-align: center;
-    padding: 3rem;
-    color: #666;
 }

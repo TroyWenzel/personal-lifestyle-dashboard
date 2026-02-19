@@ -1,5 +1,9 @@
 import { createContext, useState, useEffect } from "react";
 
+// ═══════════════════════════════════════════════════════════════
+// Authentication Context
+// ═══════════════════════════════════════════════════════════════
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -26,7 +30,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", newToken);
         setToken(newToken);
         
-        // If user data is provided, save it
         if (userData) {
             localStorage.setItem("user", JSON.stringify(userData));
             setUser(userData);
