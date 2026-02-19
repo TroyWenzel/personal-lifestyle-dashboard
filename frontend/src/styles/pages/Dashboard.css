@@ -197,7 +197,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
-    margin-bottom: 3rem;
+    margin-bottom: 0;
 }
 .dash-stat-card {
     background: var(--glass-bg);
@@ -232,14 +232,382 @@
     margin-bottom: 1.25rem;
 }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
-    .dash-saved-grid  { grid-template-columns: 1fr; }
-    .dash-stat-grid   { grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
-    .dash-stat-count  { font-size: 1.2rem; }
-    .dash-stat-label  { font-size: 0.68rem; }
+/* ── New Dashboard Layout Styles ── */
 
-    .dash-saved-card-row { flex-direction: column; }
+/* Header row with welcome + weather */
+.dashboard-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-header-row .glass-page-header {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 280px;
+}
+
+/* Weather Widget Styles */
+.weather-widget {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    min-width: 280px;
+    animation: fadeIn 0.5s ease;
+}
+
+.weather-widget:hover {
+    background: var(--glass-bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    border-color: rgba(79, 172, 254, 0.4);
+}
+
+.weather-widget.loading {
+    min-width: 280px;
+    height: 76px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.weather-widget-loader {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--glass-border);
+    border-top-color: #4facfe;
+    border-radius: 50%;
+    animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+.weather-widget-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.weather-widget-info {
+    flex: 1;
+}
+
+.weather-widget-location {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.weather-widget-temp {
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.weather-widget-condition {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.weather-widget-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    border-left: 1px solid var(--glass-border);
+    padding-left: 0.75rem;
+}
+
+.weather-widget-temp-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.weather-unit-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+}
+
+.weather-unit-toggle:hover {
+    background: rgba(79, 172, 254, 0.2);
+    border-color: rgba(79, 172, 254, 0.4);
+    color: #4facfe;
+}
+
+.weather-unit-toggle.active {
+    background: rgba(79, 172, 254, 0.3);
+    border-color: #4facfe;
+    color: #4facfe;
+}
+
+/* Responsive adjustment */
+@media (max-width: 480px) {
+    .weather-unit-toggle {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.35rem;
+    }
+}
+
+/* Collection section (full width) */
+.collection-section {
+    margin-bottom: 3rem;
+    width: 100%;
+}
+
+.collection-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    margin-top: -0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Content row with recent items + shopping list */
+.dashboard-content-row {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.recent-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.logout-section {
+    text-align: center;
+    padding-top: 1rem;
+}
+
+/* Shopping List Styles - moved from inline */
+.shopping-list {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    width: 270px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    position: sticky;
+    top: 1rem;
+}
+
+.shopping-list-title {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.shopping-list-count {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-weight: 400;
+    margin-left: 0.5rem;
+}
+
+.shopping-list-add {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.shopping-list-select {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 0.4rem 0.4rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.shopping-list-input {
+    flex: 1;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 0.4rem 0.6rem;
+    font-size: 0.82rem;
+    min-width: 0;
+}
+
+.shopping-list-btn {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.shopping-list-added {
+    color: #86efac;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.shopping-list-divider {
+    border-top: 1px solid var(--glass-border);
+    margin: 0.85rem 0;
+}
+
+.shopping-list-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.shopping-list-clear {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.shopping-list-empty {
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    font-style: italic;
+    margin: 0;
+}
+
+.shopping-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.shopping-list-item-name {
+    flex: 1;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    word-break: break-word;
+}
+
+.shopping-list-item-name.checked {
+    text-decoration: line-through;
+    opacity: 0.45;
+}
+
+.shopping-list-measure {
+    color: #fbbf24;
+    margin-right: 0.25rem;
+    font-weight: 600;
+}
+
+.shopping-list-remove {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 2px;
+    flex-shrink: 0;
+}
+
+/* Birthday banner and countdown */
+.birthday-banner {
+    background: linear-gradient(135deg,rgba(255,107,107,0.2),rgba(255,142,83,0.2));
+    border: 2px solid rgba(255,107,107,0.3);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.birthday-countdown {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .weather-widget {
+        width: 100%;
+    }
+    
+    .weather-widget-location {
+        max-width: 200px;
+    }
+    
+    .dashboard-content-row {
+        flex-direction: column;
+    }
+    
+    .shopping-list {
+        width: 100%;
+        position: static;
+    }
+    
+    .dash-stat-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .dash-saved-grid  { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .dash-stat-grid   { 
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 0.6rem; 
+    }
+    
+    .dash-stat-count  { 
+        font-size: 1.2rem; 
+    }
+    
+    .dash-stat-label  { 
+        font-size: 0.68rem; 
+    }
+
+    .dash-saved-card-row { 
+        flex-direction: column; 
+    }
+    
     .dash-book-cover,
     .dash-book-cover-placeholder,
     .dash-weather-icon,
@@ -249,6 +617,24 @@
         min-height: 90px;
         border-right: none;
         border-bottom: 1px solid var(--glass-border);
+    }
+}
+
+@media (max-width: 480px) {
+    .dash-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .weather-widget {
+        padding: 0.75rem 1rem;
+    }
+    
+    .weather-widget-icon {
+        font-size: 2rem;
+    }
+    
+    .weather-widget-temp {
+        font-size: 1.4rem;
     }
 }
 

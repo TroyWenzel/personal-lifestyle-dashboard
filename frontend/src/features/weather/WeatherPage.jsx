@@ -28,6 +28,9 @@ const WeatherPage = () => {
         return localStorage.getItem('defaultWeatherCity') || "";
     });
     const [mapReady, setMapReady] = useState(false);
+    const [unit, setUnit] = useState(() => {
+        return localStorage.getItem('tempUnit') || 'C';
+    });
     
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
@@ -57,19 +60,7 @@ const WeatherPage = () => {
         enabled: !!currentCity
     });
 
-    // Unwrap the API response - data is nested inside weatherResponse.data
     const weatherData = weatherResponse?.data;
-
-    // Debug: Log what we receive from API
-    useEffect(() => {
-        if (weatherData) {
-            console.log('=== RECEIVED WEATHER DATA ===');
-            console.log('weatherData:', weatherData);
-            console.log('weatherData.current:', weatherData.current);
-            console.log('weatherData.location:', weatherData.location);
-            console.log('============================');
-        }
-    }, [weatherData]);
 
     const cityStateMap = {
         'New York': 'New York',
@@ -121,55 +112,117 @@ const WeatherPage = () => {
         'New Orleans': 'Louisiana'
     };
 
-    // Initialize map ONCE - only on component mount
+    // Initialize map with robust error handling and retry logic
     useEffect(() => {
         if (initAttempted.current) return;
-        initAttempted.current = true;
-
+        
         const initializeMap = () => {
-            if (window.L && mapContainerRef.current && !mapRef.current) {
-                try {
-                    console.log('Initializing map for the first time...');
-                    
-                    mapRef.current = window.L.map(mapContainerRef.current, {
-                        zoomControl: false,
-                        attributionControl: false
-                    }).setView([20, 0], 2);
+            if (!window.L) {
+                console.log('Leaflet not loaded yet, waiting...');
+                return false;
+            }
+            
+            if (!mapContainerRef.current) {
+                console.log('Map container not ready yet');
+                return false;
+            }
 
-                    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 18,
-                    }).addTo(mapRef.current);
+            if (mapRef.current) {
+                console.log('Map already initialized');
+                return true;
+            }
 
-                    // Disable interactions
-                    mapRef.current.dragging.disable();
-                    mapRef.current.touchZoom.disable();
-                    mapRef.current.doubleClickZoom.disable();
-                    mapRef.current.scrollWheelZoom.disable();
-                    mapRef.current.boxZoom.disable();
-                    mapRef.current.keyboard.disable();
+            try {
+                console.log('Initializing map for the first time...');
+                
+                mapRef.current = window.L.map(mapContainerRef.current, {
+                    zoomControl: false,
+                    attributionControl: false,
+                    fadeAnimation: true,
+                    zoomAnimation: true
+                }).setView([20, 0], 2);
 
-                    setMapReady(true);
-                    console.log('Map initialized successfully!');
-                } catch (err) {
-                    console.error('Error initializing map:', err);
-                }
+                window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(mapRef.current);
+
+                mapRef.current.dragging.disable();
+                mapRef.current.touchZoom.disable();
+                mapRef.current.doubleClickZoom.disable();
+                mapRef.current.scrollWheelZoom.disable();
+                mapRef.current.boxZoom.disable();
+                mapRef.current.keyboard.disable();
+
+                setTimeout(() => {
+                    if (mapRef.current) {
+                        mapRef.current.invalidateSize();
+                    }
+                }, 100);
+
+                setMapReady(true);
+                console.log('Map initialized successfully!');
+                return true;
+            } catch (err) {
+                console.error('Error initializing map:', err);
+                return false;
             }
         };
 
-        // Wait for Leaflet to load
+        initAttempted.current = true;
+
+        const tryInitialize = () => {
+            const success = initializeMap();
+            if (!success) {
+                console.log('Will retry map initialization...');
+                setTimeout(tryInitialize, 500);
+            }
+        };
+
         if (window.L) {
-            initializeMap();
+            setTimeout(tryInitialize, 100);
         } else {
+            console.log('Waiting for Leaflet to load...');
+            
             const checkLeaflet = setInterval(() => {
                 if (window.L) {
                     clearInterval(checkLeaflet);
-                    initializeMap();
+                    console.log('Leaflet loaded, initializing map...');
+                    setTimeout(tryInitialize, 100);
                 }
             }, 100);
 
             return () => clearInterval(checkLeaflet);
         }
+
+        return () => {
+            if (mapRef.current) {
+                try {
+                    mapRef.current.remove();
+                    mapRef.current = null;
+                } catch (e) {
+                    console.error('Error cleaning up map:', e);
+                }
+            }
+        };
     }, []);
+
+    // Handle map resize when tab becomes visible
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden && mapRef.current && mapReady) {
+                setTimeout(() => {
+                    mapRef.current?.invalidateSize();
+                }, 200);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [mapReady]);
 
     // Update marker when weather changes
     useEffect(() => {
@@ -177,30 +230,19 @@ const WeatherPage = () => {
             return;
         }
 
-        console.log('=== WEATHER DATA STRUCTURE ===');
-        console.log('Full data:', JSON.stringify(weatherData, null, 2));
-        console.log('Current object:', weatherData.current);
-        console.log('===========================');
-
         const location = weatherData.location;
         const lat = Number(location.lat);
         const lon = Number(location.lon);
-
-        console.log('=== UPDATING MARKER ===');
-        console.log('City:', location.name);
-        console.log('Coordinates:', lat, lon);
 
         if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
             console.error('Invalid coordinates!');
             return;
         }
 
-        // Remove old marker
         if (markerRef.current) {
             mapRef.current.removeLayer(markerRef.current);
         }
 
-        // Create custom marker
         const customIcon = window.L.divIcon({
             className: 'custom-marker',
             html: '<div class="marker-pin"></div>',
@@ -208,26 +250,18 @@ const WeatherPage = () => {
             iconAnchor: [15, 15]
         });
 
-        // Add new marker
         markerRef.current = window.L.marker([lat, lon], {
             icon: customIcon,
             title: location.name
         }).addTo(mapRef.current);
 
-        // Calculate offset to show marker lower on screen
-        // We want the marker to appear in the CENTER of the circle
-        // Panning UP (adding to lat) makes marker appear DOWN on screen
-        const latOffset = 1.8; // Increased to move marker down more into circle center
+        const latOffset = 1.8;
         const adjustedLat = lat + latOffset;
 
-        // Fly to adjusted location so marker appears in circle center
         mapRef.current.flyTo([adjustedLat, lon], 6, {
             duration: 1.5,
             easeLinearity: 0.25
         });
-
-        console.log('Map flying to adjusted position:', [adjustedLat, lon]);
-        console.log('Marker will appear at:', [lat, lon]);
     }, [weatherData, mapReady]);
 
     useEffect(() => {
@@ -253,13 +287,11 @@ const WeatherPage = () => {
 
     const handleSaveLocation = () => {
         if (weatherData && weatherData.current && weatherData.location) {
-            // Pass full weatherData — contentService.saveLocation reads weatherData.location.name
-            // Also inject a top-level 'city' key into location so the card click handler can find it
             const dataToSave = {
                 ...weatherData,
                 location: {
                     ...weatherData.location,
-                    city: weatherData.location.name,  // explicit city field for saved card
+                    city: weatherData.location.name,
                 }
             };
             saveLocationMutation.mutate(dataToSave, {
@@ -297,6 +329,19 @@ const WeatherPage = () => {
 
     const toFahrenheit = (celsius) => Math.round((celsius * 9/5) + 32);
 
+    const displayTemp = (celsius) => {
+        if (unit === 'F') {
+            return `${toFahrenheit(celsius)}°F`;
+        }
+        return `${Math.round(celsius)}°C`;
+    };
+
+    const toggleUnit = () => {
+        const newUnit = unit === 'C' ? 'F' : 'C';
+        setUnit(newUnit);
+        localStorage.setItem('tempUnit', newUnit);
+    };
+
     const getLocationDisplay = (locationData) => {
         if (!locationData) return "";
         
@@ -329,7 +374,6 @@ const WeatherPage = () => {
 
     return (
         <div className="glass-page">
-            {/* World Map Background */}
             <div className="weather-map-background">
                 <div ref={mapContainerRef} className="world-map-container"></div>
             </div>
@@ -405,14 +449,17 @@ const WeatherPage = () => {
                             
                             <div className="weather-temp-section">
                                 <div className="weather-temp-large">
-                                    {toFahrenheit(weatherData.current.temperature)}°F
+                                    {displayTemp(weatherData.current.temperature)}
                                 </div>
                                 <p className="weather-feels-like">
-                                    Feels like {toFahrenheit(weatherData.current.feelslike)}°F
+                                    Feels like {displayTemp(weatherData.current.feelslike)}
                                 </p>
-                                <p className="weather-feels-like">
-                                    ({weatherData.current.temperature}°C)
-                                </p>
+                                <button 
+                                    className="weather-unit-toggle-large"
+                                    onClick={toggleUnit}
+                                >
+                                    Switch to °{unit === 'C' ? 'F' : 'C'}
+                                </button>
                             </div>
                         </div>
 
@@ -474,7 +521,6 @@ const WeatherPage = () => {
                             {savedLocations.map(item => (
                                 <div key={item.id} className="glass-item-card weather-saved-card">
                                     <div onClick={() => {
-                                        // contentService stores city name in metadata.location
                                         const cityName = item.metadata?.location || item.metadata?.city || item.title?.split(',')[0];
                                         if (cityName) {
                                             setCurrentCity(cityName);
@@ -490,7 +536,7 @@ const WeatherPage = () => {
                                         
                                         {item.metadata?.temp && (
                                             <p className="weather-saved-temp">
-                                                {Math.round(item.metadata.temp)}°C
+                                                {displayTemp(item.metadata.temp)}
                                             </p>
                                         )}
                                         

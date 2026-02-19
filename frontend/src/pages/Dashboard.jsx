@@ -1,12 +1,223 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
 import { useSavedItems, useDashboardStats, useDeleteItem } from "@/api/queries";
 import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/services/userService";
+import { getCurrentWeather } from "@/api/services/weatherService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/pages/Dashboard.css";
 import { loadList, addItem as slAdd, removeItem as slRemove, toggleItem as slToggle, clearChecked as slClear } from "@/api/services/shoppingListService";
 import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
+
+// ─── Weather Widget Component ────────────────────────────────────────────────
+function WeatherWidget() {
+    const navigate = useNavigate();
+    const [weather, setWeather] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [location, setLocation] = useState('');
+    const [unit, setUnit] = useState(() => {
+        // Get saved preference from localStorage, default to 'C'
+        return localStorage.getItem('tempUnit') || 'C';
+    });
+
+    // Save unit preference when it changes
+    useEffect(() => {
+        localStorage.setItem('tempUnit', unit);
+    }, [unit]);
+
+    const toggleUnit = (e) => {
+        e.stopPropagation(); // Prevent widget click when toggling
+        setUnit(prev => prev === 'C' ? 'F' : 'C');
+    };
+
+    // Convert Celsius to Fahrenheit
+    const toFahrenheit = (celsius) => {
+        return Math.round((celsius * 9/5) + 32);
+    };
+
+    // Display temperature based on selected unit
+    const displayTemp = (celsius) => {
+        if (unit === 'F') {
+            return `${toFahrenheit(celsius)}°F`;
+        }
+        return `${Math.round(celsius)}°C`;
+    };
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                // Try GPS first
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            const { latitude, longitude } = position.coords;
+                            await fetchDirectWeather(latitude, longitude, 'Current Location');
+                        },
+                        (error) => {
+                            console.log('GPS error:', error);
+                            loadDefaultCity();
+                        }
+                    );
+                } else {
+                    loadDefaultCity();
+                }
+            } catch (error) {
+                console.error('Weather widget error:', error);
+                useMockData();
+            }
+        };
+
+        const fetchDirectWeather = async (lat, lon, locName) => {
+            try {
+                // Direct call to Open-Meteo API (completely free, no key needed)
+                const response = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh`
+                );
+                
+                if (!response.ok) throw new Error('Weather fetch failed');
+                
+                const data = await response.json();
+                
+                setWeather({
+                    current: {
+                        temperature: data.current_weather.temperature,
+                        weather_descriptions: [getWeatherDescription(data.current_weather.weathercode)],
+                        humidity: 65,
+                        wind_speed: data.current_weather.windspeed,
+                    }
+                });
+                setLocation(locName);
+                setLoading(false);
+            } catch (error) {
+                console.error('Direct weather fetch failed:', error);
+                loadDefaultCity();
+            }
+        };
+
+        const loadDefaultCity = async () => {
+            try {
+                const defaultCity = localStorage.getItem('defaultWeatherCity') || 'Chicago';
+                const geoResponse = await fetch(
+                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(defaultCity)}&count=1`
+                );
+                const geoData = await geoResponse.json();
+                
+                if (geoData.results && geoData.results.length > 0) {
+                    const { latitude, longitude } = geoData.results[0];
+                    await fetchDirectWeather(latitude, longitude, defaultCity);
+                } else {
+                    useMockData();
+                }
+            } catch (error) {
+                console.error('Default city failed:', error);
+                useMockData();
+            }
+        };
+
+        const useMockData = () => {
+            setWeather({
+                current: {
+                    temperature: 22,
+                    weather_descriptions: ['Partly cloudy'],
+                    humidity: 60,
+                    wind_speed: 12,
+                }
+            });
+            setLocation('Sample City');
+            setLoading(false);
+        };
+
+        // Helper to convert Open-Meteo weather codes to descriptions
+        const getWeatherDescription = (code) => {
+            const weatherCodes = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Fog',
+                48: 'Rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                71: 'Slight snow',
+                73: 'Moderate snow',
+                75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                85: 'Slight snow showers',
+                86: 'Heavy snow showers',
+                95: 'Thunderstorm',
+                96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail',
+            };
+            return weatherCodes[code] || 'Unknown';
+        };
+
+        fetchWeather();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="weather-widget loading">
+                <div className="weather-widget-loader"></div>
+            </div>
+        );
+    }
+
+    if (!weather?.current) return null;
+
+    // Get weather condition emoji
+    const getWeatherEmoji = (desc) => {
+        const d = desc?.toLowerCase() || '';
+        if (d.includes('sun') || d.includes('clear')) return '☀️';
+        if (d.includes('cloud')) return '☁️';
+        if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
+        if (d.includes('snow')) return '❄️';
+        if (d.includes('storm') || d.includes('thunder')) return '⛈️';
+        if (d.includes('fog')) return '🌫️';
+        return '⛅';
+    };
+
+    const condition = weather.current.weather_descriptions?.[0] || 'Clear';
+    const celsiusTemp = weather.current.temperature;
+
+    return (
+        <div 
+            className="weather-widget" 
+            onClick={() => navigate('/weather')}
+            style={{ cursor: 'pointer' }}
+        >
+            <div className="weather-widget-icon">
+                {getWeatherEmoji(condition)}
+            </div>
+            <div className="weather-widget-info">
+                <div className="weather-widget-location">{location}</div>
+                <div className="weather-widget-temp-container">
+                    <span className="weather-widget-temp">
+                        {displayTemp(celsiusTemp)}
+                    </span>
+                    <button 
+                        className={`weather-unit-toggle ${unit === 'F' ? 'active' : ''}`}
+                        onClick={toggleUnit}
+                        title="Toggle °C/°F"
+                    >
+                        °{unit}
+                    </button>
+                </div>
+                <div className="weather-widget-condition">{condition}</div>
+            </div>
+            <div className="weather-widget-details">
+                <span>💧 {weather.current.humidity || 60}%</span>
+                <span>💨 {Math.round(weather.current.wind_speed)} km/h</span>
+            </div>
+        </div>
+    );
+}
 
 // ─── Shared actions ───────────────────────────────────────────────────────────
 
@@ -31,7 +242,6 @@ function CardActions({ onView, onDelete, isDeleting }) {
 function ArtCard({ item, onDelete, onView, isDeleting }) {
     const [imgFailed, setImgFailed] = useState(false);
     const m = item.metadata || {};
-    // Build URL from image_id first, fall back to stored thumbnail
     const imgUrl = m.image_id
         ? `https://www.artic.edu/iiif/2/${m.image_id}/full/400,/0/default.jpg`
         : (m.thumbnail || null);
@@ -257,7 +467,6 @@ function SavedItemCard({ item, onDelete, onView, isDeleting }) {
     }
 }
 
-
 // ─── Shopping List ────────────────────────────────────────────────────────────
 function ShoppingList() {
     const [list, setList] = useState(() => loadList());
@@ -276,24 +485,14 @@ function ShoppingList() {
     const total = list.food.length + list.drinks.length;
 
     return (
-        <div style={{
-            background: 'var(--glass-bg)', backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem', width: '270px', flexShrink: 0, alignSelf: 'flex-start',
-            position: 'sticky', top: '1rem'
-        }}>
-            <h3 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', margin: '0 0 1rem 0' }}>
+        <div className="shopping-list">
+            <h3 className="shopping-list-title">
                 🛒 Shopping List
-                {total > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: '0.5rem' }}>({total})</span>}
+                {total > 0 && <span className="shopping-list-count">({total})</span>}
             </h3>
 
-            {/* Add row */}
-            <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1rem' }}>
-                <select value={section} onChange={e => setSection(e.target.value)} style={{
-                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-                    borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
-                    padding: '0.4rem 0.4rem', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0
-                }}>
+            <div className="shopping-list-add">
+                <select value={section} onChange={e => setSection(e.target.value)} className="shopping-list-select">
                     <option value="food">🍽️</option>
                     <option value="drinks">🍸</option>
                 </select>
@@ -301,28 +500,21 @@ function ShoppingList() {
                     value={newItem} onChange={e => setNewItem(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAdd()}
                     placeholder="Add item..."
-                    style={{
-                        flex: 1, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-                        borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
-                        padding: '0.4rem 0.6rem', fontSize: '0.82rem', minWidth: 0
-                    }}
+                    className="shopping-list-input"
                 />
-                <button onClick={handleAdd} className="glass-btn" style={{ padding: '0.4rem 0.65rem', fontSize: '0.9rem', flexShrink: 0 }}>+</button>
+                <button onClick={handleAdd} className="glass-btn shopping-list-btn">+</button>
             </div>
 
-            {added && <p style={{ color: '#86efac', fontSize: '0.75rem', marginBottom: '0.5rem' }}>✓ "{added}" added</p>}
+            {added && <p className="shopping-list-added">✓ "{added}" added</p>}
 
-            {/* Food section */}
             <SectionList label="🍽️ Grocery" color="#f97316" items={list.food}
                 onToggle={id => setList(slToggle('food', id))}
                 onRemove={id => setList(slRemove('food', id))}
                 onClear={() => setList(slClear('food'))}
             />
 
-            {/* Divider */}
-            <div style={{ borderTop: '1px solid var(--glass-border)', margin: '0.85rem 0' }} />
+            <div className="shopping-list-divider" />
 
-            {/* Drinks section */}
             <SectionList label="🍸 Liquor Store" color="#a78bfa" items={list.drinks}
                 onToggle={id => setList(slToggle('drinks', id))}
                 onRemove={id => setList(slRemove('drinks', id))}
@@ -335,32 +527,25 @@ function ShoppingList() {
 function SectionList({ label, color, items, onToggle, onRemove, onClear }) {
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div className="shopping-list-section-header">
                 <span style={{ color, fontSize: '0.78rem', fontWeight: 700 }}>{label}</span>
                 {items.some(i => i.checked) && (
-                    <button onClick={onClear} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.7rem', cursor: 'pointer' }}>
+                    <button onClick={onClear} className="shopping-list-clear">
                         Clear done
                     </button>
                 )}
             </div>
             {items.length === 0
-                ? <p style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontStyle: 'italic', margin: 0 }}>Empty</p>
+                ? <p className="shopping-list-empty">Empty</p>
                 : items.map(item => (
-                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
+                    <div key={item.id} className="shopping-list-item">
                         <input type="checkbox" checked={item.checked} onChange={() => onToggle(item.id)}
                             style={{ cursor: 'pointer', accentColor: color, flexShrink: 0 }} />
-                        <span style={{
-                            flex: 1, fontSize: '0.8rem', color: 'var(--text-secondary)',
-                            textDecoration: item.checked ? 'line-through' : 'none',
-                            opacity: item.checked ? 0.45 : 1, wordBreak: 'break-word'
-                        }}>
-                            {item.measure && <span style={{ color: '#fbbf24', marginRight: '0.25rem', fontWeight: 600 }}>{item.measure}</span>}
+                        <span className={`shopping-list-item-name ${item.checked ? 'checked' : ''}`}>
+                            {item.measure && <span className="shopping-list-measure">{item.measure}</span>}
                             {item.name}
                         </span>
-                        <button onClick={() => onRemove(item.id)} style={{
-                            background: 'none', border: 'none', color: 'var(--text-tertiary)',
-                            cursor: 'pointer', fontSize: '0.75rem', padding: '0 2px', flexShrink: 0
-                        }}>✕</button>
+                        <button onClick={() => onRemove(item.id)} className="shopping-list-remove">✕</button>
                     </div>
                 ))
             }
@@ -374,7 +559,6 @@ function Dashboard() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     
-    // Add this line - you're missing the hook call!
     const { toasts, toast, removeToast } = useToast();
 
     const { data: savedItems = [], isLoading: itemsLoading } = useSavedItems();
@@ -417,12 +601,10 @@ function Dashboard() {
         });
     };
 
-    // Navigate to feature page, passing tab:'saved' so it opens on the saved section
     const handleView = (route, item) => {
         navigate(route, { state: { savedItem: item, tab: "saved" } });
     };
 
-    // Stat card click → go straight to saved tab of that feature
     const goToSaved = (path) => {
         navigate(path, { state: { tab: "saved" } });
     };
@@ -438,7 +620,6 @@ function Dashboard() {
         );
     }
 
-    // Stat cards — clicking goes to the saved section of each page
     const STAT_CARDS = [
         { icon:"🍽️", val: stats.meals,           label:"Saved Meals",      sub:"Food",     path:"/food"    },
         { icon:"⛅",  val: stats.locations,       label:"Saved Locations",  sub:"Weather",  path:"/weather" },
@@ -453,15 +634,8 @@ function Dashboard() {
     return (
         <div className="glass-page" style={{ background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)" }}>
             <div className="glass-container">
-
-                {/* ── Birthday banner ── */}
                 {birthdayData.isBirthdayToday && (
-                    <div style={{
-                        background:"linear-gradient(135deg,rgba(255,107,107,0.2),rgba(255,142,83,0.2))",
-                        border:"2px solid rgba(255,107,107,0.3)",
-                        borderRadius:"var(--radius-lg)",
-                        padding:"2rem", marginBottom:"2rem", textAlign:"center",
-                    }}>
+                    <div className="birthday-banner">
                         <div style={{ fontSize:"3rem", marginBottom:"1rem" }}>🎂</div>
                         <h2 style={{ color:"var(--text-primary)", marginBottom:"0.5rem" }}>
                             Happy Birthday, {birthdayData.displayName}! 🎉
@@ -475,14 +649,8 @@ function Dashboard() {
                     </div>
                 )}
 
-                {/* ── Birthday countdown ── */}
                 {!birthdayData.isBirthdayToday && birthdayData.countdown && birthdayData.countdown <= 30 && (
-                    <div style={{
-                        background:"rgba(255,255,255,0.05)",
-                        border:"1px solid rgba(255,255,255,0.1)",
-                        borderRadius:"var(--radius-md)",
-                        padding:"1rem", marginBottom:"2rem", textAlign:"center",
-                    }}>
+                    <div className="birthday-countdown">
                         <span style={{ fontSize:"1.5rem", marginRight:"0.5rem" }}>🎂</span>
                         <span style={{ color:"var(--text-primary)" }}>
                             Your birthday is in {birthdayData.countdown} day{birthdayData.countdown !== 1 ? "s" : ""}!
@@ -491,49 +659,17 @@ function Dashboard() {
                     </div>
                 )}
 
-                {/* ── Top row: content + shopping list ── */}
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-
-                {/* ── Welcome header ── */}
-                <div className="glass-page-header">
-                    <h2>Welcome, {birthdayData.displayName}! 👋</h2>
-                    <p className="subtitle">Here's everything you've saved across LifeHub</p>
+                <div className="dashboard-header-row">
+                    <div className="glass-page-header">
+                        <h2>Welcome, {birthdayData.displayName}! 👋</h2>
+                        <p className="subtitle">Here's everything you've saved across LifeHub</p>
+                    </div>
+                    <WeatherWidget />
                 </div>
 
-                {/* ══════════════════════════════════════════════
-                    SECTION 1 — Recently Saved Items (TOP)
-                ══════════════════════════════════════════════ */}
-                <div style={{ marginBottom:"3rem" }}>
-                    <h2 className="dash-section-title">🕐 Recently Saved</h2>
-
-                    {savedItems.length === 0 ? (
-                        <div className="glass-empty-state">
-                            <span className="glass-empty-icon">📦</span>
-                            <h3>Nothing saved yet</h3>
-                            <p>Explore any section below to start building your collection!</p>
-                        </div>
-                    ) : (
-                        <div className="dash-saved-grid">
-                            {savedItems.slice(0, 6).map(item => (
-                                <SavedItemCard
-                                    key={item.id}
-                                    item={item}
-                                    onDelete={handleDelete}
-                                    onView={handleView}
-                                    isDeleting={deleteItemMutation.isLoading}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* ══════════════════════════════════════════════
-                    SECTION 2 — Explore / Stats (merged nav)
-                ══════════════════════════════════════════════ */}
-                <div style={{ marginBottom:"3rem" }}>
+                <div className="collection-section">
                     <h2 className="dash-section-title">📊 Your Collection</h2>
-                    <p style={{ color:"var(--text-secondary)", marginBottom:"1.25rem", marginTop:"-0.75rem", fontSize:"0.9rem" }}>
+                    <p className="collection-subtitle">
                         Click any card to jump to your saved items in that section
                     </p>
                     <div className="dash-stat-grid">
@@ -548,8 +684,33 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* ── Logout ── */}
-                <div style={{ textAlign:"center", paddingTop:"1rem" }}>
+                <div className="dashboard-content-row">
+                    <div className="recent-section">
+                        <h2 className="dash-section-title">🕐 Recently Saved</h2>
+                        {savedItems.length === 0 ? (
+                            <div className="glass-empty-state">
+                                <span className="glass-empty-icon">📦</span>
+                                <h3>Nothing saved yet</h3>
+                                <p>Explore any section below to start building your collection!</p>
+                            </div>
+                        ) : (
+                            <div className="dash-saved-grid">
+                                {savedItems.slice(0, 6).map(item => (
+                                    <SavedItemCard
+                                        key={item.id}
+                                        item={item}
+                                        onDelete={handleDelete}
+                                        onView={handleView}
+                                        isDeleting={deleteItemMutation.isLoading}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <ShoppingList />
+                </div>
+
+                <div className="logout-section">
                     <button
                         className="glass-btn-secondary"
                         onClick={handleLogout}
@@ -558,11 +719,6 @@ function Dashboard() {
                         🚪 Logout
                     </button>
                 </div>
-
-                </div>{/* end main col */}
-                <ShoppingList />
-                </div>{/* end top flex row */}
-
             </div>
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
