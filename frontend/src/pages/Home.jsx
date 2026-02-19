@@ -11,7 +11,6 @@ function Home() {
     const { data: stats = {
         meals: 0,
         journalEntries: 0,
-        activities: 0,
         books: 0,
         drinks: 0,
         spacePhotos: 0,
@@ -20,7 +19,7 @@ function Home() {
     } } = useDashboardStats();
     
     const totalSavedItems = stats.meals + stats.locations + stats.artworks + 
-                        stats.books + stats.drinks + stats.activities + stats.spacePhotos;
+                        stats.books + stats.drinks + stats.spacePhotos;
     
     const activeFeatures = [
         stats.meals > 0,
@@ -28,7 +27,6 @@ function Home() {
         stats.artworks > 0,
         stats.books > 0,
         stats.drinks > 0,
-        stats.activities > 0,
         stats.spacePhotos > 0,
         stats.journalEntries > 0
     ].filter(Boolean).length;
@@ -99,10 +97,10 @@ function Home() {
         },
         {
             id: 8,
-            icon: "✨",
-            title: "Activity Ideas",
-            description: "Beat boredom with personalized activity suggestions for any occasion.",
-            path: "/hobbies",
+            icon: "⚡",
+            title: "Pokémon Fun",
+            description: "Beat boredom with pokémon battles and collections.",
+            path: "/pokemon",
             color: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
             delay: "0.8s"
         }
@@ -117,6 +115,8 @@ function Home() {
                 <div className="floating-circle circle-2"></div>
                 <div className="floating-circle circle-3"></div>
                 <div className="floating-circle circle-4"></div>
+                <div className="floating-circle circle-5"></div>
+                <div className="floating-circle circle-6"></div>
             </div>
 
             <section className="hero-section glass-card">
@@ -141,14 +141,14 @@ function Home() {
                         </>
                     ) : (
                         <>
-                            <span className="hero-badge">✨ All-in-One Platform</span>
+                            <span className="hero-badge">⚡ All-in-One Platform</span>
                             <h1 className="hero-title">
                                 Your Digital Life,<br />
                                 <span className="gradient-text">Beautifully Organized</span>
                             </h1>
                             <p className="hero-subtitle">
                                 Discover recipes, track weather, explore art, read books, mix drinks, 
-                                journal thoughts, find activities, and explore space - all in one place.
+                                journal thoughts, play pokémon, and explore space - all in one place.
                             </p>
                             <div className="hero-actions">
                                 <Link to="/register" className="btn-primary">
@@ -162,10 +162,11 @@ function Home() {
                     )}
                 </div>
                 <div className="hero-visual">
-                    <div className="floating-icon">✨</div>
+                    <div className="floating-icon">⚡</div>
                     <div className="floating-icon">🍽️</div>
                     <div className="floating-icon">⛅</div>
                     <div className="floating-icon">🎨</div>
+                    <div className="floating-icon">🍹</div>
                 </div>
             </section>
 
