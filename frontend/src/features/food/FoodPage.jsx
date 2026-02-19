@@ -3,11 +3,13 @@ import { useLocation } from "react-router-dom";
 import { useSavedItems, useSearchMeals, useSaveMeal, useDeleteItem } from "@/api/queries";
 import { extractIngredients } from "@/api/services/foodService";
 import "@/styles/GlassDesignSystem.css";
+import { addItem as slAdd } from "@/api/services/shoppingListService";
 
 const FoodPage = () => {
     const [query, setQuery] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedMeal, setSelectedMeal] = useState(null);
+    const [addedToList, setAddedToList] = useState(null);
     const [activeTab, setActiveTab] = useState('saved'); // Default to saved recipes
     const location = useLocation();
     
@@ -92,6 +94,12 @@ const FoodPage = () => {
 
     const closeMealDetails = () => {
         setSelectedMeal(null);
+    };
+
+    const handleAddToList = (ingredient, measure) => {
+        slAdd('food', ingredient, measure);
+        setAddedToList(ingredient);
+        setTimeout(() => setAddedToList(null), 1500);
     };
 
     return (
@@ -371,12 +379,26 @@ const FoodPage = () => {
                                                 padding: '0.75rem 1rem', 
                                                 background: 'rgba(255, 255, 255, 0.05)', 
                                                 borderRadius: '12px',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem'
                                             }}
                                         >
                                             <span style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>
                                                 <strong>{item.measure}</strong> {item.ingredient}
                                             </span>
+                                            <button
+                                                onClick={() => handleAddToList(item.ingredient, item.measure)}
+                                                title="Add to shopping list"
+                                                style={{
+                                                    background: addedToList === item.ingredient ? 'rgba(134,239,172,0.2)' : 'rgba(249,115,22,0.15)',
+                                                    border: addedToList === item.ingredient ? '1px solid rgba(134,239,172,0.4)' : '1px solid rgba(249,115,22,0.3)',
+                                                    borderRadius: '8px', color: addedToList === item.ingredient ? '#86efac' : '#f97316',
+                                                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                                                    padding: '0.3rem 0.6rem', whiteSpace: 'nowrap', flexShrink: 0
+                                                }}
+                                            >
+                                                {addedToList === item.ingredient ? '✓ Added' : '+ List'}
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

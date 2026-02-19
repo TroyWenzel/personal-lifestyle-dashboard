@@ -5,6 +5,7 @@ import { useSavedItems, useDashboardStats, useDeleteItem } from "@/api/queries";
 import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/services/userService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/pages/Dashboard.css";
+import { loadList, addItem as slAdd, removeItem as slRemove, toggleItem as slToggle, clearChecked as slClear } from "@/api/services/shoppingListService";
 
 // ─── Shared actions ───────────────────────────────────────────────────────────
 
@@ -119,8 +120,9 @@ function DrinkCard({ item, onDelete, onView, isDeleting }) {
     return (
         <div className="dash-saved-card">
             {m.thumbnail && (
-                <div className="dash-card-img-wrap dash-art-img-wrap">
-                    <img src={m.thumbnail} alt={item.title} className="dash-card-img dash-card-img-contain" />
+                <div className="dash-card-img-wrap">
+                    <img src={m.thumbnail} alt={item.title} className="dash-card-img dash-card-img-cover" />
+                    <div className="dash-card-img-overlay" />
                 </div>
             )}
             <div className="dash-card-body">
@@ -254,35 +256,118 @@ function SavedItemCard({ item, onDelete, onView, isDeleting }) {
     }
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-function BirthdayConfetti() {
-    const items = [
-        { emoji: "🎈", left: "5%",  delay: "0s",   dur: "3s"   },
-        { emoji: "🎉", left: "15%", delay: "0.3s", dur: "3.5s" },
-        { emoji: "🎈", left: "25%", delay: "0.6s", dur: "4s"   },
-        { emoji: "⭐",     left: "35%", delay: "0.2s", dur: "3.2s" },
-        { emoji: "🎊", left: "50%", delay: "0.5s", dur: "3.8s" },
-        { emoji: "🎈", left: "60%", delay: "0.1s", dur: "3.3s" },
-        { emoji: "🎉", left: "72%", delay: "0.7s", dur: "4.2s" },
-        { emoji: "🎈", left: "83%", delay: "0.4s", dur: "3.6s" },
-        { emoji: "🎊", left: "92%", delay: "0.8s", dur: "3.1s" },
-    ];
+// ─── Shopping List ────────────────────────────────────────────────────────────
+function ShoppingList() {
+    const [list, setList] = useState(() => loadList());
+    const [newItem, setNewItem] = useState('');
+    const [section, setSection] = useState('food');
+    const [added, setAdded] = useState(null);
+
+    const handleAdd = () => {
+        if (!newItem.trim()) return;
+        setList(slAdd(section, newItem.trim()));
+        setAdded(newItem.trim());
+        setNewItem('');
+        setTimeout(() => setAdded(null), 1500);
+    };
+
+    const total = list.food.length + list.drinks.length;
+
     return (
-        <div style={{ position:"fixed", top:0, left:0, width:"100%", height:"100%",
-                       pointerEvents:"none", zIndex:9999, overflow:"hidden" }}>
-            {items.map((item, i) => (
-                <div key={i} style={{
-                    position: "absolute", left: item.left, top: "-60px",
-                    fontSize: "2rem",
-                    animation: `birthdayFall ${item.dur} ${item.delay} ease-in infinite`,
+        <div style={{
+            background: 'var(--glass-bg)', backdropFilter: 'blur(20px)',
+            border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
+            padding: '1.25rem', width: '270px', flexShrink: 0, alignSelf: 'flex-start',
+            position: 'sticky', top: '1rem'
+        }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', margin: '0 0 1rem 0' }}>
+                🛒 Shopping List
+                {total > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: '0.5rem' }}>({total})</span>}
+            </h3>
+
+            {/* Add row */}
+            <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1rem' }}>
+                <select value={section} onChange={e => setSection(e.target.value)} style={{
+                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                    borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
+                    padding: '0.4rem 0.4rem', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0
                 }}>
-                    {item.emoji}
-                </div>
-            ))}
+                    <option value="food">🍽️</option>
+                    <option value="drinks">🍸</option>
+                </select>
+                <input
+                    value={newItem} onChange={e => setNewItem(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                    placeholder="Add item..."
+                    style={{
+                        flex: 1, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
+                        borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
+                        padding: '0.4rem 0.6rem', fontSize: '0.82rem', minWidth: 0
+                    }}
+                />
+                <button onClick={handleAdd} className="glass-btn" style={{ padding: '0.4rem 0.65rem', fontSize: '0.9rem', flexShrink: 0 }}>+</button>
+            </div>
+
+            {added && <p style={{ color: '#86efac', fontSize: '0.75rem', marginBottom: '0.5rem' }}>✓ "{added}" added</p>}
+
+            {/* Food section */}
+            <SectionList label="🍽️ Grocery" color="#f97316" items={list.food}
+                onToggle={id => setList(slToggle('food', id))}
+                onRemove={id => setList(slRemove('food', id))}
+                onClear={() => setList(slClear('food'))}
+            />
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid var(--glass-border)', margin: '0.85rem 0' }} />
+
+            {/* Drinks section */}
+            <SectionList label="🍸 Liquor Store" color="#a78bfa" items={list.drinks}
+                onToggle={id => setList(slToggle('drinks', id))}
+                onRemove={id => setList(slRemove('drinks', id))}
+                onClear={() => setList(slClear('drinks'))}
+            />
         </div>
     );
 }
+
+function SectionList({ label, color, items, onToggle, onRemove, onClear }) {
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ color, fontSize: '0.78rem', fontWeight: 700 }}>{label}</span>
+                {items.some(i => i.checked) && (
+                    <button onClick={onClear} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.7rem', cursor: 'pointer' }}>
+                        Clear done
+                    </button>
+                )}
+            </div>
+            {items.length === 0
+                ? <p style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontStyle: 'italic', margin: 0 }}>Empty</p>
+                : items.map(item => (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
+                        <input type="checkbox" checked={item.checked} onChange={() => onToggle(item.id)}
+                            style={{ cursor: 'pointer', accentColor: color, flexShrink: 0 }} />
+                        <span style={{
+                            flex: 1, fontSize: '0.8rem', color: 'var(--text-secondary)',
+                            textDecoration: item.checked ? 'line-through' : 'none',
+                            opacity: item.checked ? 0.45 : 1, wordBreak: 'break-word'
+                        }}>
+                            {item.measure && <span style={{ color: '#fbbf24', marginRight: '0.25rem', fontWeight: 600 }}>{item.measure}</span>}
+                            {item.name}
+                        </span>
+                        <button onClick={() => onRemove(item.id)} style={{
+                            background: 'none', border: 'none', color: 'var(--text-tertiary)',
+                            cursor: 'pointer', fontSize: '0.75rem', padding: '0 2px', flexShrink: 0
+                        }}>✕</button>
+                    </div>
+                ))
+            }
+        </div>
+    );
+}
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 function Dashboard() {
     const { user, logout } = useContext(AuthContext);
@@ -367,8 +452,6 @@ function Dashboard() {
 
                 {/* ── Birthday banner ── */}
                 {birthdayData.isBirthdayToday && (
-                    <>
-                    <BirthdayConfetti />
                     <div style={{
                         background:"linear-gradient(135deg,rgba(255,107,107,0.2),rgba(255,142,83,0.2))",
                         border:"2px solid rgba(255,107,107,0.3)",
@@ -386,7 +469,6 @@ function Dashboard() {
                             </p>
                         )}
                     </div>
-                    </>
                 )}
 
                 {/* ── Birthday countdown ── */}
@@ -405,6 +487,10 @@ function Dashboard() {
                     </div>
                 )}
 
+                {/* ── Top row: content + shopping list ── */}
+                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+
                 {/* ── Welcome header ── */}
                 <div className="glass-page-header">
                     <h2>Welcome, {birthdayData.displayName}! 👋</h2>
@@ -413,26 +499,6 @@ function Dashboard() {
 
                 {/* ══════════════════════════════════════════════
                     SECTION 1 — Recently Saved Items (TOP)
-                ══════════════════════════════════════════════ */}
-                <div style={{ marginBottom:"3rem" }}>
-                    <h2 className="dash-section-title">📊 Your Collection</h2>
-                    <p style={{ color:"var(--text-secondary)", marginBottom:"1.25rem", marginTop:"-0.75rem", fontSize:"0.9rem" }}>
-                        Click any card to jump to your saved items in that section
-                    </p>
-                    <div className="dash-stat-grid">
-                        {STAT_CARDS.map(s => (
-                            <div key={s.path} className="dash-stat-card" onClick={() => goToSaved(s.path)}>
-                                <span className="dash-stat-icon">{s.icon}</span>
-                                <span className="dash-stat-count">{s.val}</span>
-                                <span className="dash-stat-label">{s.label}</span>
-                                <span className="dash-stat-hint">→ {s.sub}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ══════════════════════════════════════════════
-                    SECTION 2 — Explore / Stats (merged nav)
                 ══════════════════════════════════════════════ */}
                 <div style={{ marginBottom:"3rem" }}>
                     <h2 className="dash-section-title">🕐 Recently Saved</h2>
@@ -458,6 +524,40 @@ function Dashboard() {
                     )}
                 </div>
 
+                {/* ══════════════════════════════════════════════
+                    SECTION 2 — Explore / Stats (merged nav)
+                ══════════════════════════════════════════════ */}
+                <div style={{ marginBottom:"3rem" }}>
+                    <h2 className="dash-section-title">📊 Your Collection</h2>
+                    <p style={{ color:"var(--text-secondary)", marginBottom:"1.25rem", marginTop:"-0.75rem", fontSize:"0.9rem" }}>
+                        Click any card to jump to your saved items in that section
+                    </p>
+                    <div className="dash-stat-grid">
+                        {STAT_CARDS.map(s => (
+                            <div key={s.path} className="dash-stat-card" onClick={() => goToSaved(s.path)}>
+                                <span className="dash-stat-icon">{s.icon}</span>
+                                <span className="dash-stat-count">{s.val}</span>
+                                <span className="dash-stat-label">{s.label}</span>
+                                <span className="dash-stat-hint">→ {s.sub}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── Logout ── */}
+                <div style={{ textAlign:"center", paddingTop:"1rem" }}>
+                    <button
+                        className="glass-btn-secondary"
+                        onClick={handleLogout}
+                        style={{ background:"rgba(239,68,68,0.2)", borderColor:"rgba(239,68,68,0.3)" }}
+                    >
+                        🚪 Logout
+                    </button>
+                </div>
+
+                </div>{/* end main col */}
+                <ShoppingList />
+                </div>{/* end top flex row */}
 
             </div>
         </div>

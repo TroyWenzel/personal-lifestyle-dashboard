@@ -4,6 +4,7 @@ import { useSavedItems, useDeleteItem, useSaveDrink } from "@/api/queries";
 import { searchCocktails } from "@/api/services/drinkService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Drinks.css";
+import { addItem as slAdd } from "@/api/services/shoppingListService";
 
 const DrinksPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -13,6 +14,7 @@ const DrinksPage = () => {
     const location = useLocation();
     const [selectedDrink, setSelectedDrink] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [addedToList, setAddedToList] = useState(null);
     const [savedDrinksData, setSavedDrinksData] = useState({}); // Store full drink data
 
     const { data: allSavedItems = [] } = useSavedItems();
@@ -92,6 +94,12 @@ const DrinksPage = () => {
                 alert('Failed to remove drink');
             }
         });
+    };
+
+    const handleAddToList = (name, measure) => {
+        slAdd('drinks', name, measure);
+        setAddedToList(name);
+        setTimeout(() => setAddedToList(null), 1500);
     };
 
     return (
@@ -376,9 +384,22 @@ const DrinksPage = () => {
                                     <h3>🍹 Ingredients</h3>
                                     <ul className="drinks-ingredients-list-new">
                                         {getIngredients(selectedDrink).map((ing, index) => (
-                                            <li key={index}>
+                                            <li key={index} style={{ display: 'flex', alignItems: 'center' }}>
                                                 <span className="ingredient-measure-new">{ing.measure}</span>
-                                                <span className="ingredient-name-new">{ing.name}</span>
+                                                <span className="ingredient-name-new" style={{ flex: 1 }}>{ing.name}</span>
+                                                <button
+                                                    onClick={() => handleAddToList(ing.name, ing.measure)}
+                                                    title="Add to shopping list"
+                                                    style={{
+                                                        background: addedToList === ing.name ? 'rgba(134,239,172,0.2)' : 'rgba(167,139,250,0.15)',
+                                                        border: addedToList === ing.name ? '1px solid rgba(134,239,172,0.4)' : '1px solid rgba(167,139,250,0.35)',
+                                                        borderRadius: '8px', color: addedToList === ing.name ? '#86efac' : '#a78bfa',
+                                                        fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                                                        padding: '0.3rem 0.6rem', whiteSpace: 'nowrap', flexShrink: 0, marginLeft: '0.5rem'
+                                                    }}
+                                                >
+                                                    {addedToList === ing.name ? '✓ Added' : '+ List'}
+                                                </button>
                                             </li>
                                         ))}
                                     </ul>
