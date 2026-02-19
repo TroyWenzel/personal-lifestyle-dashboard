@@ -4,8 +4,11 @@ import { AuthContext } from '@/context/AuthContext';
 import apiClient from '@/api/client';
 import { isUserBirthday, calculateAge } from '@/api/services/userService';
 import '@/styles/GlassDesignSystem.css';
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const ProfilePage = () => {
+    const { toasts, toast, removeToast } = useToast();
+    const [confirmStep, setConfirmStep] = useState(0); // 0=none, 1=first, 2=second
     const navigate = useNavigate();
     const { user: authUser, token } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
@@ -140,19 +143,12 @@ const ProfilePage = () => {
         setPasswordData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDeleteAccount = async () => {
-        const confirmed = window.confirm(
-            'Are you absolutely sure you want to delete your account?\n\n' +
-            'This will permanently delete your account and ALL saved items. ' +
-            'This cannot be undone.'
-        );
-        if (!confirmed) return;
+    const handleDeleteAccount = () => {
+        setConfirmStep(1);
+    };
 
-        const doubleConfirmed = window.confirm(
-            'Last chance — delete your account permanently?'
-        );
-        if (!doubleConfirmed) return;
-
+    const doDeleteAccount = async () => {
+        setConfirmStep(0);
         try {
             setSaving(true);
             await apiClient.delete('/auth/delete-account');
@@ -178,6 +174,7 @@ const ProfilePage = () => {
     }
 
     return (
+        <>
         <div className="glass-page">
             <div className="glass-container" style={{ maxWidth: '800px' }}>
                 <div className="glass-page-header">
@@ -408,6 +405,25 @@ const ProfilePage = () => {
                 </div>
             </div>
         </div>
+
+            {confirmStep === 1 && (
+                <ConfirmDialog
+                    message="Are you absolutely sure you want to delete your account? This will permanently delete your account and ALL saved items. This cannot be undone."
+                    confirmLabel="Yes, Delete"
+                    onConfirm={() => setConfirmStep(2)}
+                    onCancel={() => setConfirmStep(0)}
+                />
+            )}
+            {confirmStep === 2 && (
+                <ConfirmDialog
+                    message="Last chance — delete your account permanently? There is no going back."
+                    confirmLabel="Delete Forever"
+                    onConfirm={doDeleteAccount}
+                    onCancel={() => setConfirmStep(0)}
+                />
+            )}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
+        </>
     );
 };
 

@@ -4,6 +4,7 @@ import { getAstronomyPicture } from '@/api/services/spaceService';
 import { useSavedItems, useSaveSpacePhoto, useDeleteItem } from '@/api/queries';
 import '@/styles/GlassDesignSystem.css';
 import '@/styles/features/Space.css';
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const SpacePage = () => {
     const [photo, setPhoto] = useState(null);
@@ -13,6 +14,7 @@ const SpacePage = () => {
     const [activeTab, setActiveTab] = useState('explore');
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const location = useLocation();
+    const { toasts, toast, removeToast } = useToast();
 
     const { data: allSavedItems = [] } = useSavedItems();
     const savePhotoMutation = useSaveSpacePhoto();
@@ -64,15 +66,15 @@ const SpacePage = () => {
     const handleSave = () => {
         if (!photo) return;
         savePhotoMutation.mutate(photo, {
-            onSuccess: () => alert('Space photo saved!'),
-            onError:   () => alert('Failed to save photo'),
+            onSuccess: () => toast.success('Space photo saved!'),
+            onError:   () => toast.error('Failed to save photo'),
         });
     };
 
     const handleDelete = (id) => {
         deleteItemMutation.mutate(id, {
-            onSuccess: () => alert('Photo removed!'),
-            onError:   () => alert('Failed to remove photo'),
+            onSuccess: () => toast.success('Photo removed'),
+            onError:   () => toast.error('Failed to remove photo'),
         });
     };
 
@@ -296,6 +298,7 @@ const SpacePage = () => {
                     </div>
                 </div>
             )}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

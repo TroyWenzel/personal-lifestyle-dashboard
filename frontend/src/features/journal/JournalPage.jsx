@@ -3,8 +3,11 @@ import { useSavedItems, useCreateJournalEntry, useUpdateJournalEntry, useDeleteI
 import { useLocation } from 'react-router-dom';
 import '@/styles/GlassDesignSystem.css';
 import '@/styles/features/Journal.css';
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const JournalPage = () => {
+    const { toasts, toast, removeToast } = useToast();
+    const [confirmDelete, setConfirmDelete] = useState({ show: false, entryId: null });
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [mood, setMood] = useState('neutral');
@@ -46,7 +49,7 @@ const JournalPage = () => {
         e.preventDefault();
 
         if (!title.trim() || !content.trim()) {
-            alert('Please fill in both title and content');
+            toast.warning('Please fill in both title and content');
             return;
         }
 
@@ -62,11 +65,11 @@ const JournalPage = () => {
                 setTitle('');
                 setContent('');
                 setMood('neutral');
-                alert('Journal entry saved successfully!');
+                toast.success('Journal entry saved!');
             },
             onError: (error) => {
                 console.error('Error saving entry:', error);
-                alert('Failed to save journal entry');
+                toast.error('Failed to save journal entry');
             },
         });
     };
@@ -84,7 +87,7 @@ const JournalPage = () => {
         e.preventDefault();
 
         if (!title.trim() || !content.trim()) {
-            alert('Please fill in both title and content');
+            toast.warning('Please fill in both title and content');
             return;
         }
 
@@ -102,11 +105,11 @@ const JournalPage = () => {
                 setContent('');
                 setMood('neutral');
                 setEditingEntry(null);
-                alert('Journal entry updated successfully!');
+                toast.success('Journal entry updated!');
             },
             onError: (error) => {
                 console.error('Error updating entry:', error);
-                alert('Failed to update journal entry');
+                toast.error('Failed to update journal entry');
             },
         });
     };
@@ -119,18 +122,20 @@ const JournalPage = () => {
     };
 
     const handleDelete = (entryId) => {
-        if (window.confirm('Are you sure you want to delete this entry?')) {
-            deleteEntryMutation.mutate(entryId, {
-                onSuccess: () => {
-                    setSelectedEntry(null);
-                    alert('Entry deleted successfully!');
-                },
-                onError: (error) => {
-                    console.error('Error deleting entry:', error);
-                    alert('Failed to delete entry');
-                },
-            });
-        }
+        setConfirmDelete({ show: true, entryId, mutation: 'entry' });
+    };
+
+    const doDeleteEntry = (entryId) => {
+        deleteEntryMutation.mutate(entryId, {
+            onSuccess: () => {
+                setSelectedEntry(null);
+                toast.success('Entry deleted');
+            },
+            onError: (error) => {
+                console.error('Error deleting entry:', error);
+                toast.error('Failed to delete entry');
+            },
+        });
     };
 
     const formatDate = (dateString) => {
@@ -386,6 +391,7 @@ const JournalPage = () => {
                     </div>
                 )}
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

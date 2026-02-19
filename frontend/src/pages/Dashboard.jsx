@@ -6,6 +6,7 @@ import { isUserBirthday, calculateAge, getBirthdayCountdown } from "@/api/servic
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/pages/Dashboard.css";
 import { loadList, addItem as slAdd, removeItem as slRemove, toggleItem as slToggle, clearChecked as slClear } from "@/api/services/shoppingListService";
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 // ─── Shared actions ───────────────────────────────────────────────────────────
 
@@ -372,6 +373,9 @@ function SectionList({ label, color, items, onToggle, onRemove, onClear }) {
 function Dashboard() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    
+    // Add this line - you're missing the hook call!
+    const { toasts, toast, removeToast } = useToast();
 
     const { data: savedItems = [], isLoading: itemsLoading } = useSavedItems();
     const { data: stats = {
@@ -408,8 +412,8 @@ function Dashboard() {
 
     const handleDelete = (id) => {
         deleteItemMutation.mutate(id, {
-            onSuccess: () => alert("Item deleted successfully!"),
-            onError:   () => alert("Failed to delete item. Please try again."),
+            onSuccess: () => toast.success("Item deleted"),
+            onError:   () => toast.error("Failed to delete item"),
         });
     };
 
@@ -560,6 +564,7 @@ function Dashboard() {
                 </div>{/* end top flex row */}
 
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 }

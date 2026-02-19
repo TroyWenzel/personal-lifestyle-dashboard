@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";  // Add useNavigate
 import { AuthContext } from "@/context/AuthContext";
 import { useDashboardStats } from "@/api/queries";
 import "@/styles/pages/Home.css";
@@ -7,6 +7,7 @@ import "@/styles/Animations.css";
 
 function Home() {
     const { token, user } = useContext(AuthContext);
+    const navigate = useNavigate();  // Add navigate hook
     
     const { data: stats = {
         meals: 0,
@@ -106,6 +107,13 @@ function Home() {
         }
     ];
 
+    // Function to navigate to a random feature page
+    const goToRandomFeature = () => {
+        const randomIndex = Math.floor(Math.random() * features.length);
+        const randomFeature = features[randomIndex];
+        navigate(randomFeature.path);
+    };
+
     const displayedFeatures = token ? features : features;
 
     return (
@@ -134,9 +142,9 @@ function Home() {
                                 <Link to="/dashboard" className="btn-primary">
                                     Go to Dashboard
                                 </Link>
-                                <Link to="/food" className="btn-secondary">
-                                    Explore Features
-                                </Link>
+                                <button onClick={goToRandomFeature} className="btn-secondary">
+                                    🎲 Explore Random Feature
+                                </button>
                             </div>
                         </>
                     ) : (

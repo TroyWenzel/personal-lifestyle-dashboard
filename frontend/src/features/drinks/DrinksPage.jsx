@@ -5,6 +5,7 @@ import { searchCocktails } from "@/api/services/drinkService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Drinks.css";
 import { addItem as slAdd } from "@/api/services/shoppingListService";
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const DrinksPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -13,6 +14,7 @@ const DrinksPage = () => {
     const [activeTab, setActiveTab] = useState('search');
     const location = useLocation();
     const [selectedDrink, setSelectedDrink] = useState(null);
+    const { toasts, toast, removeToast } = useToast();
     const [showModal, setShowModal] = useState(false);
     const [addedToList, setAddedToList] = useState(null);
     const [savedDrinksData, setSavedDrinksData] = useState({}); // Store full drink data
@@ -41,7 +43,7 @@ const DrinksPage = () => {
             setActiveTab('search');
         } catch (error) {
             console.error('Search error:', error);
-            alert('Failed to search drinks');
+            toast.error('Search failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -77,21 +79,21 @@ const DrinksPage = () => {
                         [result.id]: drink
                     }));
                 }
-                alert("Drink saved successfully!");
+                toast.success("Drink saved to your collection!");
             },
             onError: (error) => {
                 console.error("Error saving drink:", error);
-                alert("Failed to save drink");
+                toast.error("Failed to save drink");
             }
         });
     };
 
     const handleDelete = (itemId) => {
         deleteItemMutation.mutate(itemId, {
-            onSuccess: () => alert('Drink removed!'),
+            onSuccess: () => toast.success('Drink removed from collection'),
             onError: (error) => {
                 console.error('Error deleting:', error);
-                alert('Failed to remove drink');
+                toast.error('Failed to remove drink');
             }
         });
     };
@@ -422,6 +424,7 @@ const DrinksPage = () => {
                     </div>
                 </div>
             )}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

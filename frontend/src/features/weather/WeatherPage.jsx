@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useWeather, useSaveLocation, useDeleteItem, useSavedItems } from "@/api/queries";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Weather.css";
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 // Load Leaflet CSS and JS once globally
 if (typeof window !== 'undefined' && !window.leafletLoaded) {
@@ -20,6 +21,7 @@ if (typeof window !== 'undefined' && !window.leafletLoaded) {
 }
 
 const WeatherPage = () => {
+    const { toasts, toast, removeToast } = useToast();
     const [searchCity, setSearchCity] = useState("");
     const [currentCity, setCurrentCity] = useState("");
     const [defaultCity, setDefaultCity] = useState(() => {
@@ -245,7 +247,7 @@ const WeatherPage = () => {
         if (currentCity) {
             localStorage.setItem('defaultWeatherCity', currentCity);
             setDefaultCity(currentCity);
-            alert(`${currentCity} set as your default city!`);
+            toast.success(`${currentCity} set as your default city!`);
         }
     };
 
@@ -261,10 +263,10 @@ const WeatherPage = () => {
                 }
             };
             saveLocationMutation.mutate(dataToSave, {
-                onSuccess: () => alert("Location saved successfully!"),
+                onSuccess: () => toast.success("Location saved!"),
                 onError: (error) => {
                     console.error("Error saving location:", error);
-                    alert("Failed to save location");
+                    toast.error("Failed to save location");
                 }
             });
         }
@@ -272,10 +274,10 @@ const WeatherPage = () => {
 
     const handleDeleteLocation = (itemId) => {
         deleteItemMutation.mutate(itemId, {
-            onSuccess: () => alert('Location removed!'),
+            onSuccess: () => toast.success('Location removed'),
             onError: (error) => {
                 console.error('Error deleting:', error);
-                alert('Failed to remove location');
+                toast.error('Failed to remove location');
             }
         });
     };
@@ -533,6 +535,7 @@ const WeatherPage = () => {
                     </div>
                 )}
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

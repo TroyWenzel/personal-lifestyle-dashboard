@@ -4,10 +4,12 @@ import { useSavedItems, useSearchMeals, useSaveMeal, useDeleteItem } from "@/api
 import { extractIngredients } from "@/api/services/foodService";
 import "@/styles/GlassDesignSystem.css";
 import { addItem as slAdd } from "@/api/services/shoppingListService";
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 const FoodPage = () => {
     const [query, setQuery] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const { toasts, toast, removeToast } = useToast();
     const [selectedMeal, setSelectedMeal] = useState(null);
     const [addedToList, setAddedToList] = useState(null);
     const [activeTab, setActiveTab] = useState('saved'); // Default to saved recipes
@@ -44,28 +46,26 @@ const FoodPage = () => {
         saveMealMutation.mutate(meal, {
             onSuccess: () => {
                 refetchSaved();
-                alert("Recipe saved successfully!");
+                toast.success("Recipe saved to your collection!");
             },
             onError: (error) => {
                 console.error("Error saving meal:", error);
-                alert("Failed to save recipe");
+                toast.error("Failed to save recipe");
             },
         });
     };
 
-    const handleDelete = (itemId) => {
-        if (window.confirm('Remove this recipe from your saved items?')) {
-            deleteItemMutation.mutate(itemId, {
-                onSuccess: () => {
-                    refetchSaved();
-                    alert('Recipe removed successfully!');
-                },
-                onError: (error) => {
-                    console.error('Error deleting recipe:', error);
-                    alert('Failed to remove recipe');
-                },
-            });
-        }
+    const doRemove = (itemId) => {
+        deleteItemMutation.mutate(itemId, {
+            onSuccess: () => {
+                refetchSaved();
+                toast.success('Recipe removed!');
+            },
+            onError: (error) => {
+                console.error('Error deleting recipe:', error);
+                toast.error('Failed to remove recipe');
+            },
+        });
     };
 
     const openMealDetails = (meal) => {
@@ -264,7 +264,7 @@ const FoodPage = () => {
                                         <button 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleDelete(item.id);
+                                                doRemove(item.id);
                                             }}
                                             className="glass-btn-secondary"
                                             disabled={deleteItemMutation.isLoading}
@@ -431,7 +431,7 @@ const FoodPage = () => {
                                         className="glass-btn-secondary"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDelete(selectedMeal.savedItemId);
+                                            doRemove(selectedMeal.savedItemId);
                                             closeMealDetails();
                                         }}
                                         disabled={deleteItemMutation.isLoading}
@@ -482,6 +482,7 @@ const FoodPage = () => {
                     </div>
                 )}
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

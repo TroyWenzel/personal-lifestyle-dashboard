@@ -20,8 +20,6 @@ import SpacePage from "@/features/space/SpacePage";
 import JournalPage from "@/features/journal/JournalPage";
 import PokemonPage from "@/features/pokemon/PokemonPage";
 
-import '@/styles/App.css';
-
 function App() {
     return (
         // AuthProvider wraps the whole app so any component can access login state

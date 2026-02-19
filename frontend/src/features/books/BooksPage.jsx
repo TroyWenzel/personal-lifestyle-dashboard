@@ -4,8 +4,10 @@ import { useSavedItems, useDeleteItem, useSaveBook } from "@/api/queries";
 import { searchBooks } from "@/api/services/bookService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Books.css";
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 const BooksPage = () => {
+    const { toasts, toast, removeToast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -14,9 +16,9 @@ const BooksPage = () => {
     const [selectedBook, setSelectedBook] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [backgroundBooks, setBackgroundBooks] = useState([]);
-    const [savedBooksData, setSavedBooksData] = useState({}); // Store full book data by ID
+    const [savedBooksData, setSavedBooksData] = useState({});
 
-    const { data: allSavedItems = [] } = useSavedItems();
+    const { data: allSavedItems = [], refetch: refetchSaved } = useSavedItems();
     const deleteItemMutation = useDeleteItem();
     const saveBookMutation = useSaveBook();
     const savedBooks = allSavedItems.filter(item => item.type === 'book');
@@ -36,7 +38,6 @@ const BooksPage = () => {
                 const genres = ['fiction', 'fantasy', 'mystery', 'science', 'history'];
                 const randomGenre = genres[Math.floor(Math.random() * genres.length)];
                 
-                // Use our backend API instead of direct Open Library call
                 const data = await searchBooks(randomGenre);
                 const booksWithCovers = data.docs?.filter(book => book.cover_i).slice(0, 30) || [];
                 setBackgroundBooks(booksWithCovers);
@@ -60,7 +61,7 @@ const BooksPage = () => {
             setActiveTab('search');
         } catch (error) {
             console.error('Search error:', error);
-            alert('Failed to search books');
+            toast.error('Search failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -71,33 +72,61 @@ const BooksPage = () => {
         setShowModal(true);
     };
 
-    const handleSave = async (book) => {
+    const handleSave = (book) => {
         saveBookMutation.mutate(book, {
             onSuccess: (result) => {
-                // Store the full book data for later viewing
                 if (result?.id) {
                     setSavedBooksData(prev => ({
                         ...prev,
                         [result.id]: book
                     }));
                 }
-                alert("Book saved successfully!");
+                refetchSaved();
+                toast.success("Book saved to your collection!");
             },
             onError: (error) => {
-                console.error("Error saving book:", error);
-                alert("Failed to save book");
+                // Check if it's a 409 conflict (already saved)
+                if (error.response?.status === 409) {
+                    toast.info("This book is already in your collection!");
+                } else {
+                    console.error("Error saving book:", error);
+                    toast.error("Failed to save book");
+                }
             }
         });
     };
 
     const handleDelete = (itemId) => {
         deleteItemMutation.mutate(itemId, {
-            onSuccess: () => alert('Book removed!'),
+            onSuccess: () => {
+                refetchSaved();
+                toast.success('Book removed from collection');
+            },
             onError: (error) => {
                 console.error('Error deleting:', error);
-                alert('Failed to remove book');
+                toast.error('Failed to remove book');
             }
         });
+    };
+
+    // Helper function to check if a book is already saved
+    const isBookSaved = (book) => {
+        if (!book) return false;
+        // Check by external_id (which should be the book key from Open Library)
+        return savedBooks.some(saved => 
+            saved.external_id === book.key || 
+            saved.title === book.title
+        );
+    };
+
+    // Find the saved item ID for a book if it exists
+    const getSavedItemId = (book) => {
+        if (!book) return null;
+        const saved = savedBooks.find(saved => 
+            saved.external_id === book.key || 
+            saved.title === book.title
+        );
+        return saved?.id || null;
     };
 
     return (
@@ -115,6 +144,9 @@ const BooksPage = () => {
                                 src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
                                 alt="Book cover"
                                 loading="lazy"
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                }}
                             />
                         </div>
                     ))}
@@ -187,6 +219,9 @@ const BooksPage = () => {
                                                     background: 'rgba(0, 0, 0, 0.2)'
                                                 }}
                                                 loading="lazy"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
                                             />
                                         )}
                                         <div style={{ padding: '1.5rem' }}>
@@ -218,8 +253,9 @@ const BooksPage = () => {
                                                     handleSave(book);
                                                 }}
                                                 className="glass-btn"
+                                                disabled={saveBookMutation.isLoading}
                                             >
-                                                💾 Save
+                                                {saveBookMutation.isLoading ? '💾 Saving...' : '💾 Save'}
                                             </button>
                                         </div>
                                     </div>
@@ -265,7 +301,6 @@ const BooksPage = () => {
                                         key={item.id} 
                                         className="glass-item-card books-clickable"
                                         onClick={() => {
-                                            // Try to use stored data, or reconstruct from metadata
                                             const bookData = savedBooksData[item.id] || {
                                                 title: item.title,
                                                 author_name: [item.metadata?.author || item.description?.replace('By ', '')],
@@ -292,6 +327,9 @@ const BooksPage = () => {
                                                     background: 'rgba(0, 0, 0, 0.2)'
                                                 }}
                                                 loading="lazy"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
                                             />
                                         )}
                                         <div style={{ padding: '1.5rem' }}>
@@ -326,7 +364,7 @@ const BooksPage = () => {
                                             </p>
                                             <button 
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent card click
+                                                    e.stopPropagation();
                                                     handleDelete(item.id);
                                                 }}
                                                 className="glass-btn-secondary"
@@ -587,18 +625,42 @@ const BooksPage = () => {
                                     </div>
                                 )}
 
-                                <button 
-                                    onClick={() => handleSave(selectedBook)}
-                                    className="glass-btn"
-                                    style={{ marginTop: '2rem' }}
-                                >
-                                    💾 Save to Collection
-                                </button>
+                                {/* Conditional button based on whether book is saved */}
+                                {isBookSaved(selectedBook) ? (
+                                    <button 
+                                        onClick={() => {
+                                            const savedId = getSavedItemId(selectedBook);
+                                            if (savedId) {
+                                                handleDelete(savedId);
+                                                setShowModal(false);
+                                            }
+                                        }}
+                                        className="glass-btn-secondary"
+                                        style={{ 
+                                            marginTop: '2rem',
+                                            background: 'rgba(239, 68, 68, 0.2)',
+                                            borderColor: 'rgba(239, 68, 68, 0.3)'
+                                        }}
+                                        disabled={deleteItemMutation.isLoading}
+                                    >
+                                        {deleteItemMutation.isLoading ? '🗑️ Removing...' : '🗑️ Remove from Collection'}
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => handleSave(selectedBook)}
+                                        className="glass-btn"
+                                        style={{ marginTop: '2rem' }}
+                                        disabled={saveBookMutation.isLoading}
+                                    >
+                                        {saveBookMutation.isLoading ? '💾 Saving...' : '💾 Save to Collection'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

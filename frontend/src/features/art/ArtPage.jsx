@@ -5,8 +5,10 @@ import { getArtworkById } from "@/api/services/artService";
 import { saveItem } from "@/api/services/contentService";
 import "@/styles/GlassDesignSystem.css";
 import "@/styles/features/Art.css";
+import { useToast, ToastContainer, ConfirmDialog } from '@/components/ui/Toast';
 
 const ArtPage = () => {
+    const { toasts, toast, removeToast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [currentQuery, setCurrentQuery] = useState("");
     const [activeTab, setActiveTab] = useState('search');
@@ -112,7 +114,7 @@ const ArtPage = () => {
 
     const handleSave = async (artwork) => {
         const artworkId = artwork.id || artwork.external_id;
-        if (!artworkId) { alert('Cannot save artwork: Invalid ID'); return; }
+        if (!artworkId) { toast.error('Cannot save artwork: Invalid ID'); return; }
 
         const image_id = artwork.image_id;
         const thumbnailUrl = image_id
@@ -149,13 +151,13 @@ const ArtPage = () => {
             // Manually refetch so the saved list updates
             saveArtworkMutation.reset();
             refetchSaved();
-            alert("Artwork saved successfully!");
+            toast.success("Artwork saved to your collection!");
         } catch (error) {
             if (error?.response?.status === 409) {
-                alert("This artwork is already in your collection!");
+                toast.info("Already in your collection!");
             } else {
                 console.error("Error saving artwork:", error);
-                alert("Failed to save artwork");
+                toast.error("Failed to save artwork");
             }
         }
     };
@@ -169,11 +171,11 @@ const ArtPage = () => {
                     delete newData[itemId];
                     return newData;
                 });
-                alert('Artwork removed!');
+                toast.success('Artwork removed from collection');
             },
             onError: (error) => {
                 console.error('Error deleting:', error);
-                alert('Failed to remove artwork');
+                toast.error('Failed to remove artwork');
             }
         });
     };
@@ -635,6 +637,7 @@ const ArtPage = () => {
                     </div>
                 </div>
             )}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

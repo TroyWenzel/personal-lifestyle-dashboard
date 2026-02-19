@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import '@/styles/GlassDesignSystem.css';
 import '@/styles/features/Pokemon.css';
+import { useToast, ToastContainer } from '@/components/ui/Toast';  // Removed ConfirmDialog since it's not used
 
 // ─── Type colours & chart ────────────────────────────────────────────────────
 
@@ -144,7 +145,7 @@ function StatBar({ label, value }) {
 // TAB 1 — POKÉDEX
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function PokedexTab() {
+function PokedexTab({ toast }) {  // Pass toast as prop
     const [searchInput, setSearchInput] = useState('');
     const [pokemon, setPokemon] = useState(null);
     const [currentId, setCurrentId] = useState(1);
@@ -178,8 +179,8 @@ function PokedexTab() {
     const addToTeam = () => {
         if (!pokemon) return;
         const team = getTeam();
-        if (team.length >= 6) { alert('Your team is full! Remove a Pokémon first.'); return; }
-        if (team.some(p => p.id === pokemon.id)) { alert(`${pokemon.name} is already on your team!`); return; }
+        if (team.length >= 6) { toast.warning('Your team is full! Remove a Pokémon first.'); return; }
+        if (team.some(p => p.id === pokemon.id)) { toast.info(`${pokemon.name} is already on your team!`); return; }
         const sprite = pokemon.sprites?.other?.['official-artwork']?.front_default
             || pokemon.sprites?.other?.dream_world?.front_default
             || pokemon.sprites?.front_default;
@@ -201,6 +202,7 @@ function PokedexTab() {
         };
         saveTeam([...team, newMember]);
         setAddedToTeam(true);
+        toast.success(`${pokemon.name} added to your team!`);
     };
 
     const sprite = pokemon?.sprites?.other?.['official-artwork']?.front_default
@@ -290,8 +292,9 @@ function PokedexTab() {
 // TAB 2 — MY TEAM
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function TeamTab() {
+function TeamTab({ toast }) {  // Pass toast as prop
     const [team, setTeam] = useState(getTeam);
+    const [confirmClear, setConfirmClear] = useState(false);
 
     const refreshTeam = () => setTeam(getTeam());
 
@@ -299,17 +302,34 @@ function TeamTab() {
         const updated = team.filter(p => p.id !== id);
         saveTeam(updated);
         setTeam(updated);
+        toast.success('Pokémon removed from team');
     };
 
     const clearTeam = () => {
         if (!team.length) return;
-        if (confirm('Clear your entire team?')) { saveTeam([]); setTeam([]); }
+        saveTeam([]);
+        setTeam([]);
+        setConfirmClear(false);
+        toast.success('Team cleared');
     };
 
     const emptySlots = Array(Math.max(0, 6 - team.length)).fill(null);
 
     return (
         <div>
+            {confirmClear && (
+                <div className="confirm-dialog-overlay" onClick={() => setConfirmClear(false)}>
+                    <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+                        <h3>Clear Team?</h3>
+                        <p>Are you sure you want to remove all Pokémon from your team?</p>
+                        <div className="confirm-dialog-actions">
+                            <button className="glass-btn-secondary" onClick={() => setConfirmClear(false)}>Cancel</button>
+                            <button className="glass-btn" onClick={clearTeam} style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.3)' }}>Clear Team</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem', flexWrap:'wrap', gap:'1rem' }}>
                 <p style={{ color:'var(--text-secondary)' }}>
                     {team.length}/6 Pokémon — {team.length < 6 ? 'Search the Pokédex to add more!' : 'Team full!'}
@@ -317,7 +337,7 @@ function TeamTab() {
                 <div style={{ display:'flex', gap:'0.75rem' }}>
                     <button className="glass-btn-secondary" onClick={refreshTeam}>🔄 Refresh</button>
                     {team.length > 0 && (
-                        <button className="glass-btn-secondary" onClick={clearTeam}
+                        <button className="glass-btn-secondary" onClick={() => setConfirmClear(true)}
                             style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.4)' }}>
                             🗑️ Clear Team
                         </button>
@@ -397,7 +417,7 @@ function buildOpponent(opp) {
     };
 }
 
-function HPBar({ current, max, danger }) {
+function HPBar({ current, max }) {
     const pct = Math.max(0, Math.min(100, Math.round((current / max) * 100)));
     const color = pct > 50 ? '#4ade80' : pct > 25 ? '#facc15' : '#f87171';
     return (
@@ -407,7 +427,7 @@ function HPBar({ current, max, danger }) {
     );
 }
 
-function BattleTab() {
+function BattleTab({ toast }) {  // Pass toast as prop
     const [screen, setScreen] = useState('select'); // select | battle | result
     const [team, setTeam] = useState(getTeam);
     const [selectedIdx, setSelectedIdx] = useState(0);
@@ -419,6 +439,7 @@ function BattleTab() {
     const [showMoves, setShowMoves] = useState(false);
     const [showItems, setShowItems] = useState(false);
     const [showSwitch, setShowSwitch] = useState(false);
+    const [confirmFlee, setConfirmFlee] = useState(false);
     const [items, setItems] = useState([
         { name:'Potion', heal:20, qty:3 },
         { name:'Super Potion', heal:50, qty:1 },
@@ -430,7 +451,7 @@ function BattleTab() {
     const startBattle = () => {
         const refreshedTeam = getTeam();
         setTeam(refreshedTeam);
-        if (!refreshedTeam.length) { alert('Add Pokémon to your team first!'); return; }
+        if (!refreshedTeam.length) { toast.warning('Add Pokémon to your team first!'); return; }
         const idx = Math.min(selectedIdx, refreshedTeam.length - 1);
         const player = normalizePokemon(refreshedTeam[idx]);
         const oppDef  = BATTLE_OPPONENTS[selectedOpp];
@@ -458,7 +479,7 @@ function BattleTab() {
 
             const logs = [];
             // Player attacks
-            if (Math.random() * 100 > (100 - move.accuracy)) {
+            if (Math.random() * 100 <= move.accuracy) {
                 if (move.category === 'status') {
                     logs.push(`${b.player.name} used ${move.displayName}!`);
                 } else {
@@ -568,13 +589,25 @@ function BattleTab() {
         addLog(`Go, ${newMember.name.charAt(0).toUpperCase()+newMember.name.slice(1)}!`);
     };
 
-    const flee = () => { if (confirm('Flee from battle?')) { setScreen('select'); setBattle(null); } };
+    const flee = () => { setConfirmFlee(true); };
 
     // ── Select Screen ──────────────────────────────────────────────────────────
     if (screen === 'select') {
         const freshTeam = getTeam();
         return (
             <div>
+                {confirmFlee && (
+                    <div className="confirm-dialog-overlay" onClick={() => setConfirmFlee(false)}>
+                        <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+                            <h3>Flee from Battle?</h3>
+                            <p>Are you sure you want to run away? This will end the battle.</p>
+                            <div className="confirm-dialog-actions">
+                                <button className="glass-btn-secondary" onClick={() => setConfirmFlee(false)}>Cancel</button>
+                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }} style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.3)' }}>Flee</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="poke-battle-setup">
                     {/* Choose your pokemon */}
                     <div className="glass-card poke-setup-card">
@@ -642,11 +675,21 @@ function BattleTab() {
     // ── Battle Screen ──────────────────────────────────────────────────────────
     if (screen === 'battle' && battle) {
         const { player, opp, playerMoves } = battle;
-        const playerHPPct = Math.round((player.currentHP / player.stats.hp) * 100);
-        const oppHPPct    = Math.round((opp.currentHP    / opp.stats.hp)    * 100);
 
         return (
             <div className="poke-battle-arena">
+                {confirmFlee && (
+                    <div className="confirm-dialog-overlay" onClick={() => setConfirmFlee(false)}>
+                        <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+                            <h3>Flee from Battle?</h3>
+                            <p>Are you sure you want to run away? This will end the battle.</p>
+                            <div className="confirm-dialog-actions">
+                                <button className="glass-btn-secondary" onClick={() => setConfirmFlee(false)}>Cancel</button>
+                                <button className="glass-btn" onClick={() => { setScreen('select'); setConfirmFlee(false); toast.info('You fled from battle!'); }} style={{ background:'rgba(239,68,68,0.2)', borderColor:'rgba(239,68,68,0.3)' }}>Flee</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Field */}
                 <div className="poke-battle-field glass-card">
                     {/* Opponent */}
@@ -778,6 +821,7 @@ const TABS = [
 ];
 
 export default function PokemonPage() {
+    const { toasts, toast, removeToast } = useToast();  // Add this line!
     const [activeTab, setActiveTab] = useState('pokedex');
 
     return (
@@ -807,11 +851,12 @@ export default function PokemonPage() {
                     ))}
                 </div>
 
-                {/* Tab Content */}
-                {activeTab === 'pokedex' && <PokedexTab />}
-                {activeTab === 'team'    && <TeamTab />}
-                {activeTab === 'battle'  && <BattleTab />}
+                {/* Tab Content - pass toast to each tab */}
+                {activeTab === 'pokedex' && <PokedexTab toast={toast} />}
+                {activeTab === 'team'    && <TeamTab toast={toast} />}
+                {activeTab === 'battle'  && <BattleTab toast={toast} />}
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 }
