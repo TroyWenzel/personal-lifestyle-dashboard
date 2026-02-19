@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '@/context/AuthContext';
+import apiClient from '@/api/client';
 import { isUserBirthday, calculateAge } from '@/api/services/userService';
 import '@/styles/GlassDesignSystem.css';
 
@@ -115,7 +116,6 @@ const ProfilePage = () => {
         setSaving(true);
 
         try {
-            // TODO: Implement backend password change
             setSuccess('Password change feature - backend integration needed');
             setPasswordData({
                 currentPassword: '',
@@ -138,6 +138,32 @@ const ProfilePage = () => {
     const handlePasswordInputChange = (e) => {
         const { name, value } = e.target;
         setPasswordData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(
+            'Are you absolutely sure you want to delete your account?\n\n' +
+            'This will permanently delete your account and ALL saved items. ' +
+            'This cannot be undone.'
+        );
+        if (!confirmed) return;
+
+        const doubleConfirmed = window.confirm(
+            'Last chance — delete your account permanently?'
+        );
+        if (!doubleConfirmed) return;
+
+        try {
+            setSaving(true);
+            await apiClient.delete('/auth/delete-account');
+            localStorage.clear();
+            navigate('/register');
+        } catch (err) {
+            console.error('Delete account error:', err);
+            setError('Failed to delete account. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     if (loading) {
@@ -369,10 +395,11 @@ const ProfilePage = () => {
                                     </p>
                                     <button 
                                         className="glass-btn-secondary" 
-                                        disabled 
-                                        style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)', cursor: 'not-allowed', opacity: 0.6 }}
+                                        onClick={handleDeleteAccount}
+                                        disabled={saving}
+                                        style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#ef4444' }}
                                     >
-                                        🗑️ Delete Account (Coming Soon)
+                                        {saving ? 'Deleting...' : '🗑️ Delete Account'}
                                     </button>
                                 </div>
                             </div>
