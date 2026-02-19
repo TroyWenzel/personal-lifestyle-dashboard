@@ -11,6 +11,7 @@ const SpacePage = () => {
     const [error, setError] = useState(null);
     const [date, setDate] = useState('');
     const [activeTab, setActiveTab] = useState('explore');
+    const [selectedPhoto, setSelectedPhoto] = useState(null);
     const location = useLocation();
 
     const { data: allSavedItems = [] } = useSavedItems();
@@ -189,7 +190,7 @@ const SpacePage = () => {
                                 const m = item.metadata || {};
                                 const imgUrl = m.url || m.hdurl;
                                 return (
-                                    <div key={item.id} className="glass-item-card">
+                                    <div key={item.id} className="glass-item-card" onClick={() => setSelectedPhoto(item)} style={{ cursor: 'pointer' }}>
                                         {imgUrl && m.media_type !== 'video' && (
                                             <img src={imgUrl} alt={item.title}
                                                 style={{ width:'100%', height:'200px', objectFit:'cover', borderRadius:'12px 12px 0 0' }} />
@@ -220,6 +221,81 @@ const SpacePage = () => {
                     )
                 )}
             </div>
+
+
+            {/* ── Saved Photo Modal ── */}
+            {selectedPhoto && (
+                <div
+                    onClick={() => setSelectedPhoto(null)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 1000,
+                        background: 'rgba(0,0,0,0.85)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '1rem', overflowY: 'auto'
+                    }}
+                >
+                    <div
+                        onClick={e => e.stopPropagation()}
+                        className="space-photo-card"
+                        style={{ maxWidth: '900px', width: '100%', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}
+                    >
+                        <button
+                            onClick={() => setSelectedPhoto(null)}
+                            style={{
+                                position: 'absolute', top: '1rem', right: '1rem', zIndex: 10,
+                                background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+                                width: '36px', height: '36px', color: 'white',
+                                fontSize: '1.2rem', cursor: 'pointer', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center'
+                            }}
+                        >✕</button>
+                        {selectedPhoto.metadata?.url && selectedPhoto.metadata?.media_type !== 'video' && (
+                            <div className="space-image-container">
+                                <img
+                                    src={selectedPhoto.metadata.hdurl || selectedPhoto.metadata.url}
+                                    alt={selectedPhoto.title}
+                                    className="space-main-image"
+                                />
+                            </div>
+                        )}
+                        {selectedPhoto.metadata?.media_type === 'video' && (
+                            <div className="space-video-container">
+                                <iframe src={selectedPhoto.metadata.url} title={selectedPhoto.title}
+                                    className="space-video" frameBorder="0" allowFullScreen />
+                            </div>
+                        )}
+                        <div className="space-info-section">
+                            <h3 className="space-photo-title">{selectedPhoto.title}</h3>
+                            {selectedPhoto.metadata?.date && (
+                                <p className="space-date">
+                                    📅 {new Date(selectedPhoto.metadata.date).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+                                </p>
+                            )}
+                            {selectedPhoto.metadata?.copyright && (
+                                <p className="space-copyright">📸 Copyright: {selectedPhoto.metadata.copyright}</p>
+                            )}
+                            {selectedPhoto.description && (
+                                <p className="space-explanation">{selectedPhoto.description}</p>
+                            )}
+                            <div className="space-actions">
+                                {selectedPhoto.metadata?.hdurl && (
+                                    <a href={selectedPhoto.metadata.hdurl} target="_blank" rel="noopener noreferrer" className="glass-btn">
+                                        🖼️ View HD Image
+                                    </a>
+                                )}
+                                <button
+                                    className="glass-btn-secondary"
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(selectedPhoto.id); setSelectedPhoto(null); }}
+                                    disabled={deleteItemMutation.isLoading}
+                                    style={{ background:'rgba(239,68,68,0.15)', borderColor:'rgba(239,68,68,0.3)' }}
+                                >
+                                    🗑️ Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
