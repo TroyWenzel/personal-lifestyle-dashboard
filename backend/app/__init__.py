@@ -27,8 +27,8 @@ def create_app():
      # ─── CORS Configuration ──────────────────────────────────────
      CORS(app,
           origins=[
-               "https://steady-rugelach-889cba.netlify.app",
-               re.compile(r"https://.*--steady-rugelach-889cba\.netlify\.app"),
+               "https://capstone-lifehub.netlify.app",
+               re.compile(r"https://capstone-lifehub.netlify.app"),
                "http://localhost:5173",
                "http://127.0.0.1:5173"
           ],
